@@ -9,5 +9,7 @@ The background can also be any 1280 x 800 properly formatted picture. Same as wi
 Basic Installation instructions (assuming from a SteamOS command line).
 
 Run git clone https://github.com/jlobue10/SteamDeck_rEFInd/
+
 cd into the SteamDeck_rEFInd directory
+
 Run ./SteamDeck_rEFInd_install.sh
