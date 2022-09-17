@@ -30,7 +30,6 @@ grep -A0 'rEFInd' ~/efibootlist.txt | tee ~/rEFInd_boot.txt
 REFIND_BOOTNUM="$(grep -Eo '[0-9]{1,}' ~/rEFInd_boot.txt)"
 # Delete rEFInd EFI boot entry from rEFInd-install... will be re-added later pointing to esp partition
 sudo efibootmgr -b $REFIND_BOOTNUM -B
-#sudo chmod -R 700 /boot/efi/EFI/refind/
 yes | sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
 # Renaming default rEFInd config file to keep for reference and backup
 sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
