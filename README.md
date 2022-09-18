@@ -7,16 +7,16 @@ The icons can be replaced with any 128x128 icons that a user desires. Please jus
 The background can also be any 1,280 x 800 properly formatted picture. Same as with the icons, if you plan to use a different background, make sure you update the applicable line in refind.conf for your background image.
 I recommend making any changes to the icons or background picture and refind.conf file before running the installation script.
 
-Prerequisites:
+**Prerequisites**:
 This installation script assumes that there are valid EFI boot entries for both Windows and SteamOS on the esp partition. For SteamOS there should be a valid EFI boot file located at /esp/efi/steamos/steamcl.efi . For Windows, there should be a valid EFI boot file located at /esp/efi/Microsoft/Boot/bootmgfw.efi . If you are missing either of these, or they do not function as intended, do not proceed with the installation script unless you know how to edit the boot entries in the refind.conf file to point to your correct EFI boot files for the OSes. You can confirm this by pressing Volume Up and Power buttons, then going to boot from file and selecting these manually. They should boot correctly into their respective OSes, otherwise do not proceed with the installation script (or proceed at your own risk).
 
 Assuming you have the 2 valid SteamOS and Windows EFI boot files, continue and run the following steps for installation.
 
-Basic Installation instructions (assuming from a SteamOS command line in desktop mode).
+**Basic Installation instructions** (assuming from a SteamOS command line in desktop mode). Run these commands one after the other.
 
 git clone https://github.com/jlobue10/SteamDeck_rEFInd/
 
-cd into the SteamDeck_rEFInd directory
+cd SteamDeck_rEFInd
 
 chmod +x SteamDeck_rEFInd_install.sh
 
