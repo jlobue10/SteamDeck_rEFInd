@@ -14,6 +14,8 @@ Assuming you have the 2 valid SteamOS and Windows EFI boot files, continue and r
 
 **Basic Installation instructions** (assuming from a SteamOS command line in desktop mode). Run these commands one after the other.
 
+If you know that no username password has been set on your Steam Deck (for deck user), then either create the password following the GUI steps laid out in [Deck Wizard's tutorial video](https://youtu.be/uYWNZGiBsUo "Deck Wizard Dual Boot Tutorial"), or by simply running the `passwd` from a command line (in SteamOS desktop mode). The deck user password must be set before continuing.
+
 `git clone https://github.com/jlobue10/SteamDeck_rEFInd/`
 
 `cd SteamDeck_rEFInd`
