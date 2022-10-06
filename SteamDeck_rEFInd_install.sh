@@ -1,19 +1,6 @@
 #!/bin/bash
 # A simple Steam Deck rEFInd automated install script
 
-passwd --status deck | tee ~/deck_passwd_status.txt
-# Run passwd command if no passwd is set
-awk '{
-	if($2 =="P")
-    	{
-		print "Password is already set."
-	}
-    	else
-    	{
-		passwd
-	}
-    }' ~/deck_passwd_status.txt
-
 sudo btrfs property set -ts / ro false
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
