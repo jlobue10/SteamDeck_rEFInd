@@ -12,8 +12,6 @@ This installation script assumes that there are valid EFI boot entries for both 
 
 Assuming you have the 2 valid SteamOS and Windows EFI boot files, continue and run the following steps for installation.
 
-If you know that no username password has been set on your Steam Deck (for deck user), then either create the password following the GUI steps laid out in [Deck Wizard's tutorial video](https://youtu.be/uYWNZGiBsUo "Deck Wizard Dual Boot Tutorial"), or by simply running the `passwd` from a command line (in SteamOS desktop mode). The deck user password must be set before continuing.
-
 **Basic Installation instructions** (assuming from a SteamOS command line in desktop mode). Run these commands one after the other.
 
 `git clone https://github.com/jlobue10/SteamDeck_rEFInd/`
@@ -34,12 +32,6 @@ If you plan on reinstalling Windows after running this script, you will need to 
 Take note and remember the boot entry for rEFInd and replace XXXX below with that number.
 
 `sudo efibootmgr -b XXXX -A`
-
-The rEFInd boot entry would be disabled after running this command, and Windows installation could proceed without interference. After Windows installation has completed, before re-running the installation script, delete the rEFInd EFI boot entry with this command.
-
-`sudo efibootmgr -b XXXX -B`
-
-This is so that there will not be duplicate rEFInd EFI boot entries after the script's installation. I may update the script to check for and do this automatically in the future, but as of now it's not in the installation script.
 
 **References**
 
