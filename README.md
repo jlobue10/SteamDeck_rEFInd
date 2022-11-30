@@ -33,6 +33,10 @@ Take note and remember the boot entry for rEFInd and replace XXXX below with tha
 
 `sudo efibootmgr -b XXXX -A`
 
+One more step will be required to allow the Windows installation process to complete unhindered. Replace YYYY in the following command with the Windows EFI entry number to re-enable the Windows EFI boot entry. The script will disable it again later, if it is re-ran after successful installation.
+
+`sudo efibootmgr -b YYYY -a`
+
 **SteamOS branch considerations**
 
 When using SteamOS branches other than the `Stable` branch, it's possible to run into some issues preventing a successful run of the script and installation of rEFInd. My recommendation for setting up any Steam Deck would be to always have Windows and SteamOS (`Stable` branch) both setup and working before the initial run of the script. If you try to change to any SteamOS branch other than `Stable` before the first run of the rEFInd installation script, the step where the Windows EFI boot entry is disabled may not complete successfully and therefore rEFInd will not be able to work. For this reason, run the script from the SteamOS `Stable` branch first before switching away from the `Stable` branch. In addition, a new issue popped up with SteamOS 3.4 where you may have to manually boot SteamOS from its EFI boot file, in order to run the rEFInd installation script one more time to restore rEFInd.
