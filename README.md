@@ -55,8 +55,18 @@ The updated `refind.conf` file has a manual stanza now for a Micro SD card Windo
 
 Replace the `volume REPLACE_THIS_WITH_SD_CARD_EFI_PARTITION_UUID` line with your appropriate UUID. For my example, this line becomes `volume 2FB0D40F-C809-4C67-8B50-136D93B78543` . Then we also must delete the `disabled` line at the end of the stanza. The Micro SD card Windows rEFInd entry should now be active (after these 2 steps). In my brief test case, I found it necessary to press a key to avoid disk checking upon boot. I'm not sure if this is common for Windows from the SD card, as this is not my normal setup. It's just something to be aware of. If you miss pressing this interrupt key, the screen may look corrupted until the disk check completes and Windows continues to boot.
 
+**Optional installation that works even if pacman is having issues**
+
+This option was just added today (12/21/2022) since some people are having issues with `pacman` installing the `refind` package. An optional, alternative script has just been added. This script should work without pacman installing refind. You may scroll up and see some alerts or errors, but in my limited test cases, this optional script still worked fine, and those can be ignored. Clone the GitHub repository (same as before) and change into the SteamDeck_rEFInd directory. The 3rd and 4th steps will be different as follows.
+
+`chmod +x refind_install_no_pacman.sh`
+
+`./refind_install_no_pacman.sh`
+
 **References**
 
 [rEFInd Boot Manager reference](https://www.rodsbooks.com/refind/ "rEFInd Boot Manager")
 
 [efibootmgr reference](https://linux.die.net/man/8/efibootmgr "efibootmgr")
+
+**README formatting updates will come in a future release. Until then, please don't mind how it's organized.**
