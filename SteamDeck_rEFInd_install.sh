@@ -22,17 +22,17 @@ sudo refind-install
 
 efibootmgr | tee ~/efibootlist.txt
 grep -A0 'Windows' ~/efibootlist.txt | tee ~/windows_boot.txt
-WINDOWS_BOOTNUM="$(grep -Eo '[0-9]{1,}' ~/windows_boot.txt)"
+WINDOWS_BOOTNUM="$(grep -Eo '[0-9]{1,}' ~/windows_boot.txt | head -1)"
 # Disable Windows EFI boot entry
 sudo efibootmgr -b $WINDOWS_BOOTNUM -A
 grep -A0 'rEFInd Boot Manager' ~/efibootlist.txt | tee ~/rEFInd_boot.txt
-REFIND_BOOTNUM="$(grep -Eo '[0-9]{1,}' ~/rEFInd_boot.txt)"
+REFIND_BOOTNUM="$(grep -Eo '[0-9]{1,}' ~/rEFInd_boot.txt | head -1)"
 # Delete rEFInd EFI boot entry from rEFInd-install... will be re-added later pointing to esp partition
 sudo efibootmgr -b $REFIND_BOOTNUM -B
 # Checking for duplicate rEFInd EFI boot entry, from previous script runs (or other sources)
 efibootmgr | tee ~/efibootlist2.txt
 grep -A0 'rEFInd' ~/efibootlist2.txt | tee ~/rEFInd_boot2.txt
-REFIND_BOOTNUM_ALT="$(grep -Eo '[0-9]{1,}' ~/rEFInd_boot2.txt)"
+REFIND_BOOTNUM_ALT="$(grep -Eo '[0-9]{1,}' ~/rEFInd_boot2.txt | head -1)"
 
 # Deleting duplicate rEFInd boot entry, if one was found
 re='^[0-9]+$'
@@ -58,4 +58,4 @@ yes | rm ~/rEFInd_boot.txt
 yes | rm ~/rEFInd_boot2.txt
 
 sudo steamos-readonly enable
-echo "rEFInd has now been installed."
+echo "rEFInd has now been installed (assuming pacman is functional)."
