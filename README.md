@@ -39,7 +39,7 @@ chmod +x refind_install_no_pacman.sh
 ./refind_install_no_pacman.sh
 ```
 
-If all went well, you should have rEFInd setup with SteamOS as the default loading OS. Feel free to adjust the timeout from 5 seconds to whatever desired value in the refind.conf file. This is how long you will have to choose your OS before the default OS loads. A value of -1 for the timeolut will automatically boot the default OS unless a button or trackpad is interacted with in the pre-boot sequence, after powering on. Select the desired OS using the right trackpad and the R2 (trigger) button, or with the D-Pad and A button.
+If all went well, you should have rEFInd setup with SteamOS as the default loading OS. Feel free to adjust the timeout from 5 seconds to whatever desired value in the refind.conf file. This is how long you will have to choose your OS before the default OS loads. A value of -1 for the timeout will automatically boot the default OS unless a button or trackpad is interacted with in the pre-boot sequence, after powering on. Select the desired OS using the right trackpad and the R2 (trigger) button, or with the D-Pad and A button.
 
 **Extra information and considerations _(Reinstalling Windows)_**
 
