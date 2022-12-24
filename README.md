@@ -1,9 +1,17 @@
 # SteamDeck_rEFInd
 This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe.
 
-**Please read regarding latest SteamOS 3.4 stable branch**
+**_Please read_ regarding latest SteamOS 3.4 stable branch**
 
-The latest stable release, SteamOS 3.4 has a firmware issue (for some users) that force reinstalls a Windows EFI entry and places it as the top boot priority. If you had rEFInd working properly before the 3.4 update yesterday (12/21/2022) and you are experiencing this issue, the simplest method to restore rEFInd is to boot from the [Steam Deck recovery image](https://help.steampowered.com/en/faqs/view/1b71-edf2-eb6d-2bb3), re-clone and re-run my installation script. This should work for most people. What you are looking for primarily is that the asterisk is gone next to the Windows EFI entry after running the script (which denotes an inactive entry).
+The latest stable release, SteamOS 3.4 has a firmware issue (for some users) that force reinstalls a Windows EFI entry and places it as the top boot priority. If you had rEFInd working properly before the 3.4 update (12/21/2022) and you are experiencing this issue, the simplest method to restore rEFInd is to boot from the [Steam Deck recovery image](https://help.steampowered.com/en/faqs/view/1b71-edf2-eb6d-2bb3), re-clone and re-run my installation script. This should work for most people. What you are looking for primarily is that the asterisk is gone next to the Windows EFI entry after running the script (which denotes an inactive entry). Alternatively, you could also just run `efibootmgr` take note of the Windows EFI entry boot number and replace XXXX in the following command with that number.
+
+`sudo efibootmgr -b XXXX -A`
+
+If you are setting up dual boot for the first time on a Steam Deck with version 3.4+, after installing Windows and its APU driver, the most straightforward method at this time is to boot into SteamOS desktop mode, run the script as instructed below and then either re-run the script afterwards while booted from the SteamOS recovery image, or simply manually disable the Windows EFI entry (or entries if multiple) as outlined above. I've considered making a new recovery image specific version of the script (necessary since mount points are different requiring different or additional commands), but for now I've held off on that. I'd hope moreso that Valve can undo this firmware change (in a future release) that is blocking the script from fully working without the additional step (in recovery mode or from [Windows with EasyUEFI trial](https://github.com/jlobue10/SteamDeck_rEFInd/issues/12#issuecomment-1362533289)).
+
+Also, if after the 3.4 update your SteamOS EFI entry is missing, you can re-add it from a SteamOS desktop command line with the following `efibootmgr` command. You can use boot from file (/esp/efi/steamos/steamcl.efi) in the BIOS menu (Volume Up + Power) to get into SteamOS manually.
+
+`sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\efi\\steamos\\steamcl.efi`
 
 **Prerequisites and Setup**
 
