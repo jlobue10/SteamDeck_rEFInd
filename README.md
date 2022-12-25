@@ -13,7 +13,7 @@ Also, if after the 3.4 update your SteamOS EFI entry is missing, you can re-add 
 
 `sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\efi\\steamos\\steamcl.efi`
 
-**Prerequisites and Setup**
+# **Prerequisites and Setup**
 
 This installation script assumes that there are valid EFI boot entries for both Windows and SteamOS on the esp partition. For SteamOS there should be a valid EFI boot file located at /esp/efi/steamos/steamcl.efi . For Windows, there should be a valid EFI boot file located at /esp/efi/Microsoft/Boot/bootmgfw.efi . If you are missing either of these, or they do not function as intended, do not proceed with the installation script unless you know how to edit the boot entries in the refind.conf file to point to your correct EFI boot files for the OSes. You can confirm this by pressing Volume Up and Power buttons, then going to boot from file and selecting these manually. They should boot correctly into their respective OSes, otherwise do not proceed with the installation script (or proceed at your own risk).
 
@@ -22,7 +22,7 @@ The background can also be any 1,280 x 800 properly formatted picture. Same as w
 
 **I recommend making any changes to the icons or background picture and refind.conf file _before running the installation script_.**
 
-**Basic Installation instructions** 
+# **Basic Installation instructions** 
 
 From a SteamOS command line in desktop mode, run these commands one after the other.
 
@@ -41,7 +41,7 @@ chmod +x refind_install_no_pacman.sh
 
 If all went well, you should have rEFInd setup with SteamOS as the default loading OS. Feel free to adjust the timeout from 5 seconds to whatever desired value in the refind.conf file. This is how long you will have to choose your OS before the default OS loads. A value of -1 for the timeout will automatically boot the default OS unless a button or trackpad is interacted with in the pre-boot sequence, after powering on. Select the desired OS using the right trackpad and the R2 (trigger) button, or with the D-Pad and A button.
 
-**Extra information and considerations _(Reinstalling Windows)_**
+# **Extra information and considerations _(Reinstalling Windows)_**
 
 If you plan on reinstalling Windows after running this script, you will need to disable the rEFInd EFI boot entry beforehand so that rEFInd does not interfere with the Windows installation process. You can do this from SteamOS desktop mode in a command line with two steps.
 
@@ -55,11 +55,11 @@ One more step will be required to allow the Windows installation process to comp
 
 `sudo efibootmgr -b YYYY -a`
 
-**Additional Windows considerations _(corrupted display on boot into Windows)_**
+# **Additional Windows considerations _(corrupted display on boot into Windows)_**
 
 If you encounter an issue while booting up where the Windows display is corrupted to the point that it's basically unusable, there is a workaround to fix the issue. Boot into SteamOS and edit the `refind.conf` file using the commands `sudo steamos-readonly disable` then `sudo nano /esp/efi/refind/refind.conf` from a command line. Make sure all `resolution` lines are commented out in the `refind.conf` config file (line begins with a `#`). When this is done, press `Ctrl+x` followed by `y` to save and exit. If this is successful, then on next reboot, the rEFInd screen will be rotated in portrait mode. Boot into Windows, fix any resolution discrepancies (should be 1,280 x 800 for main Steam Deck display) and save those changes. You should now be able to go back into SteamOS, edit the `refind.conf` config file again and make sure that `resolution 3` is uncommented (`#` at line beginning deleted) for use. Once you've confirmed normal operation again, please use the `sudo steamos-readonly enable` command from a SteamOS command line.
 
-**Optional Windows from Micro SD card instructions**
+# **Optional Windows from Micro SD card instructions**
 
 The updated `refind.conf` file has a manual stanza now for a Micro SD card Windows boot option. Make sure to disable the other "Windows" boot option by adding a `disabled` line in that "Windows" stanza. We need to make 2 edits to the "Windows SD card" stanza to make the Micro SD card Windows boot properly from rEFInd. First, we need to find out the Micro SD card's EFI system partition UUID. I decided to use KDE Partition Manager to find out this information for my Micro SD card. See the following picture for the highlighted partition UUID.
 
@@ -69,10 +69,8 @@ The updated `refind.conf` file has a manual stanza now for a Micro SD card Windo
 
 Replace the `volume REPLACE_THIS_WITH_SD_CARD_EFI_PARTITION_UUID` line with your appropriate UUID. For my example, this line becomes `volume 2FB0D40F-C809-4C67-8B50-136D93B78543` . Then we also must delete the `disabled` line at the end of the stanza. The Micro SD card Windows rEFInd entry should now be active (after these 2 steps). In my brief test case, I found it necessary to press a key to avoid disk checking upon boot. I'm not sure if this is common for Windows from the SD card, as this is not my normal setup. It's just something to be aware of. If you miss pressing this interrupt key, the screen may look corrupted until the disk check completes and Windows continues to boot.
 
-**References**
+# **References**
 
 [rEFInd Boot Manager reference](https://www.rodsbooks.com/refind/ "rEFInd Boot Manager")
 
 [efibootmgr reference](https://linux.die.net/man/8/efibootmgr "efibootmgr")
-
-**Further README formatting updates will come in a future release.**
