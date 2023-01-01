@@ -42,7 +42,7 @@ if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then
 	sudo efibootmgr -b $REFIND_BOOTNUM_ALT -B
 fi
 
-if [[ $STEAMOS_BOOTNUM != $re ]]; then
+if ! [[ $STEAMOS_BOOTNUM =~ $re ]]; then
 	# Recreate the missing SteamOS EFI entry (if missing)
 	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\efi\\steamos\\steamcl.efi
 fi
