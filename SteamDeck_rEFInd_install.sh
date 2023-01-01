@@ -49,6 +49,11 @@ yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
 yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\efi\\refind\\refind_x64.efi
 
+# Adding Systemctl daemon for rEFInd to be next boot priority
+# Credit goes to Reddit user lucidludic for the idea :)
+yes | sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+sudo systemctl enable --now bootnext-refind.service
+
 # Clean up temporary files
 yes | rm ~/deck_passwd_status.txt
 yes | rm ~/efibootlist.txt
