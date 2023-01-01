@@ -32,6 +32,8 @@ sudo efibootmgr -b $REFIND_BOOTNUM -B
 efibootmgr | tee ~/efibootlist2.txt
 grep -A0 'rEFInd' ~/efibootlist2.txt | tee ~/rEFInd_boot2.txt
 REFIND_BOOTNUM_ALT="$(grep -Eo '[0-9]{1,}' ~/rEFInd_boot2.txt | head -1)"
+grep -A0 'SteamOS' ~/efibootlist2.txt | tee ~/SteamOS_boot.txt
+STEAMOS_BOOTNUM="$(grep -Eo '[0-9]{1,}' ~/SteamOS_boot.txt | head -1)"
 
 # Deleting duplicate rEFInd boot entry, if one was found
 re='^[0-9]+$'
@@ -39,15 +41,27 @@ if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then
 	sudo efibootmgr -b $REFIND_BOOTNUM_ALT -B
 fi
 
+if [[ $STEAMOS_BOOTNUM != $re ]]; then
+	# Recreate the missing SteamOS EFI entry (if missing)
+	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\efi\\steamos\\steamcl.efi
+fi
+
 # Manually adding rEFInd EFI boot entry
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\efi\\refind\\refind_x64.efi
 
-# Clean up temporary files
+# Adding Systemctl daemon for rEFInd to be next boot priority
+# Credit goes to Reddit user lucidludic for the idea :)
+yes | sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+sudo systemctl enable --now bootnext-refind.service
+
+# Clean up temporary files, created for code clarity and readability
+# Used primarily in automatically discovering boot entry numbers for efibootmgr commands
 yes | rm ~/efibootlist.txt
 yes | rm ~/efibootlist2.txt
 yes | rm ~/windows_boot.txt
 yes | rm ~/rEFInd_boot.txt
 yes | rm ~/rEFInd_boot2.txt
+yes | rm ~/SteamOS_boot.txt
 
 sudo steamos-readonly enable
 echo "rEFInd has now been installed, without pacman."
