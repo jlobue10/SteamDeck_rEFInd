@@ -72,4 +72,4 @@ yes | rm ~/rEFInd_boot2.txt
 yes | rm ~/SteamOS_boot.txt
 
 sudo steamos-readonly enable
-echo "rEFInd has now been installed (assuming pacman is functional)."
+echo -e "\nrEFInd has now been installed (assuming pacman is functional)."
