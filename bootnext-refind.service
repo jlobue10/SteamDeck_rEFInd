@@ -4,7 +4,7 @@ Description=Set UEFI BootNext to rEFInd
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/bash -c 'efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo '[0-9]{1,4}' | head -1)'
+ExecStart=/bin/bash -c 'efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo "[0-9]{1,4}" | head -1)'
 
 [Install]
 WantedBy=multi-user.target
