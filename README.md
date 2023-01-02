@@ -11,7 +11,7 @@ In the "Add arguments (optional)" text box enter the following (replacing the pa
 
 `-executionpolicy bypass -file C:\PATH\TO\bootsequence-steamos.ps1`
 
-Replace the `C:\PATH\TO\` with the appropriate directory path for your file. Click Next, select the checkbox "Open the Properties dialog..." and click Finish. In the Properties window for the new task, in General enable "Run with highest privileges" and "Hidden", and set "Configure for:" to Windows 10. Switch to the Conditions tab and ensure that "Start the task only if the computer is on AC power" is disabled. Click OK to close the Properties window.
+Click Next, select the checkbox "Open the Properties dialog..." and click Finish. In the Properties window for the new task, in General enable "Run with highest privileges" and "Hidden", and set "Configure for:" to Windows 10. Switch to the Conditions tab and ensure that "Start the task only if the computer is on AC power" is disabled. Click OK to close the Properties window.
 
 To check that it works, right-click the task and click Run. You may briefly see a PowerShell window appear, but this should not happen when it is normally scheduled. Open a Powershell Terminal using Run as Administrator and run this command again:
 
