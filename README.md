@@ -23,7 +23,7 @@ With this 2 part workaround installed, switching between SteamOS branches has al
 
 ## **BIOS Update _preparation_**
 
-To prepare for a BIOS update from the SteamOS side, whether alongside a major SteamOS version update (or manually) or some other source like the Preview branch, you will need to run the bios_update_SteamOS_prep.sh script or just manually copy and paste the three `sudo` commands from it into a SteamOS desktop command line. If using the script, make sure to give it executable permissions first. From inside the SteamDeck_rEFInd folder, run:
+To prepare for a BIOS update from the SteamOS side, whether alongside a major SteamOS version update (or manually) or some other source like the Preview branch, you will need to run the `bios_update_SteamOS_prep.sh` script or just manually copy and paste the three `sudo` commands from it into a SteamOS desktop command line. If using the script, make sure to give it executable permissions first. From inside the `SteamDeck_rEFInd` folder, run:
 
 ```
 chmod +x bios_update_SteamOS_prep.sh
