@@ -3,7 +3,7 @@ This is a simple rEFInd install script for the Steam Deck meant to provide easy 
 
 ## **Script Updates and _improvements_ (Jan. 1, 2023) and outstanding issues**
 
-A systemctl daemon to always prioritize rEFInd as the top boot priority has been added. This will continue to work in the future, unless a firmware update or SteamOS permissions issue blocks setting the 'Boot Next' setting with `efibootmgr`. This is one half of a solution that mostly disregards whether the Windows EFI entry can be disabled or not by the script. Disabling the Windows EFI entry, either with EasyUEFI from Windows or from command line with the SteamOS recovery image is still recommended, especially if you are setting up a triple boot (with Batocera on SD card for instance). The other half of this solution is to install the `bootsequencer-rEFInd-first.ps1` file (under the Windows directory here in this repository) as a task from Windows Task Scheduler. Save this `bootsequencer-rEFInd-first.ps1` file somewhere to be referenced and used by Task Scheduler. Special thanks to Reddit user lucidludic for this method and explanation. Open Task Scheduler, right-click on Task Scheduler Library and create a new folder named something like "rEFInd" then select the folder. Click "Create Basic Task", give it an appropriate name and description and click Next. Set the task to start "When I log on" and click Next, leave "Start a program" selected and click Next. In the Program/script text box enter the following (or use Browse):
+A systemctl daemon to always prioritize rEFInd as the top boot priority has been added. This will continue to work in the future, unless a firmware update or SteamOS permissions issue blocks setting the 'Boot Next' setting with `efibootmgr`. This is one half of a solution that mostly disregards whether the Windows EFI entry can be disabled or not by the script. Disabling the Windows EFI entry, either with EasyUEFI from Windows or from command line with the SteamOS recovery image is still recommended, especially if you are setting up a triple boot (with Batocera on SD card for instance). The other half of this solution is to install the `bootsequencer-rEFInd-first.ps1` file (under the Windows directory here in this repository) as a task from Windows Task Scheduler. Save this `bootsequencer-rEFInd-first.ps1` file somewhere to be referenced and used by Task Scheduler. Special thanks to [Reddit user lucidludic for this method and explanation](https://www.reddit.com/r/steamdeck_linux/comments/zb3l7k/comment/iyrxnzs/?utm_source=share&utm_medium=web2x&context=3). Open Task Scheduler, right-click on Task Scheduler Library and create a new folder named something like "rEFInd" then select the folder. Click "Create Basic Task", give it an appropriate name and description and click Next. Set the task to start "When I log on" and click Next, leave "Start a program" selected and click Next. In the Program/script text box enter the following (or use Browse):
 
 `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`
 
@@ -84,7 +84,7 @@ You will also need to re-enable the Windows EFI boot entry to allow the Windows 
 
 ## **Additional Windows considerations _(corrupted display on boot into Windows)_**
 
-If you encounter an issue while booting up where the Windows display is corrupted to the point that it's basically unusable, there is a workaround to fix the issue. Boot into SteamOS and edit the `refind.conf` file using the commands `sudo steamos-readonly disable` then `sudo nano /esp/efi/refind/refind.conf` from a command line. Make sure all `resolution` lines are commented out in the `refind.conf` config file (line begins with a `#`). When this is done, press `Ctrl+x` followed by `y` to save and exit. If this is successful, then on next reboot, the rEFInd screen will be rotated in portrait mode. Boot into Windows, fix any resolution discrepancies (should be 1,280 x 800 for main Steam Deck display) and save those changes. You should now be able to go back into SteamOS, edit the `refind.conf` config file again and make sure that `resolution 3` is uncommented (`#` at line beginning deleted) for use. Once you've confirmed normal operation again, please use the `sudo steamos-readonly enable` command from a SteamOS command line.
+If you encounter an issue while booting up where the Windows display is corrupted to the point that it's basically unusable (not the same as the dotted vertical lines scrolling), there is a workaround to fix the issue. Boot into SteamOS and edit the `refind.conf` file using the commands `sudo steamos-readonly disable` then `sudo nano /esp/efi/refind/refind.conf` from a command line. Make sure all `resolution` lines are commented out in the `refind.conf` config file (line begins with a `#`). When this is done, press `Ctrl+x` followed by `y` to save and exit. If this is successful, then on next reboot, the rEFInd screen will be rotated in portrait mode. Boot into Windows, fix any resolution discrepancies (should be 1,280 x 800 for main Steam Deck display) and save those changes. You should now be able to go back into SteamOS, edit the `refind.conf` config file again and make sure that `resolution 3` is uncommented (`#` at line beginning deleted) for use. Once you've confirmed normal operation again, please use the `sudo steamos-readonly enable` command from a SteamOS command line.
 
 ## **Optional Windows from Micro SD card instructions**
 
@@ -95,6 +95,32 @@ The updated `refind.conf` file has a manual stanza now for a Micro SD card Windo
 
 
 Replace the `volume REPLACE_THIS_WITH_SD_CARD_EFI_PARTITION_UUID` line with your appropriate UUID. For my example, this line becomes `volume 2FB0D40F-C809-4C67-8B50-136D93B78543` . Then we also must delete the `disabled` line at the end of the stanza. The Micro SD card Windows rEFInd entry should now be active (after these 2 steps). In my brief test case, I found it necessary to press a key to avoid disk checking upon boot. I'm not sure if this is common for Windows from the SD card, as this is not my normal setup. It's just something to be aware of. If you miss pressing this interrupt key, the screen may look corrupted until the disk check completes and Windows continues to boot.
+
+## **Disabling and/ or uninstalling rEFInd**
+
+If you've tried rEFInd and decide you just don't want to use it any more, you can disable the rEFInd EFI entry with this command (replace XXXX with rEFInd EFI entry number).
+
+`sudo efibootmgr -b XXXX -A`
+
+If you want to delete the rEFInd EFI entry run this following command.
+
+`sudo efibootmgr -b $REFIND_BOOTNUM -B`
+
+To uninstall the package and files that came with the `pacman` installed rEFInd package run.
+
+```
+sudo steamos-readonly disable
+sudo pacman-key --init
+sudo pacman-key --populate archlinux
+yes | sudo pacman -R refind
+sudo steamos-readonly enable
+```
+
+The non-pacman installation script files would be a little bit more complicated to delete, but not too difficult if somebody insisted on it. Since those files only take up a very small amount of space on the 5GB root partition (not taking up any space for games on the `/home` partition), I am not going to go over that in more detail here.
+
+To remove the rEFInd directory from the `/esp` partition **_(be forewarned that making a mistake here and deleting the wrong files or folders on the `/esp` partition could render your Steam Deck unbootable and in need of the recovery image. Consider this a fair warning and me taking no responsibility for user error here.)_** run this command.
+
+`sudo rm -rf /esp/efi/refind/`
 
 ## **References**
 
