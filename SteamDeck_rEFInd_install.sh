@@ -44,7 +44,7 @@ fi
 
 if ! [[ $STEAMOS_BOOTNUM =~ $re ]]; then
 	# Recreate the missing SteamOS EFI entry (if missing)
-	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\efi\\steamos\\steamcl.efi
+	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\EFI\\steamos\\steamcl.efi
 fi
 
 yes | sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
@@ -54,7 +54,7 @@ CURRENT_WD=$(pwd)
 yes | sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
 yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
 yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
-sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\efi\\refind\\refind_x64.efi
+sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
