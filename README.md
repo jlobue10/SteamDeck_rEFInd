@@ -104,7 +104,7 @@ If you've tried rEFInd and decide you just don't want to use it any more, you ca
 
 If you want to delete the rEFInd EFI entry run this following command.
 
-`sudo efibootmgr -b $REFIND_BOOTNUM -B`
+`sudo efibootmgr -b XXXX -B`
 
 To uninstall the package and files that came with the `pacman` installed rEFInd package run.
 
