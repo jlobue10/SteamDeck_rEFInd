@@ -17,7 +17,7 @@ awk '{
 sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
-yes | sudo pacman -S refind
+sudo pacman -S --noconfirm refind
 sudo refind-install
 
 efibootmgr | tee ~/efibootlist.txt
@@ -42,23 +42,23 @@ if ! [[ $STEAMOS_BOOTNUM =~ $re ]]; then
 	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\EFI\\steamos\\steamcl.efi
 fi
 
-yes | sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
+sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
 # Renaming default rEFInd config file to keep for reference and backup
 sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
 CURRENT_WD=$(pwd)
-yes | sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
-yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
-yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
+sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
+sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
+sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
-yes | sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
 sudo systemctl enable --now bootnext-refind.service
 
 # Clean up temporary files, created for code clarity
-yes | rm ~/deck_passwd_status.txt
-yes | rm ~/efibootlist.txt
+rm -f ~/deck_passwd_status.txt
+rm -f ~/efibootlist.txt
 
 sudo steamos-readonly enable
 echo -e "\nrEFInd has now been installed (assuming pacman is functional)."
