@@ -110,7 +110,7 @@ To uninstall the package and files that came with the `pacman` installed rEFInd 
 
 ```
 sudo steamos-readonly disable
-# These next two coomands may not be necessary, but don't hurt anything either
+# These next two commands may not be necessary, but they don't hurt anything either
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
 # The following command performs the pacman refind package removal
