@@ -1,5 +1,5 @@
 # SteamDeck_rEFInd
-This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe.
+This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe. Since the initial version of this script, optional support has been added for Windows from the SD card, Batocera from the SD card and an example boot stanza for (K)Ubuntu. The options really are pretty limitless, but require some understanding and manual edits to the `refind.conf` file.
 
 ## **Script Updates and _improvements_ (Jan. 1, 2023) and outstanding issues**
 
@@ -110,8 +110,10 @@ To uninstall the package and files that came with the `pacman` installed rEFInd 
 
 ```
 sudo steamos-readonly disable
+# These next two coomands may not be necessary, but don't hurt anything either
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
+# The following command performs the pacman refind package removal
 yes | sudo pacman -R refind
 sudo steamos-readonly enable
 ```
@@ -130,4 +132,4 @@ To remove the rEFInd directory from the `/esp` partition **_(be forewarned that 
 
 ## **Future plans**
 
-I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. Any feedback on desired features for this GUI is welcome. Thanks for using my script.
+I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. [This is the GUI prototype so far](https://imgur.com/hqIDeMz) . Any feedback on desired features for this GUI is welcome. Thanks for using my script.
