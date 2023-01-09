@@ -133,3 +133,11 @@ To remove the rEFInd directory from the `/esp` partition **_(be forewarned that 
 ## **Future plans**
 
 I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. [This is the GUI prototype so far](https://imgur.com/hqIDeMz) . Any feedback on desired features for this GUI is welcome. Thanks for using my script.
+
+## **Additional comments**
+
+**_It should also be noted that any rEFInd installation script that claims to be "better" but is just renaming EFI files (and/ or folders) is at a higher risk of failure and needing to be re-imaged or in need of restoring EFI files from backup (to restore proper Steam Deck functionality). My script does not have this risk, as it is simply using `efibootmgr` commands as much as possible and a simple run-once systemctl daemon and Windows powershell script. Once these are executed on every OS launch (for SteamOS and Windows), they take up no further system resources, and pose no system risk or slowdown._**
+
+This script was originally coded and uploaded because the most widely known and accepted rEFInd installation method at the time (mid 2022) was janky to say the least, and it broke with every Windows update. This script has continued to receive improvements and fixes to issues as they have arisen. This code has been uploaded so people can see how my script is working and ensure there is nothing malicious going on. I am not trying to (nor do I care to) make money off of this. This is solely my contribution to the community in the absence of official dual boot. I do not try to set and force the deck user password as some other scripts have done and may do in the future (very bad practice and idea!). Please do not copy my code, make some changes, call it "improved" and then disparage me and my efforts.
+
+IF you have an idea for code or script improvement, please reach out to me. I am all for making this script as good as possible, which is why I continue work on the GUI.
