@@ -38,7 +38,7 @@ if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then
 fi
 
 if ! [[ $STEAMOS_BOOTNUM =~ $re ]]; then
-	# Recreate the missing SteamOS EFI entry (if missing)
+	# Recreate the missing SteamOS EFI entry
 	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\EFI\\steamos\\steamcl.efi
 fi
 
@@ -49,6 +49,7 @@ CURRENT_WD=$(pwd)
 yes | sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
 yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
 yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
+# Creating rEFInd EFI entry
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
@@ -61,4 +62,8 @@ yes | rm ~/deck_passwd_status.txt
 yes | rm ~/efibootlist.txt
 
 sudo steamos-readonly enable
-echo -e "\nrEFInd has now been installed (assuming pacman is functional)."
+
+# Granting executable permissions to EFI entry restore script
+chmod +x $CURRENT_WD/restore_EFI_entries.sh
+
+echo -e "\nrEFInd has now been installed (assuming pacman is functional).\n"
