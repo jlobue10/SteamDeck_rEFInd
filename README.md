@@ -49,7 +49,9 @@ The background can also be any 1,280 x 800 properly formatted picture. Same as w
 
 **I recommend making any changes to the icons or background picture and refind.conf file _before running the installation script_.**
 
-## **Basic Installation instructions** 
+## **Installation instructions**
+
+If you've cloned my repository in the past and want to make sure that you have the latest updates, from the SteamDeck_rEFInd folder on a command line run `git status`. If you see that any files are missing or that any files need updates, you can either delete the directory and re-clone, or run `git reset --hard origin/main`. You can double check afterwards with another `git status`, which should say "up to date" if nothing is missing or changed.
 
 From a SteamOS command line in desktop mode, run these commands one after the other.
 
@@ -60,13 +62,19 @@ chmod +x SteamDeck_rEFInd_install.sh
 ./SteamDeck_rEFInd_install.sh
 ```
 
-Alternatively, if the `pacman` repositories experience an issue, you can run these last two lines instead, for a `pacman` free installation method.
+Alternatively, if the `pacman` repositories experience an issue during the `pacman` based installation, you can run these last two lines instead, for a `pacman` free installation method.
 ```
 chmod +x refind_install_no_pacman.sh
 ./refind_install_no_pacman.sh
 ```
 
 If all went well, you should have rEFInd setup with SteamOS as the default loading OS. Feel free to adjust the timeout from 5 seconds to whatever desired value in the refind.conf file. This is how long you will have to choose your OS before the default OS loads. A value of -1 for the timeout will automatically boot the default OS unless a button or trackpad is interacted with in the pre-boot sequence, after powering on. Select the desired OS using the right trackpad and the R2 (trigger) button, or with the D-Pad and A button.
+
+For additional configuration options, please see the rEFInd official documentation. My supplied config file uses manual OS boot stanzas on purpose to control the icon order from left to right. This feature is something that I plan to take advantage of in the config file generation (and installation) GUI that I am developing. Please feel free to deviate from this and use rEFInd's ability to detect EFI files and OSes to boot, if you want. The config file has a lot of potential options that I encourage people to explore.
+
+## **Restoring _missing_ EFI entries**
+
+In case either the SteamOS or rEFInd EFI entries are deleted (for instance by a BIOS update), you can just run the provided restore_EFI_entries.sh script. This script will detect if either EFI entry is missing and only re-add missing entries (no duplicates created).
 
 ## **Necessary steps for _reinstalling Windows_**
 
@@ -140,4 +148,4 @@ I have started working on a small GUI to make customization of rEFInd for a give
 
 I never claimed to be the author of rEFInd. In fact, since the beginning of this script, I've linked the rEFInd webpage and encouraged people to read that resource. This script was originally coded and uploaded because the most widely known and accepted rEFInd installation method at the time (mid 2022) was janky to say the least, and it broke with every Windows update. This script has continued to receive improvements and fixes to issues as they have arisen. This code has been uploaded so people can see how my script is working and ensure there is nothing malicious going on. I am not trying to (nor do I care to) make money off of this. This is solely my contribution to the community in the absence of official dual boot. I do not try to set and force the deck user password (to be a specific password) as some other scripts have done and may do in the future (very bad practice and idea!). Please do not copy my code, make some changes (core functionality and purpose remaining intact, even with syntax differences), call it "improved" and then disparage me and my efforts. This is disrespectful (and has happened at least once already). I have done my best to support and answer everybody, and I will do my best to continue that.
 
-IF you have an idea for code or script improvement, please reach out to me. I am all for making this script as good as possible, which is why I continue work on the GUI.
+If you have an idea for code or script improvement, please reach out to me. I am all for making this script as good as possible, which is why I continue work on the GUI.
