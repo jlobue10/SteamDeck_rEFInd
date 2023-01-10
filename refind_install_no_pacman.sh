@@ -53,4 +53,8 @@ sudo systemctl enable --now bootnext-refind.service
 yes | rm ~/efibootlist.txt
 
 sudo steamos-readonly enable
-echo -e "\nrEFInd has now been installed, without pacman."
+
+# Granting executable permissions to EFI entry restore script
+chmod +x $CURRENT_WD/restore_EFI_entries.sh
+
+echo -e "\nrEFInd has now been installed, without pacman.\n"
