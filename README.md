@@ -70,11 +70,11 @@ chmod +x refind_install_no_pacman.sh
 
 If all went well, you should have rEFInd setup with SteamOS as the default loading OS. Feel free to adjust the timeout from 5 seconds to whatever desired value in the refind.conf file. This is how long you will have to choose your OS before the default OS loads. A value of -1 for the timeout will automatically boot the default OS unless a button or trackpad is interacted with in the pre-boot sequence, after powering on. Select the desired OS using the right trackpad and the R2 (trigger) button, or with the D-Pad and A button.
 
-For additional configuration options, please see the rEFInd official documentation. My supplied config file uses manual OS boot stanzas on purpose to control the icon order from left to right. This feature is something that I plan to take advantage of in the config file generation (and installation) GUI that I am developing. Please feel free to deviate from this and use rEFInd's ability to detect EFI files and OSes to boot, if you want. The config file has a lot of potential options that I encourage people to explore.
+For additional configuration options, please refer to the rEFInd official documentation. My supplied config file uses manual OS boot stanzas on purpose to control the icon order from left to right. This feature is something that I plan to take advantage of in the config file generation (and installation) GUI that I am developing. Please feel free to deviate from this and use rEFInd's ability to detect EFI files and OSes to boot, if you want. The config file has a lot of potential options that I encourage people to explore.
 
 ## **Restoring _missing_ EFI entries**
 
-In case either the SteamOS or rEFInd EFI entries are deleted (for instance by a BIOS update), you can just run the provided restore_EFI_entries.sh script. This script will detect if either EFI entry is missing and only re-add missing entries (no duplicates created).
+In case either the SteamOS or rEFInd EFI entries are deleted (for instance by a BIOS update), you can just run the provided `restore_EFI_entries.sh` script. This script will detect if either EFI entry is missing and only re-add missing entries (no duplicates created).
 
 ## **Necessary steps for _reinstalling Windows_**
 
