@@ -16,5 +16,8 @@ if ! [[ $REFIND_RESTORE_NUM =~ $re ]]; then
 	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 fi
 
+# Forcing rEFInd to have bootnext top priority, just in case Windows EFI entry is active
+sudo efibootmgr -n $REFIND_RESTORE_NUM
+
 yes | rm ~/efirestorelist.txt
 echo -e "\nMissing EFI entries for SteamOS and/ or rEFInd have been restored.\n"
