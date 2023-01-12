@@ -76,6 +76,17 @@ For additional configuration options, please refer to the rEFInd official docume
 
 In case either the SteamOS or rEFInd EFI entries are deleted (for instance by a BIOS update), you can just run the provided `restore_EFI_entries.sh` script. This script will detect if either EFI entry is missing and only re-add missing entries (no duplicates created).
 
+## **Note about systemd service**
+
+Due to the nature of SteamOS' partition structure (redundant rootfs-A and rootfs-B partitions), it may be necessary to occasionally double check whether the systemd service is still active and functioning properly. These redundant partitions are likely used for branch changes and/ or updates (or in case of failure of one or the other... not entirely sure). A useful command to check whether the systemd service is functioning properly is this.
+
+`sudo systemctl status bootnext-refind.service`
+
+If the status is anything other than active and enabled, it's possible that you may need to recopy the systemd service to `/etc/systemd/system/bootnext-refind.service
+` with sudo permissions. As this is a rare issue, I don't feel it's necessary to chack for and automate this. If you had to recopy the systemd service onto the other redundant (now active root) partition, then you will also want to run this to start the service and enable it for future boots into SteamOS.
+
+`sudo systemctl enable --now bootnext-refind.service`
+
 ## **Necessary steps for _reinstalling Windows_**
 
 If you plan on reinstalling Windows after running this script, you will need to disable the rEFInd EFI boot entry beforehand so that rEFInd does not interfere with the Windows installation process. You can do this from SteamOS desktop mode in a command line with two steps. As of the SteamOS 3.4 update, these commands may require booting from the SteamOS recovery image (to be successful).
