@@ -83,9 +83,11 @@ Due to the nature of SteamOS' partition structure (redundant rootfs-A and rootfs
 `sudo systemctl status bootnext-refind.service`
 
 If the status is anything other than active and enabled, it's possible that you may need to recopy the systemd service to `/etc/systemd/system/bootnext-refind.service
-` with sudo permissions. As this is a rare issue, I don't feel it's necessary to chack for and automate this. If you had to recopy the systemd service onto the other redundant (now active root) partition, then you will also want to run this to start the service and enable it for future boots into SteamOS.
+` with sudo permissions. As this is a rare issue, I don't feel it's necessary to check for and automate this. If you had to recopy the systemd service onto the other redundant (now active root) partition, then you will also want to run this to start the service and enable it for future boots into SteamOS.
 
 `sudo systemctl enable --now bootnext-refind.service`
+
+I still find this systemd service method to be preferable to a script that will only launch (run in background) when a terminal is launched.
 
 ## **Necessary steps for _reinstalling Windows_**
 
