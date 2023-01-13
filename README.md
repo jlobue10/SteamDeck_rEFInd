@@ -9,7 +9,7 @@ A systemctl daemon to always prioritize rEFInd as the top boot priority has been
 
 In the "Add arguments (optional)" text box enter the following (replacing the path to point to your .ps1 script file):
 
-`-executionpolicy bypass -file C:\PATH\TO\bootsequencer-rEFInd-first.ps1`
+`-executionpolicy bypass -file C:\PATH\TO\bootsequence-rEFInd-first.ps1`
 
 Click Next, select the checkbox "Open the Properties dialog..." and click Finish. In the Properties window for the new task, in General enable "Run with highest privileges" and "Hidden", and set "Configure for:" to Windows 10. Switch to the Conditions tab and ensure that "Start the task only if the computer is on AC power" is disabled. Click OK to close the Properties window.
 
