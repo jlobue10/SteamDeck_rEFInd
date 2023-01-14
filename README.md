@@ -82,8 +82,7 @@ Due to the nature of SteamOS' partition structure (redundant rootfs-A and rootfs
 
 `sudo systemctl status bootnext-refind.service`
 
-If the status is anything other than active and enabled, it's possible that you may need to recopy the systemd service to `/etc/systemd/system/bootnext-refind.service
-` with sudo permissions. As this is a rare issue, I don't feel it's necessary to check for and automate this. If you had to recopy the systemd service onto the other redundant (now active root) partition, then you will also want to run this to start the service and enable it for future boots into SteamOS.
+If the status is anything other than active and enabled, it's possible that you may need to recopy the systemd service to `/etc/systemd/system/bootnext-refind.service` with sudo permissions. As this is a rare issue, I don't feel it's necessary to check for and automate this. If you had to recopy the systemd service onto the other redundant (now active root) partition, then you will also want to run this to start the service and enable it for future boots into SteamOS.
 
 `sudo systemctl enable --now bootnext-refind.service`
 
@@ -154,6 +153,12 @@ To remove the rEFInd directory from the `/esp` partition **_(be forewarned that 
 ## **Future plans**
 
 I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. [This is the GUI prototype so far](https://imgur.com/8ffR5qU) . Any feedback on desired features for this GUI is welcome. Thanks for using my script.
+
+## **Acknowledgements**
+
+Special thanks to **[DeckWizard](https://www.youtube.com/c/DeckWizard)** for extensive testing and feedback.
+
+Special thanks to Reddit user **ChewyYui** for solving the annoying Windows graphical glitch and helping me figure out the SteamOS splash screen setting from the SteamOS manual boot stanza.
 
 ## **Additional comments**
 
