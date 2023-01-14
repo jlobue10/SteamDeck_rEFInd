@@ -8,3 +8,6 @@ foreach ($_ in $SEPARATORS) { if ($_ -lt $FILE_IDX) { $GUID_IDX = $_ } }
 $REFIND_GUID = ($BCD_INFO | Select-Object -Index $GUID_IDX | Select-String "{.*}").Matches.Value
 
 bcdedit /set "{fwbootmgr}" bootsequence "$REFIND_GUID" /addfirst
+
+# Graphical boot glitch fix
+bcdedit /set "{globalsettings}" highestmode on
