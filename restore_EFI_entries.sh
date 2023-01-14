@@ -17,7 +17,7 @@ if ! [[ $REFIND_RESTORE_NUM =~ $re ]]; then
 fi
 
 # Forcing rEFInd to have bootnext top priority, just in case Windows EFI entry is active
-sudo efibootmgr -n $REFIND_RESTORE_NUM
+sudo efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo "[0-9]{1,4}" | head -1)
 
 yes | rm ~/efirestorelist.txt
 echo -e "\nMissing EFI entries for SteamOS and/ or rEFInd have been restored.\n"
