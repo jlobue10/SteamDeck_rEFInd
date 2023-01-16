@@ -11,13 +11,13 @@ In the "Add arguments (optional)" text box enter the following (replacing the pa
 
 `-executionpolicy bypass -file C:\PATH\TO\bootsequence-rEFInd-first.ps1`
 
-Click Next, select the checkbox "Open the Properties dialog..." and click Finish. In the Properties window for the new task, in General enable "Run with highest privileges" and "Hidden", and set "Configure for:" to Windows 10. Switch to the Conditions tab and ensure that "Start the task only if the computer is on AC power" is disabled. Click OK to close the Properties window.
+Click Next, select the checkbox "Open the Properties dialog..." and click Finish. In the Properties window for the new task, in General enable "Run with highest privileges" and "Hidden", and set "Configure for:" to Windows 10. Enable the "Run whether user is logged on or not," and ensure that "Do not store password," is checked.  Switch to the Conditions tab and ensure that "Start the task only if the computer is on AC power" is disabled. Click OK to close the Properties window.
 
 To check that it works, right-click the task and click Run. You may briefly see a PowerShell window appear, but this should not happen when it is normally scheduled. Open a Powershell Terminal using Run as Administrator and run this command again:
 
 `bcdedit /enum FIRMWARE`
 
-Under Firmware Boot Manager you should now see a new bootsequence value with your rEFInd GUID. Restart and rEFInd should automatically boot. Switch back to Windows, log in, and either repeat the above or simply restart to check that your automated task is working correctly.
+Under the Firmware Boot Manager ({fwbootmgr}) entry you should now see a new bootsequence value with your rEFInd GUID. Restart and rEFInd should automatically boot. Switch back to Windows, log in, and either repeat the above or simply restart to check that your automated task is working correctly.
 
 With this 2 part workaround installed, switching between SteamOS branches has also become seamless and largely worry free (from the systemctl daemon). You can now switch freely between Stable, Beta, and Preview without the need to re-run the script. The one issue that remains and will likely not be solvable without re-running the script in the future is BIOS (UEFI firmware) updates. I confirmed this for my script earlier today by downgrading from 113 to 110, reinstalling rEFInd and then re-upgrading to BIOS 113. The 113 BIOS update completely deleted the SteamOS and rEFInd EFI entries and reactivated the Windows EFI entry. I do not know if there's a way around this going forward, other than changes from InsydeH2O and/ or Valve to the actual provided UEFI firmware (which comes with the BIOS update). If somebody else figures out a method that survives a BIOS update, then that is really good and should be applauded. For now, I've updated this script to be as easy as possible in the case of a BIOS update breaking something, but there are some additional preparation steps going forward in order to not interfere with future BIOS updates.
 
@@ -158,7 +158,7 @@ I have started working on a small GUI to make customization of rEFInd for a give
 
 Special thanks to **[DeckWizard](https://www.youtube.com/c/DeckWizard)** for extensive testing and feedback.
 
-Special thanks to Reddit user **ChewyYui** for solving the annoying Windows graphical glitch and helping me figure out the SteamOS splash screen setting from the SteamOS manual boot stanza.
+Special thanks to Reddit user **ChewyYui** for solving the annoying Windows graphical glitch and helping to figure out the SteamOS splash screen setting from the SteamOS manual boot stanza.
 
 ## **Additional comments**
 
