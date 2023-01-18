@@ -152,7 +152,7 @@ To remove the rEFInd directory from the `/esp` partition **_(be forewarned that 
 
 ## **Future plans**
 
-I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. [This is the GUI prototype so far](https://imgur.com/8ffR5qU) . Any feedback on desired features for this GUI is welcome. Thanks for using my script.
+I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. [This is the GUI prototype so far](https://i.imgur.com/JDxe03W.png) . Any feedback on desired features for this GUI is welcome. Thanks for using my script.
 
 ## **Acknowledgements**
 
