@@ -44,6 +44,11 @@ fi
 # Manually adding rEFInd EFI boot entry
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 
+# Granting executable permissions to EFI entry restore script
+chmod +x $CURRENT_WD/restore_EFI_entries.sh
+mkdir -p ~/.SteamDeck_rEFInd/GUI
+cp $CURRENT_WD/restore_EFI_entries.sh ~/.SteamDeck_rEFInd/
+
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
 yes | sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
@@ -53,8 +58,5 @@ sudo systemctl enable --now bootnext-refind.service
 yes | rm ~/efibootlist.txt
 
 sudo steamos-readonly enable
-
-# Granting executable permissions to EFI entry restore script
-chmod +x $CURRENT_WD/restore_EFI_entries.sh
 
 echo -e "\nrEFInd has now been installed, without pacman.\n"
