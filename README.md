@@ -3,10 +3,10 @@ This is a simple rEFInd install script for the Steam Deck meant to provide easy 
 
 ## **GUI Added! (README will have more detailed updates soon)**
 
-If you want to try out the GUI perform these steps.
+If you want to try out the GUI, perform these steps.
 
 ```
-it clone https://github.com/jlobue10/SteamDeck_rEFInd/
+git clone https://github.com/jlobue10/SteamDeck_rEFInd/
 cd SteamDeck_rEFInd
 chmod +x install-GUI.sh
 ./install-GUI.sh
