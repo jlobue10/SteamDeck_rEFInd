@@ -260,7 +260,7 @@ void MainWindow::on_Install_Config_clicked()
 string MainWindow::Get_FW_BootNum() {
     FILE *process;
     char buff[1024];
-    process = popen("/usr/bin/efibootmgr | grep steam | grep -Eo '[0-9]{1,4}' | head -1", "r");
+    process = popen("efibootmgr | grep steam | grep -Eo '[0-9]{1,4}' | head -1", "r");
     if (process != NULL) {
         while (fgets(buff, sizeof(buff), process)) {
             printf("%s", buff);
