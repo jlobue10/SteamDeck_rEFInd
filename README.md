@@ -172,6 +172,10 @@ Special thanks to **[DeckWizard](https://www.youtube.com/c/DeckWizard)** for ext
 
 Special thanks to Reddit user **ChewyYui** for solving the annoying Windows graphical glitch and helping to figure out the SteamOS splash screen setting from the SteamOS manual boot stanza.
 
+Credit to GitHub user **cryobyte33** (maker of [steam-deck-utilities](https://github.com/CryoByte33/steam-deck-utilities)) for zenity additions to my own code. I inspected his working examples to incorporate into some aspects of the GUI installation pop-ups.
+
+Also thank you to GitHub user **YoshiAye** for the updated background that I made default for the GUI installation.
+
 ## **Additional comments**
 
-If you have an idea for code or script improvement, please reach out to me. I am all for making this script as good as possible, which is why I continue work on the GUI.
+If you have an idea for code, script, or GUI improvement, please reach out to me. I am all for making this repository as good as possible. If you are going to use some aspect of my code for your own design, please give some credit or acknowledgment for the original code.
