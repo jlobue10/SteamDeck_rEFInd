@@ -183,11 +183,11 @@ void MainWindow::on_Create_Config_clicked()
     if(refind_timeout == "") {
         refind_timeout = "5";
         }
-    refind_conf << "timeout " << refind_timeout << "\n"; //GUI variable
+    refind_conf << "timeout " << refind_timeout << "\n";
     refind_conf << "use_nvram false\n";
     refind_conf << "hideui singleuser,hints,arrows,label,badges\n";
     refind_background = "background.png";
-    refind_conf << "banner " << refind_background << "\n"; //GUI background option
+    refind_conf << "banner " << refind_background << "\n";
     refind_conf << "banner_scale fillscreen\n";
     refind_conf << "resolution 3\n";
     refind_conf << "enable_touch\n";
@@ -199,7 +199,7 @@ void MainWindow::on_Create_Config_clicked()
     else {
         refind_enable_mouse = "#";
     }
-    refind_conf << refind_enable_mouse << "enable_mouse\n"; //GUI enable mouse option
+    refind_conf << refind_enable_mouse << "enable_mouse\n";
     refind_conf << "showtools\n";
     refind_conf << "#scanfor manual,external\n";
     refind_conf << "scanfor manual\n";
@@ -210,7 +210,7 @@ void MainWindow::on_Create_Config_clicked()
     Boot_Option_3 = ui->Boot_Option_03_comboBox->currentText();
     Boot_Option_4 = ui->Boot_Option_04_comboBox->currentText();
     default_OS_sel = getDefaultBoot(default_sel, Boot_Last_OS_bool, Firmware_BootNum_bool, Boot_Option_1, Boot_Option_2, Boot_Option_3, Boot_Option_4);
-    refind_conf << "default_selection \"" << default_OS_sel << "\"\n"; //GUI variable
+    refind_conf << "default_selection \"" << default_OS_sel << "\"\n";
     Boot_Stanza_1 = CreateBootStanza(Boot_Option_1, "1", Firmware_BootNum_bool);
     refind_conf << Boot_Stanza_1;
     Boot_Stanza_2 = CreateBootStanza(Boot_Option_2, "2", Firmware_BootNum_bool);
