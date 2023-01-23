@@ -100,7 +100,7 @@ MainWindow::~MainWindow()
 void MainWindow::on_Background_pushButton_clicked()
 {
     QFileDialog Background_File_Dialog(this, tr("Select Background PNG"));
-    Background_fileName = Background_File_Dialog.getOpenFileName(this, tr("Select Background PNG"), "/home/chia02", tr("Image (*.png)"));
+    Background_fileName = Background_File_Dialog.getOpenFileName(this, tr("Select Background PNG"), "/home/deck", tr("Image (*.png)"));
     if (Background_fileName != "")
     {
         ui->Background_lineEdit->setText(Background_fileName);
@@ -110,7 +110,7 @@ void MainWindow::on_Background_pushButton_clicked()
 void MainWindow::on_Boot_Option_01_Icon_pushButton_clicked()
 {
     QFileDialog OS_Icon1_File_Dialog(this, tr("Select OS Icon 1 PNG"));
-    OS_Icon1_fileName = OS_Icon1_File_Dialog.getOpenFileName(this, tr("Select OS Icon 1 PNG"), "/home/chia02", tr("Image (*.png)"));
+    OS_Icon1_fileName = OS_Icon1_File_Dialog.getOpenFileName(this, tr("Select OS Icon 1 PNG"), "/home/deck", tr("Image (*.png)"));
     if (OS_Icon1_fileName != "")
     {
         ui->Boot_Option_01_Icon_lineEdit->setText(OS_Icon1_fileName);
@@ -120,7 +120,7 @@ void MainWindow::on_Boot_Option_01_Icon_pushButton_clicked()
 void MainWindow::on_Boot_Option_02_Icon_pushButton_clicked()
 {
     QFileDialog OS_Icon2_File_Dialog(this, tr("Select OS Icon 2 PNG"));
-    OS_Icon2_fileName = OS_Icon2_File_Dialog.getOpenFileName(this, tr("Select OS Icon 2 PNG"), "/home/chia02", tr("Image (*.png)"));
+    OS_Icon2_fileName = OS_Icon2_File_Dialog.getOpenFileName(this, tr("Select OS Icon 2 PNG"), "/home/deck", tr("Image (*.png)"));
     if (OS_Icon2_fileName != "")
     {
         ui->Boot_Option_02_Icon_lineEdit->setText(OS_Icon2_fileName);
@@ -130,7 +130,7 @@ void MainWindow::on_Boot_Option_02_Icon_pushButton_clicked()
 void MainWindow::on_Boot_Option_03_Icon_pushButton_clicked()
 {
     QFileDialog OS_Icon3_File_Dialog(this, tr("Select OS Icon 3 PNG"));
-    OS_Icon3_fileName = OS_Icon3_File_Dialog.getOpenFileName(this, tr("Select OS Icon 3 PNG"), "/home/chia02", tr("Image (*.png)"));
+    OS_Icon3_fileName = OS_Icon3_File_Dialog.getOpenFileName(this, tr("Select OS Icon 3 PNG"), "/home/deck", tr("Image (*.png)"));
     if (OS_Icon3_fileName != "")
     {
         ui->Boot_Option_03_Icon_lineEdit->setText(OS_Icon3_fileName);
@@ -140,7 +140,7 @@ void MainWindow::on_Boot_Option_03_Icon_pushButton_clicked()
 void MainWindow::on_Boot_Option_04_Icon_pushButton_clicked()
 {
     QFileDialog OS_Icon4_File_Dialog(this, tr("Select OS Icon 4 PNG"));
-    OS_Icon4_fileName = OS_Icon4_File_Dialog.getOpenFileName(this, tr("Select OS Icon 4 PNG"), "/home/chia02", tr("Image (*.png)"));
+    OS_Icon4_fileName = OS_Icon4_File_Dialog.getOpenFileName(this, tr("Select OS Icon 4 PNG"), "/home/deck", tr("Image (*.png)"));
     if (OS_Icon4_fileName != "")
     {
         ui->Boot_Option_04_Icon_lineEdit->setText(OS_Icon4_fileName);
