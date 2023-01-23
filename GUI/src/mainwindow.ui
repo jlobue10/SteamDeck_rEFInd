@@ -1,0 +1,929 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>613</width>
+    <height>485</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>613</width>
+    <height>485</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>613</width>
+    <height>485</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Steam Deck rEFInd Setup</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>UEFI_icon.png</normaloff>UEFI_icon.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="layoutWidget1">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>440</y>
+      <width>581</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="3" alignment="Qt::AlignRight">
+      <widget class="QPushButton" name="Install_Config">
+       <property name="minimumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Install Config</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="Create_Config">
+       <property name="minimumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Create Config</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="Install_rEFInd">
+       <property name="minimumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Install rEFInd</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QComboBox" name="Install_Source_comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>Pacman</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Sourceforge</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="layoutWidget2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>591</width>
+      <height>426</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="0" column="0">
+      <widget class="QLabel" name="Background_label">
+       <property name="minimumSize">
+        <size>
+         <width>74</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Background</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::AutoText</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="3">
+      <widget class="QLineEdit" name="Background_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>rEFInd Background selection</string>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/background.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="4">
+      <widget class="QPushButton" name="Background_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="Default_Boot_Label">
+       <property name="minimumSize">
+        <size>
+         <width>123</width>
+         <height>18</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Default Boot Option</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QComboBox" name="Default_Boot_comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Default Boot Slection</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>SteamOS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Linux</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="3" alignment="Qt::AlignRight|Qt::AlignVCenter">
+      <widget class="QLabel" name="Last_OS_Label">
+       <property name="minimumSize">
+        <size>
+         <width>122</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot last booted OS</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4" alignment="Qt::AlignLeft|Qt::AlignVCenter">
+      <widget class="QCheckBox" name="Last_OS_CheckBox">
+       <property name="minimumSize">
+        <size>
+         <width>35</width>
+         <height>23</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="Boot_Option_01_Label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #1</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="2">
+      <widget class="QComboBox" name="Boot_Option_01_comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Boot Option #1 Selection</string>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <item>
+        <property name="text">
+         <string>SteamOS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (USB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Batocera (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Linux</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="2" column="3" alignment="Qt::AlignRight|Qt::AlignVCenter">
+      <widget class="QLabel" name="Firmware_bootnum_Label">
+       <property name="minimumSize">
+        <size>
+         <width>122</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>SteamOS only option</string>
+       </property>
+       <property name="text">
+        <string>Use Firmware_bootnum</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="4" alignment="Qt::AlignLeft|Qt::AlignVCenter">
+      <widget class="QCheckBox" name="Firmware_bootnum_CheckBox">
+       <property name="minimumSize">
+        <size>
+         <width>35</width>
+         <height>23</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>SteamOS only option</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="Boot_Option_01_Icon_Label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #1 Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_01_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon1.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QPushButton" name="Boot_Option_01_Icon_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="Boot_Option_02_label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #2</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="2">
+      <widget class="QComboBox" name="Boot_Option_02_comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Boot Option #2 Selection</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Windows</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>SteamOS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Linux</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (USB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Batocera (SD)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QLabel" name="Boot_Option_02_Icon_label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #2 Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_02_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon2.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="4">
+      <widget class="QPushButton" name="Boot_Option_02_Icon_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="Boot_Option_03_label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #3</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1" colspan="2">
+      <widget class="QComboBox" name="Boot_Option_03_comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Boot Option #3 Selection (optional)</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>None</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Linux</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Batocera (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>SteamOS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (USB)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="Boot_Option_03_Icon_label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #3 Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_03_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon3.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="4">
+      <widget class="QPushButton" name="Boot_Option_03_Icon_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QLabel" name="Boot_Option_04_label">
+       <property name="minimumSize">
+        <size>
+         <width>94</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #4</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1" colspan="2">
+      <widget class="QComboBox" name="Boot_Option_04_comboBox">
+       <property name="minimumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>134</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Boot Option #4 Selection (optional)</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>None</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Batocera (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Linux</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>SteamOS</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (SD)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Windows (USB)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="9" column="0">
+      <widget class="QLabel" name="Boot_Option_04_Icon_label">
+       <property name="minimumSize">
+        <size>
+         <width>145</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Boot Option #4 Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="4">
+      <widget class="QPushButton" name="Boot_Option_04_Icon_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0">
+      <widget class="QLabel" name="TimeoutLabel">
+       <property name="minimumSize">
+        <size>
+         <width>51</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>Timeout</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::AutoText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLineEdit" name="TimeOut_lineEdit">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>40</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Timeout in seconds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+       <property name="placeholderText">
+        <string>5</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="2">
+      <widget class="QLabel" name="TimeoutLabel_Seconds">
+       <property name="minimumSize">
+        <size>
+         <width>60</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Seconds</string>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::AutoText</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="3" colspan="2">
+      <layout class="QGridLayout" name="gridLayout">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item alignment="Qt::AlignRight">
+          <widget class="QLabel" name="Enable_Mouse_label">
+           <property name="text">
+            <string>Enable Mouse</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="Enable_Mouse_checkBox">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="Linux_Select_comboBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Linux Distro selection</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Ubuntu</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>CentOS</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Debian</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Elementary</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Fedora</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Kali</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>KDE Neon</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Manjaro</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Mint</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>openSUSE</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Pop!_OS</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Zorin</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="9" column="1" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_04_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon4.png</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
