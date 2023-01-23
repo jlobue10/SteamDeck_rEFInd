@@ -1,6 +1,18 @@
 # SteamDeck_rEFInd
 This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe. Since the initial version of this script, optional support has been added for Windows from the SD card, Batocera from the SD card and an example boot stanza for (K)Ubuntu. The options really are pretty limitless, but require some understanding and manual edits to the `refind.conf` file.
 
+## **GUI Added! (README will have more detailed updates soon)**
+
+If you want to try out the GUI perform these steps.
+
+```
+it clone https://github.com/jlobue10/SteamDeck_rEFInd/
+cd SteamDeck_rEFInd
+chmod +x install-GUI.sh
+./install-GUI.sh
+```
+GUI files will be created in the `/home/deck/.SteamDeck_rEFInd/GUI/` folder, including a desktop shortcut. Please give me feedback and enjoy!
+
 ## **Script Updates and _improvements_ (Jan. 1, 2023) and outstanding issues**
 
 A systemctl daemon to always prioritize rEFInd as the top boot priority has been added. This will continue to work in the future, unless a firmware update or SteamOS permissions issue blocks setting the 'Boot Next' setting with `efibootmgr`. This is one half of a solution that mostly disregards whether the Windows EFI entry can be disabled or not by the script. Disabling the Windows EFI entry, either with EasyUEFI from Windows or from command line with the SteamOS recovery image is still recommended, especially if you are setting up a triple boot (with Batocera on SD card for instance). The other half of this solution is to install the `bootsequence-rEFInd-first.ps1` file (under the Windows directory here in this repository) as a task from Windows Task Scheduler. Save this `bootsequence-rEFInd-first.ps1` file somewhere to be referenced and used by Task Scheduler. Special thanks to [Reddit user lucidludic for this method and explanation](https://www.reddit.com/r/steamdeck_linux/comments/zb3l7k/comment/iyrxnzs/?utm_source=share&utm_medium=web2x&context=3). Open Task Scheduler, right-click on Task Scheduler Library and create a new folder named something like "rEFInd" then select the folder. Click "Create Basic Task", give it an appropriate name and description and click Next. Set the task to start "When I log on" and click Next, leave "Start a program" selected and click Next. In the Program/script text box enter the following (or use Browse):
