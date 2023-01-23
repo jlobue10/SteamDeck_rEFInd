@@ -1,0 +1,14 @@
+[Desktop Entry]
+Categories=System;
+Comment[en_US]=rEFInd Customization GUI
+Comment=rEFInd Customization GUI
+Exec=/home/deck/.SteamDeck_rEFInd/GUI/rEFInd_GUI
+GenericName[en_US]=rEFInd GUI
+GenericName=rEFInd GUI
+Icon=/home/deck/.SteamDeck_rEFInd/GUI/UEFI_icon.png
+Name[en_US]=rEFInd GUI
+Name=rEFInd GUI
+StartupNotify=true
+Terminal=false
+Type=Application
+X-KDE-SubstituteUID=false
