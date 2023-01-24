@@ -8,6 +8,7 @@ GenericName=rEFInd GUI
 Icon=/home/deck/.SteamDeck_rEFInd/GUI/UEFI_icon.png
 Name[en_US]=rEFInd GUI
 Name=rEFInd GUI
+Path=/home/deck/.SteamDeck_rEFInd/GUI
 StartupNotify=true
 Terminal=false
 Type=Application
