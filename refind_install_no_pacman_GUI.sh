@@ -6,7 +6,7 @@ PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)"
 echo "$PASSWD" | sudo -v -S
 ANS=$?
 if [[ $ANS == 1 ]]; then
-	zenity --error --title="Password Error" --text="`printf "Incorrect password provided\nPlease try again providing the correct sudo password."`" --width=400 2>/dev/null
+	zenity --error --title="Password Error" --text="`printf "Incorrect password provided.\nPlease try again providing the correct sudo password."`" --width=400 2>/dev/null
 	exit 1
 fi
 
