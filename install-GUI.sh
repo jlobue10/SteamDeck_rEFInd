@@ -34,4 +34,5 @@ cp rEFInd_GUI ../
 sudo steamos-readonly enable
 if zenity --question --text="Would you like to copy the Shortcut to the desktop" --width=400 2>/dev/null; then
 	cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
+	chmod +x /home/deck/Desktop/refind_GUI.desktop
 fi
