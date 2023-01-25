@@ -26,7 +26,7 @@ yes | cp $CURRENT_WD/{restore_EFI_entries.sh,bootnext-refind.service} /home/deck
 yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,refind_install_no_pacman_GUI.sh} /home/deck/.SteamDeck_rEFInd/
 yes | cp $CURRENT_WD/refind-GUI.conf /home/deck/.SteamDeck_rEFInd/GUI/refind.conf
 chmod +x /home/deck/.SteamDeck_rEFInd/*.sh
-chmod +x /home/deck/.SteamDeck_rEFInd/GUI/rEFInd_GUI.desktop
+chmod +x /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
 cd /home/deck/.SteamDeck_rEFInd/GUI/src
 qmake
 make
