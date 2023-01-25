@@ -43,7 +43,7 @@
 	echo "# Installing files to /efi partition..."
 	sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
 	sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
-	sudo cp /home/deck/.SteamDeck_rEFInd/refind.conf /esp/efi/refind/refind.conf
+	sudo cp /home/deck/.SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
 	sudo cp -rf /home/deck/.SteamDeck_rEFInd/backgrounds/ /esp/efi/refind
 	sudo cp -rf /home/deck/.SteamDeck_rEFInd/icons/ /esp/efi/refind
 	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
