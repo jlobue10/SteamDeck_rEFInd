@@ -20,7 +20,7 @@
 	sudo pacman-key --populate archlinux
 	echo 25
 	echo "# Installing rEFInd package..."
-	yes | sudo pacman -S refind
+	yes | sudo pacman -Syu --needed refind
 	sudo refind-install
 	efibootmgr | tee /home/deck/efibootlist.txt
 	WINDOWS_BOOTNUM="$(grep -A0 'Windows' /home/deck/efibootlist.txt | grep -Eo '[0-9]{1,4}' | head -1)"
