@@ -12,11 +12,11 @@ fi
 sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
-sudo pacman -Syu base-devel
-yes | sudo pacman -Syu glibc
-yes | sudo pacman -Syu hwinfo
-yes | sudo pacman -Syu linux-api-headers
-yes | sudo pacman -Syu qt5-base
+# sudo pacman -Syu base-devel
+# Install base-devel member packages, but skip if already up to date. Makes subsequent reinstallation(s) faster.
+yes | sudo pacman -Syu --needed archlinux-keyring autoconf automake binutils bison debugedit fakeroot file findutils flex gawk gcc gettext\
+ grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
+yes | sudo pacman -Syu --needed glibc hwinfo linux-api-headers qt5-base
 CURRENT_WD=$(pwd)
 mkdir -p /home/deck/.SteamDeck_rEFInd/backgrounds
 yes | cp -rf $CURRENT_WD/GUI/ /home/deck/.SteamDeck_rEFInd
