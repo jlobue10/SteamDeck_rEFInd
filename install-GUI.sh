@@ -13,10 +13,10 @@ sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
 # sudo pacman -Syu base-devel
-# Install base-devel member packages, but skip if already up to date. Makes subsequent reinstallation(s) faster.
-yes | sudo pacman -Syu --needed archlinux-keyring autoconf automake binutils bison debugedit fakeroot file findutils flex gawk gcc gettext\
+# Install base-devel member packages
+yes | sudo pacman -Syu archlinux-keyring autoconf automake binutils bison debugedit fakeroot file findutils flex gawk gcc gettext\
  grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
-yes | sudo pacman -Syu --needed glibc hwinfo linux-api-headers qt5-base
+yes | sudo pacman -Syu glibc hwinfo linux-api-headers qt5-base
 CURRENT_WD=$(pwd)
 mkdir -p /home/deck/.SteamDeck_rEFInd/backgrounds
 yes | cp -rf $CURRENT_WD/GUI/ /home/deck/.SteamDeck_rEFInd
@@ -27,6 +27,7 @@ yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,re
 yes | cp $CURRENT_WD/refind-GUI.conf /home/deck/.SteamDeck_rEFInd/GUI/refind.conf
 chmod +x /home/deck/.SteamDeck_rEFInd/*.sh
 chmod +x /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
+chmod +x $CURRENT_WD/reinstall-GUI.sh
 cd /home/deck/.SteamDeck_rEFInd/GUI/src
 qmake
 make
