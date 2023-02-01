@@ -116,7 +116,17 @@ You will also need to re-enable the Windows EFI boot entry to allow the Windows 
 
 ## **Additional Windows considerations _(corrupted display on boot into Windows)_**
 
-If you encounter an issue while booting up where the Windows display is corrupted to the point that it's basically unusable (not the same as the dotted vertical lines scrolling), there is a workaround to fix the issue. Boot into SteamOS and edit the `refind.conf` file using the command `sudo nano /esp/efi/refind/refind.conf` from a command line. Make sure all `resolution` lines are commented out in the `refind.conf` config file (line begins with a `#`). When this is done, press `Ctrl+x` followed by `y` then `Enter` to save and exit. If this is successful, then on next reboot, the rEFInd screen will be rotated in portrait mode. Boot into Windows, fix any resolution discrepancies (should be 1,280 x 800 for main Steam Deck display) and save those changes. You should now be able to go back into SteamOS, edit the `refind.conf` config file again and make sure that `resolution 3` is uncommented (`#` at line beginning deleted) for normal use.
+There is a newer, better fix than what was previously documented that actually prevents this issue in the first place. You can run a specific `bcdedit` command from either a command prompt or powershell (both require as administrator). This command should be run as soon as possible on a new Windows installation if a user plans to use rEFInd.
+
+Command prompt command:
+
+`bcdedit.exe -set {globalsettings} highestmode on`
+
+Powershell command:
+
+`bcdedit /set "{globalsettings}" highestmode on`
+
+(**_Old "fix"_**) If you encounter an issue while booting up where the Windows display is corrupted to the point that it's basically unusable (not the same as the dotted vertical lines scrolling), there is a workaround to fix the issue. Boot into SteamOS and edit the `refind.conf` file using the command `sudo nano /esp/efi/refind/refind.conf` from a command line. Make sure all `resolution` lines are commented out in the `refind.conf` config file (line begins with a `#`). When this is done, press `Ctrl+x` followed by `y` then `Enter` to save and exit. If this is successful, then on next reboot, the rEFInd screen will be rotated in portrait mode. Boot into Windows, fix any resolution discrepancies (should be 1,280 x 800 for main Steam Deck display) and save those changes. You should now be able to go back into SteamOS, edit the `refind.conf` config file again and make sure that `resolution 3` is uncommented (`#` at line beginning deleted) for normal use.
 
 ## **Optional Windows from Micro SD card instructions**
 
