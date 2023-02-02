@@ -40,6 +40,10 @@ private slots:
 
     void on_Install_Config_clicked();
 
+    void readSettings();
+
+    void writeSettings();
+
 private:
     Ui::MainWindow *ui;
 };
