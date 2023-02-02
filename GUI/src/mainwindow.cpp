@@ -6,6 +6,7 @@
 #include <QFileDialog>
 #include <QIntValidator>
 #include <QLineEdit>
+#include <QSettings>
 #include <QString>
 #include <sstream>
 #include <string>
@@ -90,10 +91,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Boot_Option_02_Icon_lineEdit->setReadOnly(true);
     ui->Boot_Option_03_Icon_lineEdit->setReadOnly(true);
     ui->Boot_Option_04_Icon_lineEdit->setReadOnly(true);
+    readSettings();
 }
 
 MainWindow::~MainWindow()
 {
+    writeSettings();
     delete ui;
 }
 
@@ -531,4 +534,62 @@ string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
         pclose(GUID_process);
     }
     return GUID_Label;
+}
+
+void MainWindow::readSettings()
+{
+    QSettings settings("/home/deck/.SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
+    settings.beginGroup("CheckBoxes");
+        bool temp_Last_OS_bool = settings.value("LastOSCheckBox").toBool();
+        bool FW_bool = settings.value("FW_bootNum_CheckBox").toBool();
+        bool use_Mouse_bool = settings.value("Enable_Mouse_CheckBox").toBool();
+    settings.endGroup();
+    settings.beginGroup("ComboBoxes");
+        int tempDefaultBoot = settings.value("DefaultBootComboBox").toInt();
+        int tempBoot01 = settings.value("BootComboBox01").toInt();
+        int tempBoot02 = settings.value("BootComboBox02").toInt();
+        int tempBoot03 = settings.value("BootComboBox03").toInt();
+        int tempBoot04 = settings.value("BootComboBox04").toInt();
+        int LinuxChoice = settings.value("LinuxComboBox").toInt();
+        int InstallSource = settings.value("InstallSourceComboBox").toInt();
+    settings.endGroup();
+    settings.beginGroup("Timeout");
+        QString tempTimeout = settings.value("Timeout").toString();
+    settings.endGroup();
+    ui->Default_Boot_comboBox->setCurrentIndex(tempDefaultBoot);
+    ui->Boot_Option_01_comboBox->setCurrentIndex(tempBoot01);
+    ui->Boot_Option_02_comboBox->setCurrentIndex(tempBoot02);
+    ui->Boot_Option_03_comboBox->setCurrentIndex(tempBoot03);
+    ui->Boot_Option_04_comboBox->setCurrentIndex(tempBoot04);
+    ui->Linux_Select_comboBox->setCurrentIndex(LinuxChoice);
+    ui->Install_Source_comboBox->setCurrentIndex(InstallSource);
+    ui->Last_OS_CheckBox->setChecked(temp_Last_OS_bool);
+    ui->Firmware_bootnum_CheckBox->setChecked(FW_bool);
+    ui->Enable_Mouse_checkBox->setChecked(use_Mouse_bool);
+    if (tempTimeout != "")
+    {
+        ui->TimeOut_lineEdit->setText(tempTimeout);
+    }
+}
+
+void MainWindow::writeSettings()
+{
+    QSettings settings("/home/deck/.SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
+    settings.beginGroup("ComboBoxes");
+        settings.setValue("DefaultBootComboBox", ui->Default_Boot_comboBox->currentIndex());
+        settings.setValue("BootComboBox01", ui->Boot_Option_01_comboBox->currentIndex());
+        settings.setValue("BootComboBox02", ui->Boot_Option_02_comboBox->currentIndex());
+        settings.setValue("BootComboBox03", ui->Boot_Option_03_comboBox->currentIndex());
+        settings.setValue("BootComboBox04", ui->Boot_Option_04_comboBox->currentIndex());
+        settings.setValue("LinuxComboBox", ui->Linux_Select_comboBox->currentIndex());
+        settings.setValue("InstallSourceComboBox", ui->Install_Source_comboBox->currentIndex());
+    settings.endGroup();
+    settings.beginGroup("CheckBoxes");
+        settings.setValue("LastOSCheckBox", ui->Last_OS_CheckBox->isChecked());
+        settings.setValue("FW_bootNum_CheckBox", ui->Firmware_bootnum_CheckBox->isChecked());
+        settings.setValue("Enable_Mouse_CheckBox", ui->Enable_Mouse_checkBox->isChecked());
+    settings.endGroup();
+    settings.beginGroup("Timeout");
+        settings.setValue("Timeout", ui->TimeOut_lineEdit->text());
+    settings.endGroup();
 }
