@@ -44,6 +44,8 @@ private slots:
 
     void writeSettings();
 
+    void on_About_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
