@@ -3,9 +3,11 @@
 #include <iostream>
 #include <fstream>
 #include <QComboBox>
+#include <QDebug>
 #include <QFileDialog>
 #include <QIntValidator>
 #include <QLineEdit>
+#include <QMessageBox>
 #include <QSettings>
 #include <QString>
 #include <sstream>
@@ -570,6 +572,10 @@ void MainWindow::readSettings()
     {
         ui->TimeOut_lineEdit->setText(tempTimeout);
     }
+    qDebug() << temp_Last_OS_bool;
+    qDebug() << tempDefaultBoot;
+    qDebug() << tempBoot03;
+    qDebug() << tempTimeout;
 }
 
 void MainWindow::writeSettings()
@@ -592,4 +598,17 @@ void MainWindow::writeSettings()
     settings.beginGroup("Timeout");
         settings.setValue("Timeout", ui->TimeOut_lineEdit->text());
     settings.endGroup();
+}
+
+void MainWindow::on_About_pushButton_clicked()
+{
+    QMessageBox AboutBox;
+    AboutBox.setTextFormat(Qt::RichText);
+    AboutBox.setText("<p align='center'>rEFInd Customization GUI<br><br>"
+                     "Original GUI Creator: "
+                     "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
+                     "Special Thanks to Deck Wizard for testing and QA"
+                     "<br><br><a href='https://www.youtube.com/DeckWizard/'>Deck Wizard Dual Boot Tutorial</a><br></p>");
+    AboutBox.setStandardButtons(QMessageBox::Ok);
+    AboutBox.exec();
 }
