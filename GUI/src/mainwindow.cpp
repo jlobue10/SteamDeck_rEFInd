@@ -608,7 +608,7 @@ void MainWindow::on_About_pushButton_clicked()
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
-                     "<br><br><a href='https://www.youtube.com/DeckWizard/'>Deck Wizard Dual Boot Tutorial</a><br></p>");
+                     "<br><br><a href='https://www.youtube.com/watch?v=zEpcBWX9K_o'>Deck Wizard Dual Boot Tutorial</a><br></p>");
     AboutBox.setStandardButtons(QMessageBox::Ok);
     AboutBox.exec();
 }
