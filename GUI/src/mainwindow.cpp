@@ -523,10 +523,10 @@ string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
     char GUID_buff[1024];
     GUID_Label.clear();
     if(GUID_Source == "USB"){
-        GUID_process = popen("hwinfo --block | grep /dev/sda1 | grep -o 'by-partuuid.*' | cut -f2 -d'/' | cut -f1 -d ','", "r");
+        GUID_process = popen("hwinfo --block | grep /dev/sda1 | grep -o 'by-partuuid.*' | cut -f2 -d'/' | cut -f1 -d ',' | tr [:lower:] [:upper:]", "r");
     }
     if(GUID_Source == "SD"){
-        GUID_process = popen("hwinfo --block | grep /dev/mmcblk0p1 | grep -o 'by-partuuid.*' | cut -f2 -d'/' | cut -f1 -d ','", "r");
+        GUID_process = popen("hwinfo --block | grep /dev/mmcblk0p1 | grep -o 'by-partuuid.*' | cut -f2 -d'/' | cut -f1 -d ',' | tr [:lower:] [:upper:]", "r");
     }
     if (GUID_process != NULL) {
         while (fgets(GUID_buff, sizeof(GUID_buff), GUID_process)) {
