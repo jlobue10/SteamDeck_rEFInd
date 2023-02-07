@@ -38,4 +38,4 @@ GUI configuration example (my default config for my personal Steam Deck)
 
 Please review this [video tutorial by Deck Wizard](https://www.youtube.com/watch?v=zEpcBWX9K_o) to see if it answers any questions that you may have before posting an issue.
 
-Also, thanks again to the [original rEFInd developer](https://www.rodsbooks.com/refind/), who this GUI customization software would not be possible without. My script and GUI just make rEFInd installation customization easy for the Steam Deck, rEFInd itself performs the complicated bootloader tasks.
+Also, thanks again to the [original rEFInd developer](https://www.rodsbooks.com/refind/), who this GUI customization software would not be possible without. My script and GUI just make rEFInd installation and customization easy for the Steam Deck; rEFInd itself performs the complicated bootloader tasks.
