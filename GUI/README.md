@@ -10,7 +10,7 @@ chmod +x install-GUI.sh
 ```
 This GUI installation will take care of installing all of the necessary dependendcies to successfully compile the GUI from source, then compile the GUI and ask whether or not to place a shortcut on the desktop. If the GUI compile fails for some reason, you will get a pop-up notifying you of that error. Something in your installation did not finish correctly if you get this error pop-up. Common errors include a dependency failing to install, or your `pacman` repositories from your config file are pointing to something other than `*-rel`.
 
-The dependencoes that are installed by `pacman` are `base-devel glibc linux-api-headers qt5-base`. Additionally, the `hwinfo` package is installed because it is required by the code for the autodetecting of the SD card or USB Windows installation options (`hwinfo` obtains this information without sudo permissions).
+The dependencies that are installed by `pacman` are `base-devel glibc linux-api-headers qt5-base`. Additionally, the `hwinfo` package is installed because it is required by the code for the autodetecting of the SD card or USB Windows installation options (`hwinfo` obtains this information without sudo permissions).
 
 A successful GUI installation will look similar to this from your Konsole output.
 
