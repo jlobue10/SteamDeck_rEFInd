@@ -36,6 +36,12 @@ Feedback is welcome. I have tested this thoroughly enough to release it. Enjoy!
 
 GUI configuration example (my default config for my personal Steam Deck)
 
+# **Optional**
+
+If you want a quick way to make changes to your rEFInd configuration from SteamOS' Game mode, I'd recommend setting up the Plasma Nested Session and adding its shortcut to Steam. Please see this [website](https://gist.github.com/davidedmundson/8e1732b2c8b539fd3e6ab41a65bcab74) for details. I've tested this, and it works well.
+
+# **Links and Recognition**
+
 Please review this [video tutorial by Deck Wizard](https://www.youtube.com/watch?v=zEpcBWX9K_o) to see if it answers any questions that you may have before posting an issue.
 
 Also, thanks again to the [original rEFInd developer](https://www.rodsbooks.com/refind/), who this GUI customization software would not be possible without. My script and GUI just make rEFInd installation and customization easy for the Steam Deck; rEFInd itself performs the complicated bootloader tasks.
