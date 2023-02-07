@@ -22,7 +22,7 @@ If this is your first time installing rEFInd on your Steam Deck, you will want t
 
 The Line edits are read-only and you must use the combo box file dialogs (browse buttons) to change background and icon PNG files (at least for now). This simplifies the code, as it requires minimal to no error checking when selecting the PNG files for the background or OS icons.
 
-The background should be a 1,280x800 PNG file. Please use a program like GIMP to size appropriately and export as a PNG file. The icons should be 128x128 PNGs. Other resolutions may also be supported unofficially, but I do not recommend it, and results may vary. The images are restricted to PNG format because those tend to play nicely with rEFInd whereas other formats tend to be hit and miss.
+The background should be a 1,280x800 PNG file. Please use a program like GIMP to size appropriately and export as a PNG file. The icons should be 128x128 PNGs. Other resolutions may also be supported unofficially, but I do not recommend it, and results may vary. The images are restricted to PNG format because those tend to play nicely with rEFInd, whereas other formats tend to be hit and miss.
 
 The four boot options (3 and 4 are optional) represent the icons as they will appear on the bootloader screen from left to right.
 
