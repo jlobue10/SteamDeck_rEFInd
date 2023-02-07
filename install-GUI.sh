@@ -31,6 +31,11 @@ chmod +x $CURRENT_WD/reinstall-GUI.sh
 cd /home/deck/.SteamDeck_rEFInd/GUI/src
 qmake
 make
+if [ ! -f /home/deck/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
+	zenity --error --title="Installation Error" --text="`printf "GUI compile failed.\nPlease try again ensuring that your cloned repo\nis up to date and your pacman config is normal."`" --width=400 2>/dev/null
+	sudo steamos-readonly enable
+	exit 1
+fi
 cp rEFInd_GUI ../
 sudo steamos-readonly enable
 if zenity --question --text="Would you like to copy the Shortcut to the desktop?" --width=400 2>/dev/null; then
