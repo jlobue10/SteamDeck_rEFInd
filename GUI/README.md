@@ -1,4 +1,4 @@
-# ***GUI README***
+## **GUI README**
 
 # **Installation**
 
