@@ -1,4 +1,6 @@
-# **GUI README**
+# ***GUI README***
+
+# **Installation**
 
 To install the GUI, make sure that you've already set your `sudo` password and ensure that you are connected to the internet, then perform these steps.
 
@@ -71,7 +73,7 @@ These lines should be changed from beta to release like this:
 [multilib-rel]
 ```
 
-then press `Ctrl+x` followed by `y` and then `Enter` to save your changes and exit. Retry the GUI installer after this change and it SHOULD be successful, if this was your only issue.
+then press `Ctrl+x` followed by `y` and then `Enter` to save your changes and exit. Retry the GUI installer after this change and it **_SHOULD_** be successful, if this was your only issue.
 
 # **Optional**
 
