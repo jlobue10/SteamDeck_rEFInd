@@ -1,6 +1,6 @@
 # **GUI README**
 
-To install the GUI perform these steps.
+To install the GUI, make sure that you've already set your `sudo` password and ensure that you are connected to the internet, then perform these steps.
 
 ```
 git clone https://github.com/jlobue10/SteamDeck_rEFInd/
@@ -35,6 +35,43 @@ Feedback is welcome. I have tested this thoroughly enough to release it. Enjoy!
 ![rEFInd_GUI](https://user-images.githubusercontent.com/9971433/214604232-f97f9b91-9736-4cfb-95b2-cb2b78546760.png)
 
 GUI configuration example (my default config for my personal Steam Deck)
+
+# **Installation issues**
+
+One common installation issue revolves around an error with your Steam Deck's `pacman` repositories. I did not personally encounter this error in any of my testing, but here is a screenshot provided to me by a user who experienced a `pacman` error with the GUI installation. In this case, the `pacman` for this particular Steam Deck was trying to access the beta repositories and resulted in an error (as seen below).
+
+![GUI_pacman_install_error](https://user-images.githubusercontent.com/9971433/217431768-4ef817eb-b41e-47c7-a61e-69409f8e37ed.jpg)
+
+There is a fairly simple fix for this if anyone else is experiencing this. Basically fix your `pacman` config file. You can do this by opening up a Konsole command line and performing:
+
+```
+sudo steamos-readonly disable
+sudo nano /etc/pacman.conf
+```
+
+The `/etc/pacman.conf` file in the Steam Deck from the example screenshot will have these following entries.
+
+```
+[jupiter-beta]
+[holo-beta]
+[core-beta]
+[extra-beta]
+[community-beta]
+[multilib-beta]
+```
+
+These lines should be changed from beta to release like this:
+
+```
+[jupiter-rel]
+[holo-rel]
+[core-rel]
+[extra-rel]
+[community-rel]
+[multilib-rel]
+```
+
+then press `Ctrl+x` followed by `y` and then `Enter` to save your changes and exit. Retry the GUI installer after this change and it SHOULD be successful, if this was your only issue.
 
 # **Optional**
 
