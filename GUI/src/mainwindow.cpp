@@ -228,31 +228,31 @@ void MainWindow::on_Create_Config_clicked()
     Background = ui->Background_lineEdit->text();
     if((Background != "") && (Background != Default_Background)){
         Background_path = Background.toStdString();
-        string cmd = string("yes | cp '") + Background_path + "' '" + Default_Background_str + "'";
+        string cmd = string("cp '") + Background_path + "' '" + Default_Background_str + "'";
         system(cmd.c_str());
     }
     OS_Icon1 = ui->Boot_Option_01_Icon_lineEdit->text();
     if((OS_Icon1 != "" ) && (OS_Icon1 != Default_OS_Icon1)){
         OS_Icon1_path = OS_Icon1.toStdString();
-        string cmd1 = string("yes | cp '") + OS_Icon1_path + "' '" + Default_OS_Icon1_str + "'";
+        string cmd1 = string("cp '") + OS_Icon1_path + "' '" + Default_OS_Icon1_str + "'";
         system(cmd1.c_str());
         }
     OS_Icon2 = ui->Boot_Option_02_Icon_lineEdit->text();
     if((OS_Icon2 != "" ) && (OS_Icon2 != Default_OS_Icon2)){
         OS_Icon2_path = OS_Icon2.toStdString();
-        string cmd2 = string("yes | cp '") + OS_Icon2_path + "' '" + Default_OS_Icon2_str + "'";
+        string cmd2 = string("cp '") + OS_Icon2_path + "' '" + Default_OS_Icon2_str + "'";
         system(cmd2.c_str());
         }
     OS_Icon3 = ui->Boot_Option_03_Icon_lineEdit->text();
     if((OS_Icon3 != "" ) && (OS_Icon3 != Default_OS_Icon3)){
         OS_Icon3_path = OS_Icon3.toStdString();
-        string cmd3 = string("yes | cp '") + OS_Icon3_path + "' '" + Default_OS_Icon3_str + "'";
+        string cmd3 = string("cp '") + OS_Icon3_path + "' '" + Default_OS_Icon3_str + "'";
         system(cmd3.c_str());
         }
     OS_Icon4 = ui->Boot_Option_04_Icon_lineEdit->text();
     if((OS_Icon4 != "" ) && (OS_Icon4 != Default_OS_Icon4)){
         OS_Icon4_path = OS_Icon4.toStdString();
-        string cmd4 = string("yes | cp '") + OS_Icon4_path + "' '" + Default_OS_Icon4_str + "'";
+        string cmd4 = string("cp '") + OS_Icon4_path + "' '" + Default_OS_Icon4_str + "'";
         system(cmd4.c_str());
         }
 }

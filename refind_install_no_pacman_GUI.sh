@@ -22,17 +22,17 @@
 	unzip -o refind-bin-gnuefi-0.13.3.1.zip
 	sudo steamos-readonly disable
 	sudo mkdir -p /esp/efi/refind
-	yes | sudo cp /home/deck/Downloads/refind-bin-0.13.3.1/refind/refind_x64.efi /esp/efi/refind/
-	yes | sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/refind/drivers_x64/ /esp/efi/refind
-	yes | sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/refind/tools_x64/ /esp/efi/refind
+	sudo cp /home/deck/Downloads/refind-bin-0.13.3.1/refind/refind_x64.efi /esp/efi/refind/
+	sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/refind/drivers_x64/ /esp/efi/refind
+	sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/refind/tools_x64/ /esp/efi/refind
 	echo 50
 	echo "# Installing rEFInd files..."
-	yes | sudo ./refind-bin-0.13.3.1/refind-install
-	yes | sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/refind/icons/ /esp/efi/refind
-	yes | sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/fonts/ /esp/efi/refind
-	yes | sudo cp /home/deck/.SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
-	yes | sudo cp -rf /home/deck/.SteamDeck_rEFInd/themes/ /esp/efi/refind
-	yes | sudo cp -rf /home/deck/.SteamDeck_rEFInd/icons/ /esp/efi/refind
+	sudo ./refind-bin-0.13.3.1/refind-install
+	sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/refind/icons/ /esp/efi/refind
+	sudo cp -rf /home/deck/Downloads/refind-bin-0.13.3.1/fonts/ /esp/efi/refind
+	sudo cp /home/deck/.SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
+	sudo cp -rf /home/deck/.SteamDeck_rEFInd/themes/ /esp/efi/refind
+	sudo cp -rf /home/deck/.SteamDeck_rEFInd/icons/ /esp/efi/refind
 	efibootmgr | tee /home/deck/efibootlist.txt
 	echo 65
 	echo "# Fixing EFI entries..."
