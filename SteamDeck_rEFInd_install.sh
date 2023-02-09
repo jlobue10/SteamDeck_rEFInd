@@ -17,7 +17,7 @@ awk '{
 sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
-yes | sudo pacman -Syu --needed refind
+sudo pacman -Sy --noconfirm --needed refind
 sudo refind-install
 
 efibootmgr | tee ~/efibootlist.txt
