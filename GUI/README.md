@@ -32,6 +32,8 @@ Once the boot options, background and OS icons are chosen (can be left blank for
 
 The 'Use Firmware_bootnum' option is a SteamOS only option that requires the SteamOS EFI entry to be present when the config file is created. This can be checked with `efibootmgr`. This option was added so that the SteamOS icon is visible between the handoff of rEFInd to SteamOS loading (otherwise it's a blank screen).
 
+The Linux distro selection drop down box can be ignored if you're not selecting Linux as one of your boot options. This drop down offers some popular distro choices and helps the code create an appropriate boot Stanza for that choice. Some manual edits may still be required depending on which Linux distro and which particular configuration is used.
+
 Feedback is welcome. I have tested this thoroughly enough to release it. Enjoy!
 
 ![rEFInd_GUI](https://user-images.githubusercontent.com/9971433/214604232-f97f9b91-9736-4cfb-95b2-cb2b78546760.png)
