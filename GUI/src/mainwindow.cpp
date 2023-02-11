@@ -330,13 +330,23 @@ string MainWindow::CreateBootStanza(QString &BootOption, const char *BootNum, bo
     }
     if(BootOption == "Windows (USB)") {
         Windows_USB_GUID = getPartitionGUIDLabel(USB_GUID);
-        Boot_Stanza_GUI.append("\nmenuentry \"Windows Micro SD\" {\n");
+        Boot_Stanza_GUI.append("\nmenuentry \"Windows USB\" {\n");
         Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
         Boot_Stanza_GUI.append(BootNum);
         Boot_Stanza_GUI.append(".png\n");
         Boot_Stanza_GUI.append("\tvolume ");
         Boot_Stanza_GUI.append(Windows_USB_GUID);
         Boot_Stanza_GUI.append("\tloader /EFI/Microsoft/Boot/bootmgfw.efi\n");
+        Boot_Stanza_GUI.append("\tgraphics on\n}\n");
+        return Boot_Stanza_GUI;
+    }
+    if(BootOption == "Ventoy") {
+        Boot_Stanza_GUI.append("\nmenuentry \"Ventoy\" {\n");
+        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
+        Boot_Stanza_GUI.append(BootNum);
+        Boot_Stanza_GUI.append(".png\n");
+        Boot_Stanza_GUI.append("\tvolume \"VTOYEFI\"\n");
+        Boot_Stanza_GUI.append("\tloader /EFI/BOOT/grubx64_real.efi\n");
         Boot_Stanza_GUI.append("\tgraphics on\n}\n");
         return Boot_Stanza_GUI;
     }
