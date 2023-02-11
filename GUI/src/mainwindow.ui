@@ -125,7 +125,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>11</x>
@@ -325,6 +325,11 @@
          <string>Linux</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Ventoy</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="2" column="4">
@@ -470,6 +475,11 @@
          <string>Batocera (SD)</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Ventoy</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="5" column="0" colspan="2">
@@ -582,6 +592,11 @@
          <string>Windows (USB)</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Ventoy</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="7" column="0" colspan="2">
@@ -692,6 +707,11 @@
        <item>
         <property name="text">
          <string>Windows (USB)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Ventoy</string>
         </property>
        </item>
       </widget>
