@@ -34,6 +34,8 @@ The 'Use Firmware_bootnum' option is a SteamOS only option that requires the Ste
 
 The Linux distro selection drop down box can be ignored if you're not selecting Linux as one of your boot options. This drop down offers some popular distro choices and helps the code create an appropriate boot Stanza for that choice. Some manual edits may still be required depending on which Linux distro and which particular configuration is used.
 
+Ventoy was added as a boot option. This selection will work for either Micro SD card or USB, although not both concurrently, as it will boot whichever one it finds first with the `VTOYEFI` partition label.
+
 Feedback is welcome. I have tested this thoroughly enough to release it. Enjoy!
 
 ![rEFInd_GUI](https://user-images.githubusercontent.com/9971433/214604232-f97f9b91-9736-4cfb-95b2-cb2b78546760.png)
