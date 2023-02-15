@@ -4,11 +4,9 @@
 PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)"
 echo "$PASSWD" | sudo -v -S
 ANS=$?
-if [[ $ANS == 1 ]]; then
-	zenity --error --title="Password Error" --text="`printf "Incorrect password provided.\nPlease try again providing the correct sudo password."`" --width=400 2>/dev/null
-	exit 1
-fi
-
+echo -e "\nPlease make sure a sudo password is already set before continuing. If you have not set the user\
+ or sudo password, please exit this installer with 'Ctrl+c' and then create a password either using 'passwd'\
+ from a command line or by using the KDE Plasma User settings GUI.\n"
 sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
@@ -38,7 +36,5 @@ if [ ! -f /home/deck/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
 fi
 cp rEFInd_GUI ../
 sudo steamos-readonly enable
-if zenity --question --text="Would you like to copy the Shortcut to the desktop?" --width=400 2>/dev/null; then
-	cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
-	chmod +x /home/deck/Desktop/refind_GUI.desktop
-fi
+cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
+chmod +x /home/deck/Desktop/refind_GUI.desktop
