@@ -1,12 +1,10 @@
 #!/bin/bash
 # A simple script to install the rEFInd customization GUI
 
-PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)"
-echo "$PASSWD" | sudo -v -S
-ANS=$?
 echo -e "\nPlease make sure a sudo password is already set before continuing. If you have not set the user\
  or sudo password, please exit this installer with 'Ctrl+c' and then create a password either using 'passwd'\
  from a command line or by using the KDE Plasma User settings GUI.\n"
+ 
 sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
@@ -29,12 +27,26 @@ chmod +x $CURRENT_WD/reinstall-GUI.sh
 cd /home/deck/.SteamDeck_rEFInd/GUI/src
 qmake
 make
+
 if [ ! -f /home/deck/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
-	zenity --error --title="Installation Error" --text="`printf "GUI compile failed.\nPlease try again ensuring that your cloned repo\nis up to date and your pacman config is normal."`" --width=400 2>/dev/null
+	echo -e "\nGUI compile failed. Please try again after ensuring that your cloned repo is up to date and\
+	 your pacman config is normal.\n"
 	sudo steamos-readonly enable
 	exit 1
 fi
+
 cp rEFInd_GUI ../
 sudo steamos-readonly enable
-cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
-chmod +x /home/deck/Desktop/refind_GUI.desktop
+
+while true; do
+	read -p "Do you want to copy the rEFInd_GUI icon to the desktop? (y/n) " YN
+	case $YN in 
+		[yY]) echo -e "\nOk, icon will be copied to the desktop.\n"
+			cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
+			chmod +x /home/deck/Desktop/refind_GUI.desktop
+			break;;
+		[nN]) echo -e "\nIcon will not be copied to the desktop.\n"
+			exit 1;;
+		*) echo -e "\nInvalid response.\n";;
+	esac
+done
