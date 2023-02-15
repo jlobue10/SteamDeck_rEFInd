@@ -156,22 +156,24 @@ sudo steamos-readonly disable
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
 # The following command performs the pacman refind package removal
-yes | sudo pacman -R refind
+sudo pacman -R --noconfirm refind
 sudo steamos-readonly enable
 ```
 
 Once refind is uninstalled, the GUI can be removed with the following commands:
 ```
-sudo rm -rf ~/SteamDeck_rEFInd
-sudo rm -rf ~/.SteamDeck_rEFInd
-sudo rm -f ~/Desktop/refind_GUI.desktop
+rm -rf ~/SteamDeck_rEFInd
+rm -rf ~/.SteamDeck_rEFInd
+rm -f ~/Desktop/refind_GUI.desktop
 ```
 
 The non-pacman installation script files would be a little bit more complicated to delete, but not too difficult if somebody insisted on it. Since those files only take up a very small amount of space on the 5GB root partition (not taking up any space for games on the `/home` partition), I am not going to go over that in more detail here.
 
 To remove the rEFInd directory from the `/esp` partition **_(be forewarned that making a mistake here and deleting the wrong files or folders on the `/esp` partition could render your Steam Deck unbootable and in need of the recovery image. Consider this a fair warning and me taking no responsibility for user error here.)_** run this command.
 
-```sudo rm -rf /esp/efi/refind/```
+```
+sudo rm -rf /esp/efi/refind/
+```
 
 ## **References**
 
