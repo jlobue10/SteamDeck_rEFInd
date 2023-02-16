@@ -1,7 +1,9 @@
 #!/bin/bash
 # A simple script to install the rEFInd customization GUI
 
-read -p "\nPlease make sure a sudo password is already set before continuing. If you have not set the user\
+echo -e "\n"
+
+read -p "Please make sure a sudo password is already set before continuing. If you have not set the user\
  or sudo password, please exit this installer with 'Ctrl+c' and then create a password either using 'passwd'\
  from a command line or by using the KDE Plasma User settings GUI. Otherwise, press Enter/Return to continue with the install."
  
@@ -38,7 +40,8 @@ cp rEFInd_GUI ../
 sudo steamos-readonly enable
 
 while true; do
-	read -p "\nDo you want to copy the rEFInd_GUI icon to the desktop? (y/n) " YN
+	echo -e "\n"
+	read -p "Do you want to copy the rEFInd_GUI icon to the desktop? (y/n) " YN
 	case $YN in 
 		[yY]) echo -e "\nOk, icon will be copied to the desktop.\n"
 			cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
