@@ -48,7 +48,7 @@ while true; do
 			chmod +x /home/deck/Desktop/refind_GUI.desktop
 			break;;
 		[nN]) echo -e "\nIcon will not be copied to the desktop.\n"
-			exit 1;;
-		*) echo -e "\nInvalid response.\n";;
+			exit;;
+		*) echo -e "\nInvalid response.";;
 	esac
 done
