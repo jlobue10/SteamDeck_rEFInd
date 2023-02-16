@@ -16,21 +16,21 @@ sudo pacman -Sy --noconfirm archlinux-keyring autoconf automake binutils bison d
  grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
 sudo pacman -Sy --noconfirm glibc hwinfo linux-api-headers qt5-base
 CURRENT_WD=$(pwd)
-mkdir -p /home/deck/.SteamDeck_rEFInd/backgrounds
-yes | cp -rf $CURRENT_WD/GUI/ /home/deck/.SteamDeck_rEFInd
-yes | cp -rf $CURRENT_WD/icons/ /home/deck/.SteamDeck_rEFInd
-yes | cp $CURRENT_WD/themes/background.png /home/deck/.SteamDeck_rEFInd/backgrounds/
-yes | cp $CURRENT_WD/{restore_EFI_entries.sh,bootnext-refind.service} /home/deck/.SteamDeck_rEFInd/
-yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,refind_install_no_pacman_GUI.sh} /home/deck/.SteamDeck_rEFInd/
-yes | cp $CURRENT_WD/refind-GUI.conf /home/deck/.SteamDeck_rEFInd/GUI/refind.conf
-chmod +x /home/deck/.SteamDeck_rEFInd/*.sh
-chmod +x /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
+mkdir -p $HOME/.SteamDeck_rEFInd/backgrounds
+yes | cp -rf $CURRENT_WD/GUI/ $HOME/.SteamDeck_rEFInd
+yes | cp -rf $CURRENT_WD/icons/ $HOME/.SteamDeck_rEFInd
+yes | cp $CURRENT_WD/themes/background.png $HOME/.SteamDeck_rEFInd/backgrounds/
+yes | cp $CURRENT_WD/{restore_EFI_entries.sh,bootnext-refind.service} $HOME/.SteamDeck_rEFInd/
+yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,refind_install_no_pacman_GUI.sh} $HOME/.SteamDeck_rEFInd/
+yes | cp $CURRENT_WD/refind-GUI.conf $HOME/.SteamDeck_rEFInd/GUI/refind.conf
+chmod +x $HOME/.SteamDeck_rEFInd/*.sh
+chmod +x $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
 chmod +x $CURRENT_WD/reinstall-GUI.sh
-cd /home/deck/.SteamDeck_rEFInd/GUI/src
+cd $HOME/.SteamDeck_rEFInd/GUI/src
 qmake
 make
 
-if [ ! -f /home/deck/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
+if [ ! -f $HOME/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
 	echo -e "\nGUI compile failed. Please try again after ensuring that your cloned repo is up to date and your pacman config is normal.\n"
 	sudo steamos-readonly enable
 	exit 1
@@ -44,8 +44,8 @@ while true; do
 	read -p "Do you want to copy the rEFInd_GUI icon to the desktop? (y/n) " YN
 	case $YN in 
 		[yY]) echo -e "\nOk, icon will be copied to the desktop.\n"
-			cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
-			chmod +x /home/deck/Desktop/refind_GUI.desktop
+			cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop
+			chmod +x $HOME/Desktop/refind_GUI.desktop
 			break;;
 		[nN]) echo -e "\nIcon will not be copied to the desktop.\n"
 			exit;;
