@@ -1,13 +1,11 @@
 #!/bin/bash
 # A simple script to install the rEFInd customization GUI
 
-PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)"
-echo "$PASSWD" | sudo -v -S
-ANS=$?
-if [[ $ANS == 1 ]]; then
-	zenity --error --title="Password Error" --text="`printf "Incorrect password provided.\nPlease try again providing the correct sudo password."`" --width=400 2>/dev/null
-	exit 1
-fi
+echo ""
+
+read -p "Please make sure a sudo password is already set before continuing. If you have not set the user\
+ or sudo password, please exit this installer with 'Ctrl+c' and then create a password either using 'passwd'\
+ from a command line or by using the KDE Plasma User settings GUI. Otherwise, press Enter/Return to continue with the install."
 
 sudo steamos-readonly disable
 sudo pacman-key --init
@@ -18,21 +16,31 @@ sudo pacman -Sy --noconfirm --needed archlinux-keyring autoconf automake binutil
  grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
 sudo pacman -Sy --noconfirm --needed glibc hwinfo linux-api-headers qt5-base
 CURRENT_WD=$(pwd)
-mkdir -p /home/deck/.SteamDeck_rEFInd/backgrounds
-yes | cp -rf $CURRENT_WD/GUI/ /home/deck/.SteamDeck_rEFInd
-yes | cp -rf $CURRENT_WD/icons/ /home/deck/.SteamDeck_rEFInd
-yes | cp $CURRENT_WD/themes/background.png /home/deck/.SteamDeck_rEFInd/backgrounds/
-yes | cp $CURRENT_WD/{restore_EFI_entries.sh,bootnext-refind.service} /home/deck/.SteamDeck_rEFInd/
-yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,refind_install_no_pacman_GUI.sh} /home/deck/.SteamDeck_rEFInd/
-yes | cp $CURRENT_WD/refind-GUI.conf /home/deck/.SteamDeck_rEFInd/GUI/refind.conf
-chmod +x /home/deck/.SteamDeck_rEFInd/*.sh
-chmod +x /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
-cd /home/deck/.SteamDeck_rEFInd/GUI/src
+mkdir -p $HOME/.SteamDeck_rEFInd/backgrounds
+yes | cp -rf $CURRENT_WD/GUI/ $HOME/.SteamDeck_rEFInd
+yes | cp -rf $CURRENT_WD/icons/ $HOME/.SteamDeck_rEFInd
+yes | cp $CURRENT_WD/themes/background.png $HOME/.SteamDeck_rEFInd/backgrounds/
+yes | cp $CURRENT_WD/{restore_EFI_entries.sh,bootnext-refind.service} $HOME/.SteamDeck_rEFInd/
+yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,refind_install_no_pacman_GUI.sh} $HOME/.SteamDeck_rEFInd/
+yes | cp $CURRENT_WD/refind-GUI.conf $HOME/.SteamDeck_rEFInd/GUI/refind.conf
+chmod +x $HOME/.SteamDeck_rEFInd/*.sh
+chmod +x $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
+cd $HOME/.SteamDeck_rEFInd/GUI/src
 qmake
 make
 yes | cp rEFInd_GUI ../
 sudo steamos-readonly enable
-if zenity --question --text="Would you like to copy the Shortcut to the desktop?" --width=400 2>/dev/null; then
-	yes | cp /home/deck/.SteamDeck_rEFInd/GUI/refind_GUI.desktop /home/deck/Desktop
-	chmod +x /home/deck/Desktop/refind_GUI.desktop
-fi
+
+while true; do
+	echo ""
+	read -p "Do you want to copy the rEFInd_GUI icon to the desktop? (y/n) " YN
+	case $YN in 
+		[yY]) echo -e "\nOk, icon will be copied to the desktop.\n"
+			cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop
+			chmod +x $HOME/Desktop/refind_GUI.desktop
+			break;;
+		[nN]) echo -e "\nIcon will not be copied to the desktop.\n"
+			exit;;
+		*) echo -e "\nInvalid response.";;
+	esac
+done
