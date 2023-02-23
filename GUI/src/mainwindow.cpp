@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <QComboBox>
-#include <QDebug>
 #include <QFileDialog>
 #include <QIntValidator>
 #include <QLineEdit>
@@ -582,10 +581,6 @@ void MainWindow::readSettings()
     {
         ui->TimeOut_lineEdit->setText(tempTimeout);
     }
-    qDebug() << temp_Last_OS_bool;
-    qDebug() << tempDefaultBoot;
-    qDebug() << tempBoot03;
-    qDebug() << tempTimeout;
 }
 
 void MainWindow::writeSettings()
