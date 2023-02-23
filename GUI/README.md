@@ -1,6 +1,10 @@
 ## **GUI README**
 
-# **Installation**
+## **Alternative installation method**
+
+Starting with release version `1.1.6`, I am pre-packaging a tarball called `rEFInd_GUI.tar.gz`. If you don't want `pacman` to make any system changes, you can download the latest release version `rEFInd_GUI.tar.gz` tarball instead and extract the entire `.SteamDeck_rEFInd` folder to `/home/deck`. Feel free to copy the `rEFInd_GUI.desktop` shortcut to the desktop if desired. This tarball comes with the precompiled rEFInd_GUI binary since on some systems the compile may fail. I have not been able to replicate this or explain why, but I think providing the precompiled GUI binary is a good compromise and may be what some people want anyways.
+
+# **Default Installation**
 
 To install the GUI, make sure that you've already set your `sudo` password and ensure that you are connected to the internet, then perform these steps.
 
