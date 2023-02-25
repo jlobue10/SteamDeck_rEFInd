@@ -125,11 +125,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>11</x>
-      <y>11</y>
+      <x>12</x>
+      <y>12</y>
       <width>591</width>
       <height>416</height>
      </rect>
@@ -148,22 +148,6 @@
        </property>
        <property name="textFormat">
         <enum>Qt::AutoText</enum>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" colspan="3">
-      <widget class="QLineEdit" name="Background_lineEdit">
-       <property name="minimumSize">
-        <size>
-         <width>135</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>rEFInd Background selection</string>
-       </property>
-       <property name="placeholderText">
-        <string>~/.SteamDeck_rEFInd/GUI/background.png</string>
        </property>
       </widget>
      </item>
@@ -383,19 +367,6 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_01_Icon_lineEdit">
-       <property name="minimumSize">
-        <size>
-         <width>135</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="placeholderText">
-        <string>~/.SteamDeck_rEFInd/GUI/os_icon1.png</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="5">
       <widget class="QPushButton" name="Boot_Option_01_Icon_pushButton">
        <property name="minimumSize">
@@ -495,19 +466,6 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_02_Icon_lineEdit">
-       <property name="minimumSize">
-        <size>
-         <width>135</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="placeholderText">
-        <string>~/.SteamDeck_rEFInd/GUI/os_icon2.png</string>
-       </property>
-      </widget>
-     </item>
      <item row="5" column="5">
       <widget class="QPushButton" name="Boot_Option_02_Icon_pushButton">
        <property name="minimumSize">
@@ -599,6 +557,25 @@
        </item>
       </widget>
      </item>
+     <item row="6" column="5">
+      <widget class="QPushButton" name="Enable_sysd_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Sysd On</string>
+       </property>
+      </widget>
+     </item>
      <item row="7" column="0" colspan="2">
       <widget class="QLabel" name="Boot_Option_03_Icon_label">
        <property name="minimumSize">
@@ -609,19 +586,6 @@
        </property>
        <property name="text">
         <string>Boot Option #3 Icon</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_03_Icon_lineEdit">
-       <property name="minimumSize">
-        <size>
-         <width>135</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="placeholderText">
-        <string>~/.SteamDeck_rEFInd/GUI/os_icon3.png</string>
        </property>
       </widget>
      </item>
@@ -716,6 +680,25 @@
        </item>
       </widget>
      </item>
+     <item row="8" column="5">
+      <widget class="QPushButton" name="Disable_sysd_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Sysd Off</string>
+       </property>
+      </widget>
+     </item>
      <item row="9" column="0" colspan="2">
       <widget class="QLabel" name="Boot_Option_04_Icon_label">
        <property name="minimumSize">
@@ -726,19 +709,6 @@
        </property>
        <property name="text">
         <string>Boot Option #4 Icon</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_04_Icon_lineEdit">
-       <property name="minimumSize">
-        <size>
-         <width>135</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="placeholderText">
-        <string>~/.SteamDeck_rEFInd/GUI/os_icon4.png</string>
        </property>
       </widget>
      </item>
@@ -761,7 +731,7 @@
        </property>
       </widget>
      </item>
-     <item row="10" column="0" alignment="Qt::AlignHCenter">
+     <item row="10" column="0">
       <widget class="QPushButton" name="About_pushButton">
        <property name="minimumSize">
         <size>
@@ -961,6 +931,74 @@
         </widget>
        </item>
       </layout>
+     </item>
+     <item row="0" column="2" colspan="3">
+      <widget class="QLineEdit" name="Background_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>rEFInd Background selection</string>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/background.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_01_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon1.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_02_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon2.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="2" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_03_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon3.png</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="2" colspan="3">
+      <widget class="QLineEdit" name="Boot_Option_04_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.SteamDeck_rEFInd/GUI/os_icon4.png</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
