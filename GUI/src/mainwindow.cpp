@@ -4,9 +4,12 @@
 #include <fstream>
 #include <QComboBox>
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QIntValidator>
+#include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QObject>
 #include <QSettings>
 #include <QString>
 #include <sstream>
@@ -18,7 +21,6 @@ using std::endl;
 using std::ifstream;
 using std::ofstream;
 using std::ostringstream;
-using std::remove;
 using std::string;
 
 bool Boot_Last_OS_bool;
@@ -85,13 +87,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QValidator *validator = new QIntValidator(-1, 99, this);
-    ui->TimeOut_lineEdit->setValidator(validator);
-    ui->Background_lineEdit->setReadOnly(true);
-    ui->Boot_Option_01_Icon_lineEdit->setReadOnly(true);
-    ui->Boot_Option_02_Icon_lineEdit->setReadOnly(true);
-    ui->Boot_Option_03_Icon_lineEdit->setReadOnly(true);
-    ui->Boot_Option_04_Icon_lineEdit->setReadOnly(true);
+    QValidator *INT_validator = new QIntValidator(-1, 99, this);
+    ui->TimeOut_lineEdit->setValidator(INT_validator);
     readSettings();
 }
 
@@ -224,6 +221,12 @@ void MainWindow::on_Create_Config_clicked()
     Boot_Stanza_4 = CreateBootStanza(Boot_Option_4, "4", Firmware_BootNum_bool);
     refind_conf << Boot_Stanza_4;
     refind_conf.close();
+    // Double checksing for valid PNG files
+    checkPNGFile(ui->Background_lineEdit);
+    checkPNGFile(ui->Boot_Option_01_Icon_lineEdit);
+    checkPNGFile(ui->Boot_Option_02_Icon_lineEdit);
+    checkPNGFile(ui->Boot_Option_03_Icon_lineEdit);
+    checkPNGFile(ui->Boot_Option_04_Icon_lineEdit);
     Background = ui->Background_lineEdit->text();
     if((Background != "") && (Background != Default_Background)){
         Background_path = Background.toStdString();
@@ -616,4 +619,58 @@ void MainWindow::on_About_pushButton_clicked()
                      "<br><br><a href='https://www.youtube.com/watch?v=zEpcBWX9K_o'>Deck Wizard Dual Boot Tutorial</a><br></p>");
     AboutBox.setStandardButtons(QMessageBox::Ok);
     AboutBox.exec();
+}
+
+void MainWindow::checkPNGFile(QLineEdit *PNGlineEdit) {
+    QString text_PNG = PNGlineEdit->text();
+    QFileInfo fileInfo(text_PNG);
+    if (fileInfo.exists() && fileInfo.isFile() && fileInfo.suffix() == "png") {
+        // Do nothing to text, keep valid PNG entry
+    } else {
+        // The file does not exist or is not a .png file.
+        // Clear the QLineEdit.
+        PNGlineEdit->clear();
+    }
+}
+
+void MainWindow::on_Background_lineEdit_editingFinished()
+{
+   checkPNGFile(ui->Background_lineEdit);
+}
+
+
+void MainWindow::on_Boot_Option_01_Icon_lineEdit_editingFinished()
+{
+    checkPNGFile(ui->Boot_Option_01_Icon_lineEdit);
+}
+
+void MainWindow::on_Boot_Option_02_Icon_lineEdit_editingFinished()
+{
+    checkPNGFile(ui->Boot_Option_02_Icon_lineEdit);
+}
+
+void MainWindow::on_Boot_Option_03_Icon_lineEdit_editingFinished()
+{
+    checkPNGFile(ui->Boot_Option_03_Icon_lineEdit);
+}
+
+void MainWindow::on_Boot_Option_04_Icon_lineEdit_editingFinished()
+{
+    checkPNGFile(ui->Boot_Option_04_Icon_lineEdit);
+}
+
+void MainWindow::on_Enable_sysd_pushButton_clicked()
+{
+    string sysd_on = string("xterm -e \"sudo cp $HOME/.SteamDeck_rEFInd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service &&");
+           sysd_on.append(" sudo systemctl enable --now bootnext-refind.service &&");
+           sysd_on.append(" sudo systemctl status bootnext-refind.service; $SHELL\"");
+    system(sysd_on.c_str());
+}
+
+void MainWindow::on_Disable_sysd_pushButton_clicked()
+{
+    string sysd_off = string("xterm -e \"sudo systemctl disable --now bootnext-refind.service &&");
+           sysd_off.append(" sudo efibootmgr -N &&");
+           sysd_off.append(" sudo systemctl status bootnext-refind.service; $SHELL\"");
+    system(sysd_off.c_str());
 }
