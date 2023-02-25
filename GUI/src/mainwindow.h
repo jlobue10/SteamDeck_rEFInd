@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <string>
+#include <QLineEdit>
 #include <QMainWindow>
 #include <QString>
 
@@ -22,6 +23,7 @@ public:
     string CreateBootStanza(QString &BootOption, const char *BootNum, bool FW_BootNum);
     string getDefaultBoot(QString &DefaultBootOption, bool Last_OS, bool FW_BootNum_boot_bool, QString &Boot_Opt1, QString &Boot_Opt2, QString &Boot_Opt3, QString &Boot_Opt4);
     string getPartitionGUIDLabel(string &GUID_Source);
+    void checkPNGFile(QLineEdit *lineEdit);
 
 private slots:
     void on_Background_pushButton_clicked();
@@ -45,6 +47,20 @@ private slots:
     void writeSettings();
 
     void on_About_pushButton_clicked();
+
+    void on_Background_lineEdit_editingFinished();
+
+    void on_Boot_Option_01_Icon_lineEdit_editingFinished();
+
+    void on_Boot_Option_02_Icon_lineEdit_editingFinished();
+
+    void on_Boot_Option_03_Icon_lineEdit_editingFinished();
+
+    void on_Boot_Option_04_Icon_lineEdit_editingFinished();
+
+    void on_Enable_sysd_pushButton_clicked();
+
+    void on_Disable_sysd_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
