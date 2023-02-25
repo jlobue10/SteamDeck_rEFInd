@@ -6,10 +6,8 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIntValidator>
-#include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <QObject>
 #include <QSettings>
 #include <QString>
 #include <sstream>
