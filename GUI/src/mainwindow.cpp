@@ -444,16 +444,6 @@ string MainWindow::CreateBootStanza(QString &BootOption, const char *BootNum, bo
             Boot_Stanza_GUI.append("\tgraphics on\n}\n");
             return Boot_Stanza_GUI;
         }
-        if(Linux_Select_str == "Pop!_OS") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Pop!_OS\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tvolume REPLACE_WITH_POP_OS_EFI_SYS_PART_UUID\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/systemd/systemd-bootx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
         if(Linux_Select_str == "Zorin") {
             Boot_Stanza_GUI.append("\nmenuentry \"Zorin\" {\n");
             Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
