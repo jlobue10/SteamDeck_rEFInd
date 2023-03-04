@@ -125,7 +125,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>12</x>
@@ -916,11 +916,6 @@
          <item>
           <property name="text">
            <string>openSUSE</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Pop!_OS</string>
           </property>
          </item>
          <item>
