@@ -4,6 +4,16 @@
 
 Starting with release version `1.1.6`, I am pre-packaging a tarball called `rEFInd_GUI.tar.gz`. If you don't want `pacman` to make any system changes during the GUI installation script, you can download the latest release version `rEFInd_GUI.tar.gz` tarball instead and extract the entire `.SteamDeck_rEFInd` folder to `/home/deck`. Feel free to copy the `rEFInd_GUI.desktop` shortcut to the desktop if desired. This tarball comes with the precompiled rEFInd_GUI binary since on some systems the compile may fail. I have not been able to replicate this or explain why, but I think providing the precompiled GUI binary is a good compromise and may be what some people want anyways.
 
+If you use the precompiled binary and want to use the Windows (SD) or Windows (USB) options as one of your boot methods, then you may need to perform a few additional steps to install the `hwinfo` package. This `hwinfo` program is used by the GUI to obtain the relevant partition GUID information for the SD card and/ or USB hard drive without the need for `sudo` permissions. If you need to manually install `hwinfo`, then perform these steps from a SteamOS command line.
+
+```
+sudo steamos-readonly disable
+sudo pacman-key --init
+sudo pacman-key --populate archlinux
+sudo pacman -Sy --noconfirm hwinfo
+sudo steamos-readonly enable
+```
+
 # **Default Installation**
 
 To install the GUI, make sure that you've already set your `sudo` password and ensure that you are connected to the internet, then perform these steps.
@@ -38,11 +48,13 @@ The 'Use Firmware_bootnum' option is a SteamOS only option that requires the Ste
 
 The Linux distro selection drop down box can be ignored if you're not selecting Linux as one of your boot options. This drop down offers some popular distro choices and helps the code create an appropriate boot Stanza for that choice. Some manual edits may still be required depending on which Linux distro and which particular configuration is used.
 
+Two new buttons were added to either enable or disable the `systemd` service (Sysd On and Sysd Off). These buttons will pop-up an xterm, ask for the `sudo` password and then perform their respective tasks, displaying the `systemd` service status as the last step. The xterm can be safely closed after completion.
+
 Ventoy was added as a boot option. This selection will work for either Micro SD card or USB, although not both concurrently, as it will boot whichever one it finds first with the `VTOYEFI` partition label.
 
 Feedback is welcome. I have tested this thoroughly enough to release it. Enjoy!
 
-![rEFInd_GUI](https://user-images.githubusercontent.com/9971433/214604232-f97f9b91-9736-4cfb-95b2-cb2b78546760.png)
+![refind_GUI_2023](https://user-images.githubusercontent.com/9971433/222976497-ca58d762-669c-4a4d-9300-0557e95f0b67.png)
 
 GUI configuration example (my default config for my personal Steam Deck)
 
