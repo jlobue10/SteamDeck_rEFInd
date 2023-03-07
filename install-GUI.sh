@@ -15,7 +15,12 @@ sudo pacman-key --populate archlinux
 sudo pacman -Sy --noconfirm archlinux-keyring autoconf automake binutils bison debugedit fakeroot file findutils flex gawk gcc gettext\
  grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
 sudo pacman -Sy --noconfirm glibc hwinfo linux-api-headers qt5-base
+if [ "$#" -eq 0 ]
+then
+CURRENT_WD=$(pwd)
+else
 CURRENT_WD=$1
+fi
 mkdir -p $HOME/.SteamDeck_rEFInd/backgrounds
 yes | cp -rf $CURRENT_WD/GUI/ $HOME/.SteamDeck_rEFInd
 yes | cp -rf $CURRENT_WD/icons/ $HOME/.SteamDeck_rEFInd
