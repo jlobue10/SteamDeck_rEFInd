@@ -30,6 +30,9 @@
 	yes | sudo ./refind-bin-0.14.0.2/refind-install
 	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/icons/ /esp/efi/refind
 	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/fonts/ /esp/efi/refind
+	yes | sudo cp $HOME/.SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
+	yes | sudo cp -rf $HOME/.SteamDeck_rEFInd/backgrounds/ /esp/efi/refind
+	yes | sudo cp -rf $HOME/.SteamDeck_rEFInd/icons/ /esp/efi/refind
 	efibootmgr | tee $HOME/efibootlist.txt
 	echo 65
 	echo "# Fixing EFI entries..."
