@@ -14,7 +14,7 @@ sudo pacman-key --populate archlinux
 # Install base-devel member packages
 sudo pacman -Sy --noconfirm archlinux-keyring autoconf automake binutils bison debugedit fakeroot file findutils flex gawk gcc gettext\
  grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
-sudo pacman -Sy --noconfirm glibc hwinfo linux-api-headers qt5-base
+sudo pacman -Sy --noconfirm lib32-glibc glibc hwinfo linux-api-headers qt5-base
 CURRENT_WD=$(pwd)
 mkdir -p $HOME/.SteamDeck_rEFInd/backgrounds
 yes | cp -rf $CURRENT_WD/GUI/ $HOME/.SteamDeck_rEFInd
