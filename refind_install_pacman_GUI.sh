@@ -40,7 +40,7 @@
 		sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "SteamOS" -l \\EFI\\steamos\\steamcl.efi
 	fi
 	echo 75
-	echo "# Installing files to /efi partition..."
+	echo "# Installing files to /esp partition..."
 	sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
 	sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
 	sudo cp $HOME/.SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
