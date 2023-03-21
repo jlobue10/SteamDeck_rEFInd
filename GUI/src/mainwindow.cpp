@@ -602,7 +602,7 @@ void MainWindow::on_About_pushButton_clicked()
 {
     QMessageBox AboutBox;
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'>rEFInd Customization GUI<br><br>"
+    AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.1.8<br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
