@@ -175,6 +175,8 @@ To remove the rEFInd directory from the `/esp` partition **_(be forewarned that 
 sudo rm -rf /esp/efi/refind/
 ```
 
+## **[SteamOS reinstallation Considerations](https://github.com/jlobue10/SteamDeck_rEFInd/issues/49)**
+
 ## **References**
 
 [rEFInd Boot Manager reference](https://www.rodsbooks.com/refind/ "rEFInd Boot Manager")
