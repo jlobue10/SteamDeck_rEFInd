@@ -1,7 +1,7 @@
 # SteamDeck_rEFInd
-This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe. Since the initial version of this script, optional support has been added for Windows from the SD card, Batocera from the SD card and an example boot stanza for (K)Ubuntu. The options really are pretty limitless, but require some understanding and manual edits to the `refind.conf` file.
+This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe. Since the initial version of this script, optional support has been added for Windows from the SD card, Batocera from the SD card and an example boot stanza for Ubuntu (or other Ubuntu based flavors / distros). The options really are pretty limitless, but require some understanding and manual edits to the `refind.conf` file.
 
-## [**GUI is now available**](https://github.com/jlobue10/SteamDeck_rEFInd/tree/main/GUI)
+## [**The GUI is available and is the recommended method**](https://github.com/jlobue10/SteamDeck_rEFInd/tree/main/GUI)
 
 If you want to try out the GUI, perform these steps.
 
@@ -11,9 +11,9 @@ cd SteamDeck_rEFInd
 chmod +x install-GUI.sh
 ./install-GUI.sh
 ```
-GUI files will be created in the `/home/deck/.SteamDeck_rEFInd/GUI/` folder, including a desktop shortcut. Please give me feedback and enjoy!
+The GUI files will be created in the `/home/deck/.SteamDeck_rEFInd/GUI/` folder, including a desktop shortcut. Please give me feedback and enjoy!
 
-## **Script Updates and _improvements_ (Jan. 1, 2023) and outstanding issues**
+## **Script Updates and _improvements_**
 
 A systemctl daemon to always prioritize rEFInd as the top boot priority has been added. This will continue to work in the future, unless a firmware update or SteamOS permissions issue blocks setting the 'Boot Next' setting with `efibootmgr`. This is one half of a solution that mostly disregards whether the Windows EFI entry can be disabled or not by the script. Disabling the Windows EFI entry, either with EasyUEFI from Windows or from command line with the SteamOS recovery image is still recommended, especially if you are setting up a triple boot (with Batocera on SD card for instance). The other half of this solution is to install the `bootsequence-rEFInd-first.ps1` file (under the Windows directory here in this repository) as a task from Windows Task Scheduler. Save this `bootsequence-rEFInd-first.ps1` file somewhere to be referenced and used by Task Scheduler. Special thanks to [Reddit user lucidludic for this method and explanation](https://www.reddit.com/r/steamdeck_linux/comments/zb3l7k/comment/iyrxnzs/?utm_source=share&utm_medium=web2x&context=3). Open Task Scheduler, right-click on Task Scheduler Library and create a new folder named something like "rEFInd" then select the folder. Click "Create Basic Task", give it an appropriate name and description and click Next. Set the task to start "When I log on" and click Next, leave "Start a program" selected and click Next. In the Program/script text box enter the following (or use Browse):
 
@@ -34,6 +34,8 @@ Under the Firmware Boot Manager ({fwbootmgr}) entry you should now see a new boo
 With this 2 part workaround installed, switching between SteamOS branches has also become seamless and largely worry free (from the systemctl daemon). You can now switch freely between Stable, Beta, and Preview without the need to re-run the script. The one issue that remains and will likely not be solvable without re-running the script in the future is BIOS (UEFI firmware) updates. I confirmed this for my script earlier today by downgrading from 113 to 110, reinstalling rEFInd and then re-upgrading to BIOS 113. The 113 BIOS update completely deleted the SteamOS and rEFInd EFI entries and reactivated the Windows EFI entry. I do not know if there's a way around this going forward, other than changes from InsydeH2O and/ or Valve to the actual provided UEFI firmware (which comes with the BIOS update). If somebody else figures out a method that survives a BIOS update, then that is really good and should be applauded. For now, I've updated this script to be as easy as possible in the case of a BIOS update breaking something, but there are some additional preparation steps going forward in order to not interfere with future BIOS updates.
 
 ## **BIOS Update _preparation_**
+
+***This is easily accomplished now from the GUI by clicking the Sysd Off button and entering the `sudo` password in the popped up xterm.***
 
 To prepare for a BIOS update from the SteamOS side, whether alongside a major SteamOS version update (or manually) or some other source like the Preview branch, you will need to run the `bios_update_SteamOS_prep.sh` script or just manually copy and paste the three `sudo` commands from it into a SteamOS desktop command line. If using the script, make sure to give it executable permissions first. From inside the `SteamDeck_rEFInd` folder, run:
 
@@ -88,7 +90,11 @@ For additional configuration options, please refer to the rEFInd official docume
 
 In case either the SteamOS or rEFInd EFI entries are deleted (for instance by a BIOS update), you can just run the provided `restore_EFI_entries.sh` script. This script will detect if either EFI entry is missing and only re-add missing entries (no duplicates created).
 
+This functionality has been automated with the `systemd` service, if the `systemd` service is enabled.
+
 ## **Note about systemd service**
+
+***The GUI now has buttons to easily enable or disable the `systemd` service ('Sysd On' and 'Sysd Off').***
 
 Due to the nature of SteamOS' partition structure (redundant rootfs-A and rootfs-B partitions), it may be necessary to occasionally double check whether the systemd service is still active and functioning properly. These redundant partitions are likely used for branch changes and/ or updates (or in case of failure of one or the other... not entirely sure). A useful command to check whether the systemd service is functioning properly is this.
 
@@ -97,8 +103,6 @@ Due to the nature of SteamOS' partition structure (redundant rootfs-A and rootfs
 If the status is anything other than active and enabled, it's possible that you may need to recopy the systemd service to `/etc/systemd/system/bootnext-refind.service` with sudo permissions. As this is a rare issue, I don't feel it's necessary to check for and automate this. If you had to recopy the systemd service onto the other redundant (now active root) partition, then you will also want to run this to start the service and enable it for future boots into SteamOS.
 
 `sudo systemctl enable --now bootnext-refind.service`
-
-I still find this systemd service method to be preferable to a script that will only launch (run in background) when a terminal is launched.
 
 ## **Necessary steps for _reinstalling Windows_**
 
@@ -129,6 +133,8 @@ Powershell command:
 (**_Old "fix"_**) If you encounter an issue while booting up where the Windows display is corrupted to the point that it's basically unusable (not the same as the dotted vertical lines scrolling), there is a workaround to fix the issue. Boot into SteamOS and edit the `refind.conf` file using the command `sudo nano /esp/efi/refind/refind.conf` from a command line. Make sure all `resolution` lines are commented out in the `refind.conf` config file (line begins with a `#`). When this is done, press `Ctrl+x` followed by `y` then `Enter` to save and exit. If this is successful, then on next reboot, the rEFInd screen will be rotated in portrait mode. Boot into Windows, fix any resolution discrepancies (should be 1,280 x 800 for main Steam Deck display) and save those changes. You should now be able to go back into SteamOS, edit the `refind.conf` config file again and make sure that `resolution 3` is uncommented (`#` at line beginning deleted) for normal use.
 
 ## **Optional Windows from Micro SD card instructions**
+
+This is automated in the GUI. Just make sure the Windows SD card is inserted for the 'Create Config' step and install the config afterwards. The manual steps below will still also work but they are less convenient than the GUI method.
 
 The updated `refind.conf` file has a manual stanza now for a Micro SD card Windows boot option. Make sure to disable the other "Windows" boot option by adding a `disabled` line in that "Windows" stanza. We need to make 2 edits to the "Windows SD card" stanza to make the Micro SD card Windows boot properly from rEFInd. First, we need to find out the Micro SD card's EFI system partition UUID. I decided to use KDE Partition Manager to find out this information for my Micro SD card. See the following picture for the highlighted partition UUID.
 
@@ -185,7 +191,9 @@ sudo rm -rf /esp/efi/refind/
 
 ## **Future plans**
 
-I have started working on a small GUI to make customization of rEFInd for a given user even easier. I realize that not everyone is comfortable with command line and config file editing. This GUI will allow selecting a new background, different icons per OS, custom boot order and priority, timeout value and whether or not the mouse is enabled for the rEFInd screen. [This is the GUI prototype so far](https://i.imgur.com/JDxe03W.png) . Any feedback on desired features for this GUI is welcome. Thanks for using my script.
+The GUI has been thoroughly tested and released. I'm working on adding a check for update function to the GUI. As this is just a minor QoL improvement and not any functional "improvement," the priority is not that high and there's no specific ETA for this to be working as of now.
+
+I also have an unreleased repo meant for laptops and desktops with generic Linux and Windows dual boot support (with support for secure boot). I may release this at some point, but no ETA.
 
 ## **Acknowledgements**
 
