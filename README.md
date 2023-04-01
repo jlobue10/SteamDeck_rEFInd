@@ -134,7 +134,7 @@ Powershell command:
 
 ## **Optional Windows from Micro SD card instructions**
 
-This is automated in the GUI. Just make sure the Windows SD card is inserted for the 'Create Config' step and install the config afterwards. The manual steps below will still also work but they are less convenient than the GUI method.
+***This is automated in the GUI. Just make sure the Windows SD card is inserted for the 'Create Config' step and install the config afterwards. The manual steps below will still also work, but they are less convenient than the GUI method.***
 
 The updated `refind.conf` file has a manual stanza now for a Micro SD card Windows boot option. Make sure to disable the other "Windows" boot option by adding a `disabled` line in that "Windows" stanza. We need to make 2 edits to the "Windows SD card" stanza to make the Micro SD card Windows boot properly from rEFInd. First, we need to find out the Micro SD card's EFI system partition UUID. I decided to use KDE Partition Manager to find out this information for my Micro SD card. See the following picture for the highlighted partition UUID.
 
