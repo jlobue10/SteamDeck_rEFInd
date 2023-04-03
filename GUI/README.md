@@ -95,7 +95,7 @@ These lines should be changed from beta to release like this:
 
 then press `Ctrl+x` followed by `y` and then `Enter` to save your changes and exit. Retry the GUI installer after this change and it **_SHOULD_** be successful, if this was your only issue.
 
-##**Compile fail issue (example in below screenshot)**
+## **Compile fail issue (example in below screenshot)**
 
 If for whatever reason you still cannot get the GUI to compile due to a C library dependency issue, you will want to grab and use the `rEFInd_GUI_standalone` tarball from the release page and follow the same instructions as above for the "Alternative installation method" using this standalone version. What's different with the standalone version is that the necessary C static libraries are compiled into the GUI, so they do not rely on the same C language system shared libraries. This ends up in a larger executable file. This has already been proven to work by at least one user.
 
