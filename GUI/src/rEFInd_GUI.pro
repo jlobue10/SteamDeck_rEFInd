@@ -22,3 +22,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+#QMAKE_LFLAGS += -static-libgcc -static-libstdc++
+QMAKE_CFLAGS_RELEASE -= -O2
