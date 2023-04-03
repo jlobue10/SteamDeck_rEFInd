@@ -62,8 +62,6 @@ GUI configuration example (my default config for my personal Steam Deck)
 
 One common installation issue revolves around an error with your Steam Deck's `pacman` repositories. I did not personally encounter this error in any of my testing, but here is a screenshot provided to me by a user who experienced a `pacman` error with the GUI installation. In this case, the `pacman` for this particular Steam Deck was trying to access the beta repositories and resulted in an error (as seen below).
 
-![GUI_pacman_install_error](https://user-images.githubusercontent.com/9971433/217431768-4ef817eb-b41e-47c7-a61e-69409f8e37ed.jpg)
-
 There is a fairly simple fix for this if anyone else is experiencing this. Basically fix your `pacman` config file. You can do this by opening up a Konsole command line and performing:
 
 ```
@@ -99,7 +97,7 @@ then press `Ctrl+x` followed by `y` and then `Enter` to save your changes and ex
 
 If for whatever reason you still cannot get the GUI to compile due to a C library dependency issue, you will want to grab and use the `rEFInd_GUI_standalone` tarball from the release page and follow the same instructions as above for the "Alternative installation method" using this standalone version. What's different with the standalone version is that the necessary C static libraries are compiled into the GUI, so they do not rely on the same C language system shared libraries. This ends up in a larger executable file. This has already been proven to work by at least one user.
 
-![rEFInd_compile_error](https://user-images.githubusercontent.com/9971433/229572358-10b4f74a-6894-4317-beac-63aed667d653.png)
+![rEFInd_compile_error](https://user-images.githubusercontent.com/9971433/229573606-ddd0ab43-b472-4b47-91be-dd208baf1a5c.png)
 
 If you see this error or something similar, please try the standalone version and feel free to leave me any relevant feedback.
 
