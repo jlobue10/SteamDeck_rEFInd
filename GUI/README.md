@@ -95,7 +95,7 @@ then press `Ctrl+x` followed by `y` and then `Enter` to save your changes and ex
 
 ## **Compile fail issue (example in below screenshot)**
 
-If for whatever reason you still cannot get the GUI to compile due to a C library dependency issue, you will want to grab and use the `rEFInd_GUI_standalone` tarball from the release page and follow the same instructions as above for the "Alternative installation method" using this standalone version. What's different with the standalone version is that the necessary C static libraries are compiled into the GUI, so they do not rely on the same C language system shared libraries. This ends up in a larger executable file. This has already been proven to work by at least one user.
+If for whatever reason you still cannot get the GUI to compile due to a C library dependency issue, you will want to grab and use the `rEFInd_GUI_standalone` tarball from the release page and follow the same instructions as above for the "Alternative installation method" (using this standalone version). What's different with the standalone version is that the necessary C static libraries are compiled into the GUI, so they do not rely on the same C language system shared libraries. This ends up in a larger executable file. This has already been proven to work by at least one user.
 
 ![rEFInd_compile_error](https://user-images.githubusercontent.com/9971433/229573606-ddd0ab43-b472-4b47-91be-dd208baf1a5c.png)
 
