@@ -62,6 +62,8 @@ private slots:
 
     void on_Disable_sysd_pushButton_clicked();
 
+    void on_updateButton_Clicked();
+
 private:
     Ui::MainWindow *ui;
 };
