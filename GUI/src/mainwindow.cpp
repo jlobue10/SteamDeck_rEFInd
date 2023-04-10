@@ -610,7 +610,7 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton* updateButton = new QPushButton("Check For Update");
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.1.8<br><br>"
+    AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.1.9<br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
