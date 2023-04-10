@@ -8,6 +8,7 @@
 #include <QIntValidator>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QSettings>
 #include <QString>
 #include <sstream>
@@ -19,11 +20,14 @@ using std::endl;
 using std::ifstream;
 using std::ofstream;
 using std::ostringstream;
+using std::stoi;
 using std::string;
 
 bool Boot_Last_OS_bool;
 bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
+int Update_Num;
+int VERSION = 119;
 QString Background;
 QString Background_fileName;
 QString Boot_Option_1;
@@ -77,6 +81,8 @@ string refind_timeout = "5";
 string refind_USER = getlogin();
 string MICRO_SD_GUID = "SD";
 string USB_GUID = "USB";
+string Update_Num_str;
+string VERSION_str;
 string Windows_SD_GUID;
 string Windows_USB_GUID;
 
@@ -601,6 +607,8 @@ void MainWindow::writeSettings()
 void MainWindow::on_About_pushButton_clicked()
 {
     QMessageBox AboutBox;
+    QPushButton* updateButton = new QPushButton("Check For Update");
+    connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
     AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.1.8<br><br>"
                      "Original GUI Creator: "
@@ -608,6 +616,7 @@ void MainWindow::on_About_pushButton_clicked()
                      "Special Thanks to Deck Wizard for testing and QA"
                      "<br><br><a href='https://www.youtube.com/watch?v=zEpcBWX9K_o'>Deck Wizard Dual Boot Tutorial</a><br></p>");
     AboutBox.setStandardButtons(QMessageBox::Ok);
+    AboutBox.addButton(updateButton, QMessageBox::ActionRole);
     AboutBox.exec();
 }
 
@@ -663,4 +672,30 @@ void MainWindow::on_Disable_sysd_pushButton_clicked()
            sysd_off.append(" sudo efibootmgr -N &&");
            sysd_off.append(" sudo systemctl status bootnext-refind.service; $SHELL\"");
     system(sysd_off.c_str());
+}
+
+void MainWindow::on_updateButton_Clicked()
+{
+    QMessageBox UpdateBox;
+    UpdateBox.setTextFormat(Qt::RichText);
+    FILE *Update_process;
+    char Update_buff[1024];
+    Update_Num_str.clear();
+    Update_process = popen("echo $(curl https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION) | sed 's/\\./ /g' | sed 's/\\s\\+//g'", "r");
+    if (Update_process != NULL) {
+        while (fgets(Update_buff, sizeof(Update_buff), Update_process)) {
+            printf("%s", Update_buff);
+            Update_Num_str += Update_buff;
+        }
+        pclose(Update_process);
+    }
+    Update_Num = stoi(Update_Num_str);
+    if(Update_Num > VERSION) {
+        UpdateBox.setText("<p align='center'>An update is available "
+                         "<a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'>here</a><br><br></p>");
+    } else {
+        UpdateBox.setText("<p align='center'>No update found. You are using the latest version.<br><br></p>");
+    }
+    UpdateBox.setStandardButtons(QMessageBox::Ok);
+    UpdateBox.exec();
 }
