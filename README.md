@@ -191,9 +191,7 @@ sudo rm -rf /esp/efi/refind/
 
 ## **Future plans**
 
-The GUI has been thoroughly tested and released. I'm working on adding a check for update function to the GUI. As this is just a minor QoL improvement and not any functional "improvement," the priority is not that high, and there's no specific ETA for when this will be working.
-
-I also have an unreleased repo meant for laptops and desktops with generic Linux and Windows rEFind dual boot support (with support for secure boot). I may release this at some point, but there's no ETA.
+I have an unreleased repo meant for laptops and desktops with generic Linux and Windows rEFind dual boot support (with support for secure boot). I may release this at some point, but there's no ETA.
 
 ## **Acknowledgements**
 
