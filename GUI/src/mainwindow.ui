@@ -875,6 +875,11 @@
          </item>
          <item>
           <property name="text">
+           <string>Arch - Systemd</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>CentOS</string>
           </property>
          </item>
