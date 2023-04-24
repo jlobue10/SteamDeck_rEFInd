@@ -27,7 +27,7 @@ bool Boot_Last_OS_bool;
 bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
 int Update_Num;
-int VERSION = 119;
+int VERSION = 120;
 QString Background;
 QString Background_fileName;
 QString Boot_Option_1;
@@ -619,7 +619,7 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton* updateButton = new QPushButton("Check For Update");
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.1.9<br><br>"
+    AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.2.0<br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
