@@ -54,6 +54,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Install config, icons and background</string>
+       </property>
        <property name="text">
         <string>Install Config</string>
        </property>
@@ -72,6 +75,9 @@
          <width>140</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Create config and copy PNG files (ready for install step)</string>
        </property>
        <property name="text">
         <string>Create Config</string>
@@ -92,6 +98,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Install rEFInd using selected method</string>
+       </property>
        <property name="text">
         <string>Install rEFInd</string>
        </property>
@@ -110,6 +119,9 @@
          <width>140</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Installation source and method</string>
        </property>
        <item>
         <property name="text">
@@ -240,6 +252,9 @@
          <width>35</width>
          <height>23</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string/>
        </property>
        <property name="text">
         <string/>
@@ -571,6 +586,9 @@
          <height>32</height>
         </size>
        </property>
+       <property name="toolTip">
+        <string>Install and enable systemd service</string>
+       </property>
        <property name="text">
         <string>Sysd On</string>
        </property>
@@ -693,6 +711,9 @@
          <width>84</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Disable systemd service</string>
        </property>
        <property name="text">
         <string>Sysd Off</string>
@@ -955,6 +976,9 @@
          <width>135</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="toolTip">
+        <string>Icon 1 PNG (leftmost icon)</string>
        </property>
        <property name="placeholderText">
         <string>~/.SteamDeck_rEFInd/GUI/os_icon1.png</string>
