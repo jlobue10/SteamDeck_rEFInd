@@ -152,11 +152,7 @@ Replace the `volume REPLACE_THIS_WITH_SD_CARD_EFI_PARTITION_UUID` line with your
 
 ## **Disabling and/ or uninstalling rEFInd**
 
-If you've tried rEFInd and decide you just don't want to use it any more, you can disable the rEFInd EFI entry with this command (replace XXXX with rEFInd EFI entry number).
-
-`sudo efibootmgr -b XXXX -A`
-
-If you want to delete the rEFInd EFI entry run this following command.
+If you've tried rEFInd and decide you just don't want to use it any more, you can delete the rEFInd EFI entry with this command (replace XXXX with rEFInd EFI entry number).
 
 `sudo efibootmgr -b XXXX -B`
 
