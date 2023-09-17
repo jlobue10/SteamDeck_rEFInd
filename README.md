@@ -92,6 +92,10 @@ If all went well, you should have rEFInd setup with SteamOS as the default loadi
 
 For additional configuration options, please refer to the rEFInd official documentation. My supplied config file uses manual OS boot stanzas on purpose to control the icon order from left to right. This feature is something that I plan to take advantage of in the config file generation (and installation) GUI that I am developing. Please feel free to deviate from this and use rEFInd's ability to detect EFI files and OSes to boot, if you want. The config file has a lot of potential options that I encourage people to explore.
 
+## **Disable Windows EFI entry or run the Windows' side script**
+
+This honestly should be in a bold flashing neon light, as it is one if the most commonly missed issues. This step is still required for SteamOS 3.4+.
+
 ## **Restoring _missing_ EFI entries**
 
 In case either the SteamOS or rEFInd EFI entries are deleted (for instance by a BIOS update), you can just run the provided `restore_EFI_entries.sh` script. This script will detect if either EFI entry is missing and only re-add missing entries (no duplicates created).
