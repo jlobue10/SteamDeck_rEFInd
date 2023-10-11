@@ -55,7 +55,7 @@ For additional configuration options, please refer to the rEFInd official docume
 
 ## **Disable Windows EFI entry or run the Windows' side script**
 
-This honestly should be in a bold flashing neon light, as it is one if the most commonly missed issues. This step is still required for SteamOS 3.4+. Unfortunately, this still requires booting from the SteamOS recovery USB or another live Linux distro.
+This honestly should be in a bold flashing neon light, as it is one of the most commonly missed issues. This step is still required for SteamOS 3.4+. Unfortunately, this still requires booting from the SteamOS recovery USB or another live Linux distro.
 
 Steps:
 ```
