@@ -25,7 +25,6 @@ yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,re
 yes | cp $CURRENT_WD/refind-GUI.conf $HOME/.SteamDeck_rEFInd/GUI/refind.conf
 chmod +x $HOME/.SteamDeck_rEFInd/*.sh
 chmod +x $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
-chmod +x $CURRENT_WD/reinstall-GUI.sh
 cd $HOME/.SteamDeck_rEFInd/GUI/src
 qmake
 make
@@ -35,6 +34,13 @@ if [ ! -f $HOME/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
 	sudo steamos-readonly enable
 	exit 1
 fi
+
+#Create file for passwordless sudo for config file, background and icon installation
+cat > $HOME/.SteamDeck_rEFInd/install_config_from_GUI <<EOF
+$USER ALL = NOPASSWD: $HOME/.SteamDeck_rEFInd/install_config_from_GUI.sh
+EOF
+
+sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
 
 cp rEFInd_GUI ../
 sudo steamos-readonly enable
