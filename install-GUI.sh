@@ -49,7 +49,7 @@ chmod 0440 $HOME/.SteamDeck_rEFInd/install_config_from_GUI
 
 sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
 
-cp rEFInd_GUI ../
+cp -f rEFInd_GUI ../
 sudo steamos-readonly enable
 
 cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop
