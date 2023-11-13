@@ -15,6 +15,11 @@ sudo pacman-key --populate archlinux
 sudo pacman -Sy --noconfirm archlinux-keyring autoconf automake binutils bison debugedit fakeroot file findutils flex gawk gcc gettext\
  grep groff gzip libtool m4 make pacman patch pkgconf sed sudo texinfo which
 sudo pacman -Sy --noconfirm lib32-glibc glibc hwinfo linux-api-headers qt5-base
+echo -e "Installing SteamDeck rEFInd...\n"
+cd $HOME
+sudo rm -rf ./SteamDeck_rEFInd/
+git clone https://github.com/jlobue10/SteamDeck_rEFind
+cd SteamDeck_rEFind
 CURRENT_WD=$(pwd)
 mkdir -p $HOME/.SteamDeck_rEFInd/backgrounds
 yes | cp -rf $CURRENT_WD/GUI/ $HOME/.SteamDeck_rEFInd
