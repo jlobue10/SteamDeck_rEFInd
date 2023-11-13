@@ -50,16 +50,5 @@ sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/nu
 cp rEFInd_GUI ../
 sudo steamos-readonly enable
 
-while true; do
-	echo ""
-	read -p "Do you want to copy the rEFInd_GUI icon to the desktop? (y/n) " YN
-	case $YN in 
-		[yY]) echo -e "\nOk, icon will be copied to the desktop.\n"
-			cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop
-			chmod +x $HOME/Desktop/refind_GUI.desktop
-			break;;
-		[nN]) echo -e "\nIcon will not be copied to the desktop.\n"
-			exit;;
-		*) echo -e "\nInvalid response.";;
-	esac
-done
+cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop
+chmod +x $HOME/Desktop/refind_GUI.desktop
