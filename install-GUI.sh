@@ -28,7 +28,7 @@ yes | cp $CURRENT_WD/themes/background.png $HOME/.SteamDeck_rEFInd/backgrounds/
 yes | cp $CURRENT_WD/{restore_EFI_entries.sh,bootnext-refind.service} $HOME/.SteamDeck_rEFInd/
 yes | cp $CURRENT_WD/{install_config_from_GUI.sh,refind_install_pacman_GUI.sh,refind_install_no_pacman_GUI.sh} $HOME/.SteamDeck_rEFInd/
 yes | cp $CURRENT_WD/refind-GUI.conf $HOME/.SteamDeck_rEFInd/GUI/refind.conf
-chmod +x $HOME/.SteamDeck_rEFInd/*.sh
+chmod 755 $HOME/.SteamDeck_rEFInd/*.sh
 chmod +x $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop
 cd $HOME/.SteamDeck_rEFInd/GUI/src
 qmake
