@@ -29,6 +29,7 @@ bool Firmware_BootNum_bool;
 int Update_Num;
 int VERSION = 120;
 ostringstream install_config_path_o;
+ostringstream user_home_path;
 QString Background;
 QString Background_fileName;
 QString Boot_Option_1;
@@ -47,6 +48,7 @@ QString OS_Icon3_fileName;
 QString OS_Icon4_fileName;
 QString refind_install_source;
 QString refind_GUI_timeout;
+QString user_home_path_q;
 QString Default_Background = "/home/deck/.SteamDeck_rEFInd/GUI/background.png";
 QString Default_OS_Icon1 = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon1.png";
 QString Default_OS_Icon2 = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon2.png";
@@ -81,6 +83,7 @@ string refind_background;
 string refind_enable_mouse = "";
 string refind_timeout = "5";
 string refind_USER = getlogin();
+string user_home_path_str;
 string MICRO_SD_GUID = "SD";
 string USB_GUID = "USB";
 string Update_Num_str;
@@ -95,6 +98,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     QValidator *INT_validator = new QIntValidator(-1, 99, this);
     ui->TimeOut_lineEdit->setValidator(INT_validator);
+    user_home_path << "/home/" << refind_USER;
+    user_home_path_str = user_home_path.str();
+    user_home_path_q = QString::fromStdString(user_home_path_str);
     readSettings();
 }
 
