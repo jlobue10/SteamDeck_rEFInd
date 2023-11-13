@@ -28,6 +28,7 @@ bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
 int Update_Num;
 int VERSION = 120;
+ostringstream install_config_path_o;
 QString Background;
 QString Background_fileName;
 QString Boot_Option_1;
@@ -70,6 +71,7 @@ string Config_FW_BootNum;
 string default_OS_sel;
 string FW_BootNum_SteamOS;
 string GUID_Label;
+string install_config_path;
 string Linux_Select_str;
 string OS_Icon1_path;
 string OS_Icon2_path;
@@ -265,7 +267,11 @@ void MainWindow::on_Create_Config_clicked()
 
 void MainWindow::on_Install_Config_clicked()
 {
-    system("/home/deck/.SteamDeck_rEFInd/install_config_from_GUI.sh");
+    install_config_path_o.str("");
+    install_config_path.clear();
+    install_config_path_o << "sudo " << user_home_path_str << "/.SteamDeck_rEFInd/install_config_from_GUI.sh";
+    install_config_path = install_config_path_o.str();
+    system(install_config_path.c_str());
 }
 
 string MainWindow::Get_FW_BootNum() {
