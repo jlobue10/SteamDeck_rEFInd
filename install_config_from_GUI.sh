@@ -1,5 +1,4 @@
 #!/bin/bash
-
 cp /home/deck/.SteamDeck_rEFInd/GUI/{refind.conf,background.png,os_icon1.png,os_icon2.png,os_icon3.png,os_icon4.png} /esp/efi/refind/ 2>/dev/null
 
 ANS=$?
