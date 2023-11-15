@@ -41,13 +41,13 @@ if [ ! -f $HOME/.SteamDeck_rEFInd/GUI/src/rEFInd_GUI ]; then
 fi
 
 #Create file for passwordless sudo for config file, background and icon installation
-cat > $HOME/.SteamDeck_rEFInd/install_config_from_GUI <<EOF
-$USER ALL = NOPASSWD: $HOME/.SteamDeck_rEFInd/install_config_from_GUI.sh
-EOF
+#cat > $HOME/.SteamDeck_rEFInd/install_config_from_GUI <<EOF
+#$USER ALL = NOPASSWD: $HOME/.SteamDeck_rEFInd/install_config_from_GUI.sh
+#EOF
 
-chmod 0666 $HOME/.SteamDeck_rEFInd/install_config_from_GUI
+#chmod 0666 $HOME/.SteamDeck_rEFInd/install_config_from_GUI
 
-sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
+#sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
 
 cp -f rEFInd_GUI ../
 sudo steamos-readonly enable
