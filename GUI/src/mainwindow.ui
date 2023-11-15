@@ -210,7 +210,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Default Boot Selection</string>
+        <string>Default Boot Slection</string>
        </property>
        <item>
         <property name="text">
@@ -891,12 +891,22 @@
          </property>
          <item>
           <property name="text">
-           <string>Ubuntu</string>
+           <string>Nobara</string>
           </property>
          </item>
          <item>
           <property name="text">
            <string>Arch - Systemd</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bazzite</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>ChimeraOS</string>
           </property>
          </item>
          <item>
@@ -942,6 +952,11 @@
          <item>
           <property name="text">
            <string>openSUSE</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Ubuntu</string>
           </property>
          </item>
          <item>
