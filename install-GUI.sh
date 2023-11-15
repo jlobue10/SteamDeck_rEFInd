@@ -45,7 +45,7 @@ cat > $HOME/.SteamDeck_rEFInd/install_config_from_GUI <<EOF
 $USER ALL = NOPASSWD: $HOME/.SteamDeck_rEFInd/install_config_from_GUI.sh
 EOF
 
-chmod 0440 $HOME/.SteamDeck_rEFInd/install_config_from_GUI
+chmod 0666 $HOME/.SteamDeck_rEFInd/install_config_from_GUI
 
 sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
 
