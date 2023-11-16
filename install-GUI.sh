@@ -52,5 +52,5 @@ fi
 cp -f rEFInd_GUI ../
 sudo steamos-readonly enable
 
-cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop
+cp $HOME/.SteamDeck_rEFInd/GUI/refind_GUI.desktop $HOME/Desktop/refind_GUI.desktop
 chmod +x $HOME/Desktop/refind_GUI.desktop
