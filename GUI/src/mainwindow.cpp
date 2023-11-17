@@ -275,7 +275,7 @@ void MainWindow::on_Install_Config_clicked()
 {
     install_config_path_o.str("");
     install_config_path.clear();
-    install_config_path_o << user_home_path_str << "/.SteamDeck_rEFInd/./install_config_from_GUI.sh";
+    install_config_path_o << user_home_path_str << "/.SteamDeck_rEFInd/install_config_from_GUI.sh";
     install_config_path = install_config_path_o.str();
     system(install_config_path.c_str());
 }
