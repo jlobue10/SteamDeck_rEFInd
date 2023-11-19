@@ -79,8 +79,6 @@ string Config_FW_BootNum;
 string default_OS_sel;
 string FW_BootNum_SteamOS;
 string GUID_Label;
-string install_config;
-string install_config_suffix = "/home/deck/.local/SteamDeck_rEFInd/GUI/{refind.conf,background.png,os_icon1.png,os_icon2.png,os_icon3.png,os_icon4.png} /esp/efi/refind/";
 string Linux_Select_str;
 string OS_Icon1_path;
 string OS_Icon2_path;
@@ -190,38 +188,11 @@ void MainWindow::on_Install_rEFInd_clicked()
     refind_install_source = ui->Install_Source_comboBox->currentText();
     if(refind_install_source == "Pacman")
     {
-        string pacman_install = string("xterm -e \"sudo steamos-readonly disable &&");
-        pacman_install.append(" sudo pacman-key --init && sudo pacman-key --populate archlinux &&");
-        pacman_install.append(" sudo pacman -Sy --noconfirm refind && sudo refind-install &&");
-        pacman_install.append(" REFIND_BOOTNUM=\"$(efibootmgr | grep -A0 'rEFInd Boot Manager' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
-        pacman_install.append(" sudo efibootmgr -b $REFIND_BOOTNUM -B &&");
-        pacman_install.append(" REFIND_BOOTNUM_ALT=\"$(efibootmgr | grep -A0 'rEFInd' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
-        pacman_install.append(" if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then sudo efibootmgr -b $REFIND_BOOTNUM_ALT -B fi &&");
-        pacman_install.append(" sudo cp -rf /boot/efi/EFI/refind/ /esp/efi &&");
-        pacman_install.append(" sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L \"rEFInd\" -l \\EFI\\refind\\refind_x64.efi &&");
-        pacman_install.append(" sudo efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo '[0-9]{1,4}' | head -1) &&");
-        pacman_install.append(" sudo steamos-readonly enable && echo -e \"\nInstallation completed succesfully.\n\"; $SHELL\"");
-        system(pacman_install.c_str());
+        system("/usr/bin/pacman_install.sh");
     }
     if(refind_install_source == "Sourceforge")
     {
-        string sourceforge_install = string("xterm -e \"cd $HOME/Downloads &&");
-        sourceforge_install.append(" wget https://sourceforge.net/projects/refind/files/0.14.0.2/refind-bin-gnuefi-0.14.0.2.zip &&");
-        sourceforge_install.append(" unzip -o refind-bin-gnuefi-0.14.0.2.zip && sudo steamos-readonly disable && sudo mkdir -p /esp/efi/refind &&");
-        sourceforge_install.append(" sudo cp -f $HOME/Downloads/refind-bin-0.14.0.2/refind/refind_x64.efi /esp/efi/refind/ &&");
-        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/drivers_x64/ /esp/efi/refind &&");
-        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/tools_x64/ /esp/efi/refind &&");
-        sourceforge_install.append(" sudo ./refind-bin-0.14.0.2/refind-install &&");
-        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/icons/ /esp/efi/refind &&");
-        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/fonts/ /esp/efi/refind &&");
-        sourceforge_install.append(" REFIND_BOOTNUM=\"$(efibootmgr | grep -A0 'rEFInd Boot Manager' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
-        sourceforge_install.append(" sudo efibootmgr -b $REFIND_BOOTNUM -B &&");
-        sourceforge_install.append(" REFIND_BOOTNUM_ALT=\"$(efibootmgr | grep -A0 'rEFInd' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
-        sourceforge_install.append(" if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then sudo efibootmgr -b $REFIND_BOOTNUM_ALT -B fi &&");
-        sourceforge_install.append(" sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L \"rEFInd\" -l \\EFI\\refind\\refind_x64.efi &&");
-        sourceforge_install.append(" sudo efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo '[0-9]{1,4}' | head -1) &&");
-        sourceforge_install.append(" sudo steamos-readonly enable && echo -e \"\nInstallation completed succesfully.\n\"; $SHELL\"");
-        system(sourceforge_install.c_str());
+        system("/usr/bin/sourceforge_install.sh");
     }
 }
 
@@ -325,13 +296,7 @@ void MainWindow::on_Create_Config_clicked()
 
 void MainWindow::on_Install_Config_clicked()
 {
-    // fix with pkexec command and popen for result (if necessary -- maybe just works)??
-    install_config.clear();
-    install_config.append("xterm -e \"sudo cp ");
-    install_config.append(install_config_suffix);
-    install_config.append("; $SHELL\"");
-    system(install_config.c_str());
-    // add a Qt Message box pop-up
+    system("/usr/bin/install_config_from_GUI.sh");
 }
 
 string MainWindow::Get_FW_BootNum() {
