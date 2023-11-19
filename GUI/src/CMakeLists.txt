@@ -49,7 +49,7 @@ else()
     qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
 endif()
 
-target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -static-libgcc -static-libstdc++)
 
 set_target_properties(SteamDeck_rEFInd PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com
