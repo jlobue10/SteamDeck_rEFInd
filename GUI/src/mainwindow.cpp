@@ -27,8 +27,7 @@ bool Boot_Last_OS_bool;
 bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
 int Update_Num;
-int VERSION = 120;
-ostringstream install_config_path_o;
+int VERSION = 130;
 ostringstream user_home_path;
 QString Background;
 QString Background_fileName;
@@ -49,16 +48,23 @@ QString OS_Icon4_fileName;
 QString refind_install_source;
 QString refind_GUI_timeout;
 QString user_home_path_q;
-QString Default_Background = "/home/deck/.SteamDeck_rEFInd/GUI/background.png";
-QString Default_OS_Icon1 = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon1.png";
-QString Default_OS_Icon2 = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon2.png";
-QString Default_OS_Icon3 = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon3.png";
-QString Default_OS_Icon4 = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon4.png";
-string Default_Background_str = "/home/deck/.SteamDeck_rEFInd/GUI/background.png";
-string Default_OS_Icon1_str = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon1.png";
-string Default_OS_Icon2_str = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon2.png";
-string Default_OS_Icon3_str = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon3.png";
-string Default_OS_Icon4_str = "/home/deck/.SteamDeck_rEFInd/GUI/os_icon4.png";
+QString Default_Background;
+QString Default_OS_Icon1;
+QString Default_OS_Icon2;
+QString Default_OS_Icon3;
+QString Default_OS_Icon4;
+QString settings_path;
+QString Default_Background_Suffix{"/.local/SteamDeck_rEFInd/GUI/background.png"};
+QString Default_OS_Icon1_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon1.png"};
+QString Default_OS_Icon2_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon2.png"};
+QString Default_OS_Icon3_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon3.png"};
+QString Default_OS_Icon4_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon4.png"};
+QString settings_path_suffix{"/.local/SteamDeck_rEFInd/GUI/rEFInd_GUI.ini"};
+string Default_Background_str;
+string Default_OS_Icon1_str;
+string Default_OS_Icon2_str;
+string Default_OS_Icon3_str;
+string Default_OS_Icon4_str;
 string Background_path;
 string Boot_Opt1_str;
 string Boot_Opt2_str;
@@ -73,7 +79,8 @@ string Config_FW_BootNum;
 string default_OS_sel;
 string FW_BootNum_SteamOS;
 string GUID_Label;
-string install_config_path;
+string install_config;
+string install_config_suffix = "/home/deck/.local/SteamDeck_rEFInd/GUI/{refind.conf,background.png,os_icon1.png,os_icon2.png,os_icon3.png,os_icon4.png} /esp/efi/refind/";
 string Linux_Select_str;
 string OS_Icon1_path;
 string OS_Icon2_path;
@@ -101,6 +108,24 @@ MainWindow::MainWindow(QWidget *parent)
     user_home_path << "/home/" << refind_USER;
     user_home_path_str = user_home_path.str();
     user_home_path_q = QString::fromStdString(user_home_path_str);
+    Default_Background.reserve(user_home_path_q.length() + Default_Background_Suffix.length());
+    Default_Background.append(user_home_path_q);
+    Default_Background.append(Default_Background_Suffix);
+    settings_path.reserve(user_home_path_q.length() + settings_path_suffix.length());
+    settings_path.append(user_home_path_q);
+    settings_path.append(settings_path_suffix);
+    Default_OS_Icon1.reserve(user_home_path_q.length() + Default_OS_Icon1_Suffix.length());
+    Default_OS_Icon1.append(user_home_path_q);
+    Default_OS_Icon1.append(Default_OS_Icon1_Suffix);
+    Default_OS_Icon2.reserve(user_home_path_q.length() + Default_OS_Icon2_Suffix.length());
+    Default_OS_Icon2.append(user_home_path_q);
+    Default_OS_Icon2.append(Default_OS_Icon2_Suffix);
+    Default_OS_Icon3.reserve(user_home_path_q.length() + Default_OS_Icon3_Suffix.length());
+    Default_OS_Icon3.append(user_home_path_q);
+    Default_OS_Icon3.append(Default_OS_Icon3_Suffix);
+    Default_OS_Icon4.reserve(user_home_path_q.length() + Default_OS_Icon4_Suffix.length());
+    Default_OS_Icon4.append(user_home_path_q);
+    Default_OS_Icon4.append(Default_OS_Icon4_Suffix);
     readSettings();
 }
 
@@ -165,11 +190,38 @@ void MainWindow::on_Install_rEFInd_clicked()
     refind_install_source = ui->Install_Source_comboBox->currentText();
     if(refind_install_source == "Pacman")
     {
-        system("/home/deck/.SteamDeck_rEFInd/refind_install_pacman_GUI.sh");
+        string pacman_install = string("xterm -e \"sudo steamos-readonly disable &&");
+        pacman_install.append(" sudo pacman-key --init && sudo pacman-key --populate archlinux &&");
+        pacman_install.append(" sudo pacman -Sy --noconfirm refind && sudo refind-install &&");
+        pacman_install.append(" REFIND_BOOTNUM=\"$(efibootmgr | grep -A0 'rEFInd Boot Manager' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
+        pacman_install.append(" sudo efibootmgr -b $REFIND_BOOTNUM -B &&");
+        pacman_install.append(" REFIND_BOOTNUM_ALT=\"$(efibootmgr | grep -A0 'rEFInd' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
+        pacman_install.append(" if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then sudo efibootmgr -b $REFIND_BOOTNUM_ALT -B fi &&");
+        pacman_install.append(" sudo cp -rf /boot/efi/EFI/refind/ /esp/efi &&");
+        pacman_install.append(" sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L \"rEFInd\" -l \\EFI\\refind\\refind_x64.efi &&");
+        pacman_install.append(" sudo efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo '[0-9]{1,4}' | head -1) &&");
+        pacman_install.append(" sudo steamos-readonly enable && echo -e \"\nInstallation completed succesfully.\n\"; $SHELL\"");
+        system(pacman_install.c_str());
     }
     if(refind_install_source == "Sourceforge")
     {
-        system("/home/deck/.SteamDeck_rEFInd/refind_install_no_pacman_GUI.sh");
+        string sourceforge_install = string("xterm -e \"cd $HOME/Downloads &&");
+        sourceforge_install.append(" wget https://sourceforge.net/projects/refind/files/0.14.0.2/refind-bin-gnuefi-0.14.0.2.zip &&");
+        sourceforge_install.append(" unzip -o refind-bin-gnuefi-0.14.0.2.zip && sudo steamos-readonly disable && sudo mkdir -p /esp/efi/refind &&");
+        sourceforge_install.append(" sudo cp -f $HOME/Downloads/refind-bin-0.14.0.2/refind/refind_x64.efi /esp/efi/refind/ &&");
+        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/drivers_x64/ /esp/efi/refind &&");
+        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/tools_x64/ /esp/efi/refind &&");
+        sourceforge_install.append(" sudo ./refind-bin-0.14.0.2/refind-install &&");
+        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/icons/ /esp/efi/refind &&");
+        sourceforge_install.append(" sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/fonts/ /esp/efi/refind &&");
+        sourceforge_install.append(" REFIND_BOOTNUM=\"$(efibootmgr | grep -A0 'rEFInd Boot Manager' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
+        sourceforge_install.append(" sudo efibootmgr -b $REFIND_BOOTNUM -B &&");
+        sourceforge_install.append(" REFIND_BOOTNUM_ALT=\"$(efibootmgr | grep -A0 'rEFInd' | grep -Eo '[0-9]{1,4}' | head -1)\" &&");
+        sourceforge_install.append(" if [[ $REFIND_BOOTNUM_ALT =~ $re ]]; then sudo efibootmgr -b $REFIND_BOOTNUM_ALT -B fi &&");
+        sourceforge_install.append(" sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L \"rEFInd\" -l \\EFI\\refind\\refind_x64.efi &&");
+        sourceforge_install.append(" sudo efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo '[0-9]{1,4}' | head -1) &&");
+        sourceforge_install.append(" sudo steamos-readonly enable && echo -e \"\nInstallation completed succesfully.\n\"; $SHELL\"");
+        system(sourceforge_install.c_str());
     }
 }
 
@@ -186,7 +238,7 @@ void MainWindow::on_Create_Config_clicked()
     OS_Icon3_path.clear();
     OS_Icon4_path.clear();
     ostringstream refind_temp_path;
-    refind_temp_path << "/home/" << refind_USER << "/.SteamDeck_rEFInd/GUI/refind.conf";
+    refind_temp_path << "/home/" << refind_USER << "/.local/SteamDeck_rEFInd/GUI/refind.conf";
     string refind_conf_path = refind_temp_path.str();
     ofstream refind_conf(refind_conf_path);
     cout << refind_conf.is_open() << endl;
@@ -242,42 +294,44 @@ void MainWindow::on_Create_Config_clicked()
     Background = ui->Background_lineEdit->text();
     if((Background != "") && (Background != Default_Background)){
         Background_path = Background.toStdString();
-        string cmd = string("yes | cp '") + Background_path + "' '" + Default_Background_str + "'";
+        string cmd = string("cp -f '") + Background_path + "' '" + Default_Background_str + "'";
         system(cmd.c_str());
     }
     OS_Icon1 = ui->Boot_Option_01_Icon_lineEdit->text();
     if((OS_Icon1 != "" ) && (OS_Icon1 != Default_OS_Icon1)){
         OS_Icon1_path = OS_Icon1.toStdString();
-        string cmd1 = string("yes | cp '") + OS_Icon1_path + "' '" + Default_OS_Icon1_str + "'";
+        string cmd1 = string("cp -f '") + OS_Icon1_path + "' '" + Default_OS_Icon1_str + "'";
         system(cmd1.c_str());
         }
     OS_Icon2 = ui->Boot_Option_02_Icon_lineEdit->text();
     if((OS_Icon2 != "" ) && (OS_Icon2 != Default_OS_Icon2)){
         OS_Icon2_path = OS_Icon2.toStdString();
-        string cmd2 = string("yes | cp '") + OS_Icon2_path + "' '" + Default_OS_Icon2_str + "'";
+        string cmd2 = string("cp -f '") + OS_Icon2_path + "' '" + Default_OS_Icon2_str + "'";
         system(cmd2.c_str());
         }
     OS_Icon3 = ui->Boot_Option_03_Icon_lineEdit->text();
     if((OS_Icon3 != "" ) && (OS_Icon3 != Default_OS_Icon3)){
         OS_Icon3_path = OS_Icon3.toStdString();
-        string cmd3 = string("yes | cp '") + OS_Icon3_path + "' '" + Default_OS_Icon3_str + "'";
+        string cmd3 = string("cp -f '") + OS_Icon3_path + "' '" + Default_OS_Icon3_str + "'";
         system(cmd3.c_str());
         }
     OS_Icon4 = ui->Boot_Option_04_Icon_lineEdit->text();
     if((OS_Icon4 != "" ) && (OS_Icon4 != Default_OS_Icon4)){
         OS_Icon4_path = OS_Icon4.toStdString();
-        string cmd4 = string("yes | cp '") + OS_Icon4_path + "' '" + Default_OS_Icon4_str + "'";
+        string cmd4 = string("cp -f '") + OS_Icon4_path + "' '" + Default_OS_Icon4_str + "'";
         system(cmd4.c_str());
         }
 }
 
 void MainWindow::on_Install_Config_clicked()
 {
-    install_config_path_o.str("");
-    install_config_path.clear();
-    install_config_path_o << user_home_path_str << "/.SteamDeck_rEFInd/install_config_from_GUI.sh";
-    install_config_path = install_config_path_o.str();
-    system(install_config_path.c_str());
+    // fix with pkexec command and popen for result (if necessary -- maybe just works)??
+    install_config.clear();
+    install_config.append("xterm -e \"sudo cp ");
+    install_config.append(install_config_suffix);
+    install_config.append("; $SHELL\"");
+    system(install_config.c_str());
+    // add a Qt Message box pop-up
 }
 
 string MainWindow::Get_FW_BootNum() {
@@ -391,7 +445,7 @@ string MainWindow::CreateBootStanza(QString &BootOption, const char *BootNum, bo
             return Boot_Stanza_GUI;
         }
         if(Linux_Select_str == "Bazzite") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Nobara\" {\n");
+            Boot_Stanza_GUI.append("\nmenuentry \"Bazzite\" {\n");
             Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
             Boot_Stanza_GUI.append(BootNum);
             Boot_Stanza_GUI.append(".png\n");
@@ -580,10 +634,10 @@ string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
     char GUID_buff[1024];
     GUID_Label.clear();
     if(GUID_Source == "USB"){
-        GUID_process = popen("hwinfo --block | grep /dev/sda1 | grep -o 'by-partuuid.*' | cut -f2 -d'/' | cut -f1 -d ',' | tr [:lower:] [:upper:]", "r");
+        GUID_process = popen("lsblk -f | grep sda1 | awk '{print $5}' | tr [:lower:] [:upper:]", "r");
     }
     if(GUID_Source == "SD"){
-        GUID_process = popen("hwinfo --block | grep /dev/mmcblk0p1 | grep -o 'by-partuuid.*' | cut -f2 -d'/' | cut -f1 -d ',' | tr [:lower:] [:upper:]", "r");
+        GUID_process = popen("lsblk -f | grep mmcblk0p1 | awk '{print $5}' | tr [:lower:] [:upper:]", "r");
     }
     if (GUID_process != NULL) {
         while (fgets(GUID_buff, sizeof(GUID_buff), GUID_process)) {
@@ -597,7 +651,7 @@ string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
 
 void MainWindow::readSettings()
 {
-    QSettings settings("/home/deck/.SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
+    QSettings settings("/home/deck/.local/SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
     settings.beginGroup("CheckBoxes");
         bool temp_Last_OS_bool = settings.value("LastOSCheckBox").toBool();
         bool FW_bool = settings.value("FW_bootNum_CheckBox").toBool();
@@ -633,7 +687,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-    QSettings settings("/home/deck/.SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
+    QSettings settings("/home/deck/.local/SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
     settings.beginGroup("ComboBoxes");
         settings.setValue("DefaultBootComboBox", ui->Default_Boot_comboBox->currentIndex());
         settings.setValue("BootComboBox01", ui->Boot_Option_01_comboBox->currentIndex());
@@ -659,7 +713,7 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton* updateButton = new QPushButton("Check For Update");
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'>rEFInd Customization GUI v1.2.0<br><br>"
+    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.3.0</a><br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
@@ -747,4 +801,19 @@ void MainWindow::on_updateButton_Clicked()
     }
     UpdateBox.setStandardButtons(QMessageBox::Ok);
     UpdateBox.exec();
+}
+
+void MainWindow::on_Rand_BG_On_pushButton_clicked()
+{
+    string rand_bg_on = string("xterm -e \"sudo cp $HOME/.local/rEFInd_GUI/rEFInd_bg_randomizer.service /etc/systemd/system/rEFInd_bg_randomizer.service &&");
+           rand_bg_on.append(" sudo systemctl enable --now rEFInd_bg_randomizer.service &&");
+           rand_bg_on.append(" sudo systemctl status rEFInd_bg_randomizer.service; $SHELL\"");
+    system(rand_bg_on.c_str());
+}
+
+void MainWindow::on_Rand_BG_Off_pushButton_clicked()
+{
+    string rand_bg_off = string("xterm -e \"sudo systemctl disable --now rEFInd_bg_randomizer.service &&");
+           rand_bg_off.append(" sudo systemctl status rEFInd_bg_randomizer.service; $SHELL\"");
+    system(rand_bg_off.c_str());
 }
