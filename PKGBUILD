@@ -41,3 +41,9 @@ package() {
         install -Dm644 "${srcdir}/$_pkgname/systemd/rEFInd_bg_randomizer.service" "${pkgdir}/etc/systemd/system/rEFInd_bg_randomizer.service"
         install -Dm644 "${srcdir}/$_pkgname/systemd/bootnext-refind.service" "${pkgdir}/etc/systemd/system/bootnext-refind.service"
 }
+
+post_install() {
+    # Start and enable the bootnext-refind service
+    systemctl start bootnext-refind.service
+    systemctl enable bootnext-refind.service
+}
