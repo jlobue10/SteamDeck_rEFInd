@@ -1,0 +1,10 @@
+[Unit]
+Description=Randomize Background on each rEFInd boot
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash -c '/usr/bin/rEFInd_bg_randomizer.sh'
+
+[Install]
+WantedBy=multi-user.target
