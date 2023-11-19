@@ -115,15 +115,19 @@ MainWindow::MainWindow(QWidget *parent)
     Default_OS_Icon1.reserve(user_home_path_q.length() + Default_OS_Icon1_Suffix.length());
     Default_OS_Icon1.append(user_home_path_q);
     Default_OS_Icon1.append(Default_OS_Icon1_Suffix);
+    Default_OS_Icon1_str = Default_OS_Icon1.toStdString();
     Default_OS_Icon2.reserve(user_home_path_q.length() + Default_OS_Icon2_Suffix.length());
     Default_OS_Icon2.append(user_home_path_q);
     Default_OS_Icon2.append(Default_OS_Icon2_Suffix);
+    Default_OS_Icon2_str = Default_OS_Icon2.toStdString();
     Default_OS_Icon3.reserve(user_home_path_q.length() + Default_OS_Icon3_Suffix.length());
     Default_OS_Icon3.append(user_home_path_q);
     Default_OS_Icon3.append(Default_OS_Icon3_Suffix);
+    Default_OS_Icon3_str = Default_OS_Icon3.toStdString();
     Default_OS_Icon4.reserve(user_home_path_q.length() + Default_OS_Icon4_Suffix.length());
     Default_OS_Icon4.append(user_home_path_q);
     Default_OS_Icon4.append(Default_OS_Icon4_Suffix);
+    Default_OS_Icon4_str = Default_OS_Icon4.toStdString();
     readSettings();
 }
 
@@ -728,8 +732,7 @@ void MainWindow::on_Boot_Option_04_Icon_lineEdit_editingFinished()
 
 void MainWindow::on_Enable_sysd_pushButton_clicked()
 {
-    string sysd_on = string("xterm -e \"sudo cp $HOME/.SteamDeck_rEFInd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service &&");
-           sysd_on.append(" sudo systemctl enable --now bootnext-refind.service &&");
+    string sysd_on = string("xterm -e \"sudo systemctl enable --now bootnext-refind.service &&");
            sysd_on.append(" sudo systemctl status bootnext-refind.service; $SHELL\"");
     system(sysd_on.c_str());
 }
@@ -737,8 +740,7 @@ void MainWindow::on_Enable_sysd_pushButton_clicked()
 void MainWindow::on_Disable_sysd_pushButton_clicked()
 {
     string sysd_off = string("xterm -e \"sudo systemctl disable --now bootnext-refind.service &&");
-           sysd_off.append(" sudo efibootmgr -N &&");
-           sysd_off.append(" sudo systemctl status bootnext-refind.service; $SHELL\"");
+           sysd_off.append(" sudo efibootmgr -N && sudo systemctl status bootnext-refind.service; $SHELL\"");
     system(sysd_off.c_str());
 }
 
