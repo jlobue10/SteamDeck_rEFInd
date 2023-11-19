@@ -27,7 +27,7 @@ bool Boot_Last_OS_bool;
 bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
 int Update_Num;
-int VERSION = 130;
+int VERSION = 131;
 ostringstream user_home_path;
 QString Background;
 QString Background_fileName;
