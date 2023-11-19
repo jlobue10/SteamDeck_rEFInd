@@ -4,7 +4,7 @@
 sudo steamos-readonly disable
 echo -e "Installing SteamDeck rEFInd...\n"
 cd $HOME
-sudo rm -rf $HOME/SteamDeck_rEFInd/
+# sudo rm -rf $HOME/SteamDeck_rEFInd/
 git clone https://github.com/jlobue10/SteamDeck_rEFind
 cd SteamDeck_rEFind
 CURRENT_WD=$(pwd)
