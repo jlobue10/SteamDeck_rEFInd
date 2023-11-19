@@ -14,8 +14,10 @@ This is a simple rEFInd install script for the Steam Deck meant to provide easy 
 If you want to try out the GUI, perform these steps.
 
 ```
-rm -rf $HOME/SteamDeck_rEFInd
-curl -L https://github.com/jlobue10/SteamDeck_rEFInd/raw/main/install-GUI.sh | sh
+git clone https://github.com/jlobue10/SteamDeck_rEFInd
+cd SteamDeck_rEFInd
+chmod +x install-GUI.sh
+./install-GUI.sh
 ```
 
 The GUI files will be created in the `/home/deck/.SteamDeck_rEFInd/GUI/` folder, including a desktop shortcut. Please give me feedback and enjoy!
