@@ -137,11 +137,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>12</x>
-      <y>12</y>
+      <x>13</x>
+      <y>13</y>
       <width>591</width>
       <height>416</height>
      </rect>
@@ -466,6 +466,50 @@
          <string>Ventoy</string>
         </property>
        </item>
+      </widget>
+     </item>
+     <item row="4" column="4" alignment="Qt::AlignRight">
+      <widget class="QPushButton" name="Rand_BG_On_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Install and enable systemd service</string>
+       </property>
+       <property name="text">
+        <string>Rand BG On</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="5">
+      <widget class="QPushButton" name="Rand_BG_Off_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>84</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Install and enable systemd service</string>
+       </property>
+       <property name="text">
+        <string>Rand BG Off</string>
+       </property>
       </widget>
      </item>
      <item row="5" column="0" colspan="2">
