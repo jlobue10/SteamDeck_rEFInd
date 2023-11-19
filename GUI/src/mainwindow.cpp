@@ -772,8 +772,7 @@ void MainWindow::on_updateButton_Clicked()
 
 void MainWindow::on_Rand_BG_On_pushButton_clicked()
 {
-    string rand_bg_on = string("xterm -e \"sudo cp $HOME/.local/rEFInd_GUI/rEFInd_bg_randomizer.service /etc/systemd/system/rEFInd_bg_randomizer.service &&");
-           rand_bg_on.append(" sudo systemctl enable --now rEFInd_bg_randomizer.service &&");
+    string rand_bg_on = string("xterm -e \"sudo systemctl enable --now rEFInd_bg_randomizer.service &&");
            rand_bg_on.append(" sudo systemctl status rEFInd_bg_randomizer.service; $SHELL\"");
     system(rand_bg_on.c_str());
 }
