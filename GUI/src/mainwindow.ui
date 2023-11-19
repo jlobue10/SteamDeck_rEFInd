@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>/usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png</normaloff>/usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png</iconset>
+    <normaloff>../../../../usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png</normaloff>../../../../usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="layoutWidget1">
@@ -137,11 +137,11 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="layoutWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>14</x>
-      <y>14</y>
+      <x>15</x>
+      <y>15</y>
       <width>591</width>
       <height>416</height>
      </rect>
@@ -167,13 +167,13 @@
       <widget class="QPushButton" name="Background_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
@@ -386,13 +386,13 @@
       <widget class="QPushButton" name="Boot_Option_01_Icon_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
@@ -472,18 +472,18 @@
       <widget class="QPushButton" name="Rand_BG_On_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="toolTip">
-        <string>Install and enable systemd service</string>
+        <string>Enable background randomizer service</string>
        </property>
        <property name="text">
         <string>Rand BG On</string>
@@ -494,18 +494,18 @@
       <widget class="QPushButton" name="Rand_BG_Off_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="toolTip">
-        <string>Install and enable systemd service</string>
+        <string>Disable background randomizer service</string>
        </property>
        <property name="text">
         <string>Rand BG Off</string>
@@ -529,13 +529,13 @@
       <widget class="QPushButton" name="Boot_Option_02_Icon_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
@@ -620,13 +620,13 @@
       <widget class="QPushButton" name="Enable_sysd_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
@@ -655,13 +655,13 @@
       <widget class="QPushButton" name="Boot_Option_03_Icon_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
@@ -746,13 +746,13 @@
       <widget class="QPushButton" name="Disable_sysd_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
@@ -781,13 +781,13 @@
       <widget class="QPushButton" name="Boot_Option_04_Icon_pushButton">
        <property name="minimumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>88</width>
+         <width>92</width>
          <height>32</height>
         </size>
        </property>
