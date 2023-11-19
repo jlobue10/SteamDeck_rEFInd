@@ -43,11 +43,11 @@
 	echo "# Installing files to /esp partition..."
 	sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
 	sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
-	sudo cp $HOME/.SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
-	sudo cp -rf $HOME/.SteamDeck_rEFInd/backgrounds/ /esp/efi/refind
-	sudo cp -rf $HOME/.SteamDeck_rEFInd/icons/ /esp/efi/refind
+	sudo cp -f $HOME/.local/SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
+	sudo cp -rf $HOME/.local/SteamDeck_rEFInd/backgrounds/ /esp/efi/refind
+	sudo cp -rf $HOME/.local/SteamDeck_rEFInd/icons/ /esp/efi/refind
 	sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
-	sudo cp $HOME/.SteamDeck_rEFInd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+	sudo cp -f $HOME/.local/SteamDeck_rEFInd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
 	sudo systemctl enable --now bootnext-refind.service
 	sudo efibootmgr -n $(efibootmgr | grep rEFInd | grep -Eo "[0-9]{1,4}" | head -1)
 	rm $HOME/efibootlist.txt
