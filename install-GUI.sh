@@ -21,7 +21,15 @@ wget $DOWNLOAD_URL
 sudo pacman -Qs SteamDeck_rEFInd
 STEAMDECK_REFIND_STATUS=$?
 if [ $STEAMDECK_REFIND_STATUS == 0 ]; then
-    	sudo pacman -R --noconfirm SteamDeck_rEFInd
+    sudo pacman -R --noconfirm SteamDeck_rEFInd
+fi
+
+ls -l /etc/systemd/system/bootnext-refind.service
+OLD_REFIND_SERVICE=$?
+if [ $OLD_REFIND_SERVICE == 0 ]; then
+    sudo systemctl disable --now bootnext-refind.service
+    # Force removing old service file from previous versions
+    sudo rm /etc/systemd/system/bootnext-refind.service
 fi
 
 INSTALL_PKG="$(ls | grep pkg.tar.zst)"
