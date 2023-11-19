@@ -1,0 +1,10 @@
+[Unit]
+Description=Set UEFI BootNext to rEFInd (and restore missing EFI entries)
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash -c '/usr/bin/restore_EFI_entries.sh'
+
+[Install]
+WantedBy=multi-user.target
