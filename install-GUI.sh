@@ -25,10 +25,11 @@ wget $DOWNLOAD_URL
 sudo pacman -Qs SteamDeck_rEFInd
 STEAMDECK_REFIND_STATUS=$?
 if [ $STEAMDECK_REFIND_STATUS == 0 ]; then
-    	sudo pacman -R SteamDeck-rEFInd
+    	sudo pacman -R SteamDeck_rEFInd
 fi
 
-sudo pacman -U --noconfirm SteamDeck_rEFInd-*.x86_64.pkg.tar.zst
+INSTALL_PKG="$(ls | grep pkg.tar.zst)"
+sudo pacman -U --noconfirm $INSTALL_PKG
 
 # Leaving passwordless sudo stuff to try to fix another day...
 #Create file for passwordless sudo for config file, background and icon installation
