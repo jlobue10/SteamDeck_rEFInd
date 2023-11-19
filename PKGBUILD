@@ -9,7 +9,7 @@ arch=('x86_64')
 url="https://github.com/jlobue10/SteamDeck_rEFInd"
 license=('MIT')
 depends=()
-makedepends=('cmake' 'gcc' 'glibc' 'qt5-base')
+makedepends=('cmake' 'gcc' 'glibc' 'make' 'qt5-base')
 source=(
     "SteamDeck_rEFInd::git+https://github.com/jlobue10/SteamDeck_rEFInd.git"
 )
