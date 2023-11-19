@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=System;
+Comment=SteamDeck rEFInd Customization GUI
+Exec=/usr/bin/SteamDeck_rEFInd
+GenericName=SteamDeck_rEFInd
+Name=SteamDeck_rEFInd
+Path=/usr/bin
+Icon=/usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png
+StartupNotify=true
+Terminal=false
+Type=Application
+X-KDE-SubstituteUID=false
