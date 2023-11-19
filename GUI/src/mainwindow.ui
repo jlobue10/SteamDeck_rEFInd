@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>UEFI_icon.png</normaloff>UEFI_icon.png</iconset>
+    <normaloff>../../../../usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png</normaloff>../../../../usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="layoutWidget1">
@@ -137,7 +137,7 @@
      </item>
     </layout>
    </widget>
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>14</x>
