@@ -25,7 +25,7 @@ wget $DOWNLOAD_URL
 sudo pacman -Qs SteamDeck_rEFInd
 STEAMDECK_REFIND_STATUS=$?
 if [ $STEAMDECK_REFIND_STATUS == 0 ]; then
-    	sudo pacman -R SteamDeck_rEFInd
+    	sudo pacman -R --noconfirm SteamDeck_rEFInd
 fi
 
 INSTALL_PKG="$(ls | grep pkg.tar.zst)"
