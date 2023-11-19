@@ -64,6 +64,10 @@ private slots:
 
     void on_updateButton_Clicked();
 
+    void on_Rand_BG_On_pushButton_clicked();
+
+    void on_Rand_BG_Off_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
