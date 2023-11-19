@@ -10,7 +10,7 @@ cp -rf $CURRENT_WD/icons/ $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/backgrounds/ $HOME/.local/SteamDeck_rEFInd
 cp -f $CURRENT_WD/refind-GUI.conf $HOME/.local/SteamDeck_rEFInd/GUI/refind.conf
 
-# Thanks to Maclay74 steaam-patch for the following syntax
+# Thanks to Maclay74 steam-patch for the following syntax
 RELEASE=$(curl -s 'https://api.github.com/repos/jlobue10/SteamDeck_rEFInd/releases' | jq -r "first(.[] | select(.prerelease == "false"))")
 VERSION=$(jq -r '.tag_name' <<< ${RELEASE} )
 DOWNLOAD_URL=$(jq -r '.assets[].browser_download_url | select(endswith("x86_64.pkg.tar.zst"))' <<< ${RELEASE})
@@ -37,13 +37,13 @@ sudo pacman -U --noconfirm $INSTALL_PKG
 
 # Leaving passwordless sudo stuff to try to fix another day...
 #Create file for passwordless sudo for config file, background and icon installation
-#cat > $HOME/.SteamDeck_rEFInd/install_config_from_GUI <<EOF
-#$USER ALL = NOPASSWD: $HOME/.SteamDeck_rEFInd/install_config_from_GUI.sh
+#cat > $HOME/.local/SteamDeck_rEFInd/install_config_from_GUI <<EOF
+#$USER ALL = NOPASSWD: /usr/bin/install_config_from_GUI.sh
 #EOF
 
-#chmod 0666 $HOME/.SteamDeck_rEFInd/install_config_from_GUI
+#chmod 0666 $HOME/.local/SteamDeck_rEFInd/install_config_from_GUI
 
-#sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
+#sudo cp $HOME/.local/SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
 
 sudo systemctl daemon-reload
 sudo systemctl enable --now bootnext-refind.service
