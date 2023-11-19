@@ -37,6 +37,9 @@ sudo pacman -U --noconfirm $INSTALL_PKG
 
 #sudo cp $HOME/.SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
 
+sudo systemctl daemon-reload
+sudo systemctl enable --now bootnext-refind.service
+
 sudo steamos-readonly enable
 
 cp -f /usr/share/applications/SteamDeck_rEFInd.desktop $HOME/Desktop/SteamDeck_rEFInd.desktop
