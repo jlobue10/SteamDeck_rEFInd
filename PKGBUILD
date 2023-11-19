@@ -43,7 +43,8 @@ package() {
 }
 
 post_install() {
-    # Start and enable the bootnext-refind service
-    systemctl start bootnext-refind.service
-    systemctl enable bootnext-refind.service
+	systemctl daemon-reload
+	# Start and enable the bootnext-refind service
+	systemctl start bootnext-refind.service
+	systemctl enable bootnext-refind.service
 }
