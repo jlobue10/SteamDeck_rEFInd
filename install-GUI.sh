@@ -28,7 +28,7 @@ if [ $STEAMDECK_REFIND_STATUS == 0 ]; then
     	sudo pacman -R SteamDeck-rEFInd
 fi
 
-sudo pacman -U SteamDeck_rEFInd-*.x86_64.pkg.tar.zst
+sudo pacman -U --noconfirm SteamDeck_rEFInd-*.x86_64.pkg.tar.zst
 
 # Leaving passwordless sudo stuff to try to fix another day...
 #Create file for passwordless sudo for config file, background and icon installation
