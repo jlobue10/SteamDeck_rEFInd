@@ -5,7 +5,7 @@ Please feel free to donate and support me at the following link. Donations are n
   <img src="https://raw.githubusercontent.com/stefan-niedermann/paypal-donate-button/master/paypal-donate-button.png" alt="Donate with PayPal" />
 </a>
 
-## SteamOS 3.5 seems to have broken quite a bit with the installer. I'm actively debugging and looking to repackage the whole process (probably into a PKGBUILD based delivery). Stay tuned...
+## Updated installation method is SteamOS 3.5 compatible. An optional background randomizer feature has been added.
 
 This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe. Since the initial version of this script, optional support has been added for Windows from the SD card, Batocera from the SD card and an example boot stanza for Ubuntu (or other Ubuntu based flavors / distros). The options really are pretty limitless, but require some understanding and manual edits to the `refind.conf` file.
 
