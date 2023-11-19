@@ -682,7 +682,7 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton* updateButton = new QPushButton("Check For Update");
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.3.0</a><br><br>"
+    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.3.1</a><br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
