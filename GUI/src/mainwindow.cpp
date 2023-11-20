@@ -109,6 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
     Default_Background.reserve(user_home_path_q.length() + Default_Background_Suffix.length());
     Default_Background.append(user_home_path_q);
     Default_Background.append(Default_Background_Suffix);
+    Default_Background_str = Default_Background.toStdString();
     settings_path.reserve(user_home_path_q.length() + settings_path_suffix.length());
     settings_path.append(user_home_path_q);
     settings_path.append(settings_path_suffix);
