@@ -28,6 +28,8 @@ The Linux distro selection drop down box can be ignored if you're not selecting 
 
 Two new buttons were added to either enable or disable the `systemd` service (Sysd On and Sysd Off). These buttons will pop-up an xterm, ask for the `sudo` password and then perform their respective tasks, displaying the `systemd` service status as the last step. The xterm can be safely closed after completion.
 
+# **Background randomizer**
+
 `Rand BG On` and `Rand BG Off` background randomization service has been added. This will randomly choose one background from the `/home/deck/.local/SteamDeck_rEFInd/backgrounds/` folder when SteamOS boots and then overwrite the `background.png` file on the `/esp` partition. This can easily be turned on or off with the 2 buttons. If you turn off and want to go back to a set background, please make sure to redo the create config and install config steps as necessary. Please feel free to delete or add additional PNG backgrounds to that folder that the randomizer chooses from.
 
 Ventoy was added as a boot option. This selection will work for either Micro SD card or USB, although not both concurrently, as it will boot whichever one it finds first with the `VTOYEFI` partition label.
