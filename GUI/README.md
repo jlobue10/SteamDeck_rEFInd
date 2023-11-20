@@ -12,10 +12,6 @@ To install the GUI, make sure that you've already set your `sudo` password and e
 cd $HOME && rm -rf $HOME/SteamDeck_rEFInd/ && git clone https://github.com/jlobue10/SteamDeck_rEFInd && cd SteamDeck_rEFInd && chmod +x install-GUI.sh && ./install-GUI.sh
 ```
 
-A successful GUI installation will look similar to this from your Konsole output.
-
-![GUI_compile_success](https://user-images.githubusercontent.com/9971433/217302271-5192bae7-3fea-4ee1-86f0-12bb9e91797b.png)
-
 The GUI setup installs all of the necessary files to the `/home/deck/.local/SteamDeck_rEFInd/GUI/` folder. Inside this folder, you will also find the `background.png, os_icon1.png, os_icon2.png, os_icon3.png, and os_icon4.png` files. These 5 files will also be copied to the `/esp` partition when the 'Install Config' button is pressed (in addition to the `refind.conf` file).
 
 If this is your first time installing rEFInd on your Steam Deck, you will want to press the 'Install rEFInd' button. I recommend leaving Sourceforge selected from the drop down for this installation, as Sourceforge is the preferred installation source. A `pacman` installation source script is also provided, in case there or if someone just prefers to try to use `pacman` for the rEFInd installation portion. If you already have a functional rEFInd setup, you can safely skip this step (in most instances).
