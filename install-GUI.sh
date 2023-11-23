@@ -33,7 +33,7 @@ if [ $OLD_REFIND_SERVICE == 0 ]; then
     sudo rm /etc/systemd/system/bootnext-refind.service
 fi
 
-ls -l /etc/systemd/system/bootnext-refind.service
+ls -l /etc/systemd/system/rEFInd_bg_randomizer.service
 OLD_BGRAND_SERVICE=$?
 if [ $OLD_BGRAND_SERVICE == 0 ]; then
     sudo systemctl disable --now rEFInd_bg_randomizer.service
