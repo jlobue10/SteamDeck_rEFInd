@@ -10,6 +10,20 @@ cp -rf $CURRENT_WD/icons/ $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/backgrounds/ $HOME/.local/SteamDeck_rEFInd
 cp -f $CURRENT_WD/refind-GUI.conf $HOME/.local/SteamDeck_rEFInd/GUI/refind.conf
 
+#Clean up old installation...
+ls -l $HOME/.SteamDeck_rEFInd
+OLD_INSTALL_FOUND=$?
+if [ $OLD_INSTALL_FOUND == 0 ]; then
+    rm -rf $HOME/.SteamDeck_rEFInd
+fi
+
+#Clean up old icon...
+ls -l $HOME/Desktop/refind_GUI.desktop
+OLD_ICON_FOUND=$?
+if [ $OLD_ICON_FOUND == 0 ]; then
+    rm -f $HOME/Desktop/refind_GUI.desktop
+fi
+
 # Thanks to Maclay74 steam-patch for the following syntax
 RELEASE=$(curl -s 'https://api.github.com/repos/jlobue10/SteamDeck_rEFInd/releases' | jq -r "first(.[] | select(.prerelease == "false"))")
 VERSION=$(jq -r '.tag_name' <<< ${RELEASE} )
