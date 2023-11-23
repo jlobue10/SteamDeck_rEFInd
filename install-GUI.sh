@@ -32,6 +32,14 @@ if [ $OLD_REFIND_SERVICE == 0 ]; then
     sudo rm /etc/systemd/system/bootnext-refind.service
 fi
 
+ls -l /etc/systemd/system/bootnext-refind.service
+OLD_BGRAND_SERVICE=$?
+if [ $OLD_BGRAND_SERVICE == 0 ]; then
+    sudo systemctl disable --now rEFInd_bg_randomizer.service
+    # Force removing old service file from previous versions
+    sudo rm /etc/systemd/system/rEFInd_bg_randomizer.service
+fi
+
 INSTALL_PKG="$(ls | grep pkg.tar.zst)"
 sudo pacman -U --noconfirm $INSTALL_PKG
 
