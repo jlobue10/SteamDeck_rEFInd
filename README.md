@@ -17,7 +17,7 @@ If you want to try out the GUI, perform these steps.
 cd $HOME && rm -rf $HOME/SteamDeck_rEFInd/ && git clone https://github.com/jlobue10/SteamDeck_rEFInd && cd SteamDeck_rEFInd && chmod +x install-GUI.sh && ./install-GUI.sh
 ```
 
-The GUI files will be created in the `/home/deck/.SteamDeck_rEFInd/GUI/` folder, including a desktop shortcut. Please give me feedback and enjoy!
+The GUI files will be created in the `/home/deck/.local/SteamDeck_rEFInd/GUI/` folder, including a desktop shortcut. Please give me feedback and enjoy!
 
 ## **Prerequisites and Setup (no GUI method)**
 
