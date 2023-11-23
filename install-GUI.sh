@@ -29,6 +29,7 @@ OLD_REFIND_SERVICE=$?
 if [ $OLD_REFIND_SERVICE == 0 ]; then
     sudo systemctl disable --now bootnext-refind.service
     # Force removing old service file from previous versions
+    echo -e "\nRemoving old bootnext-refind.servce\n"
     sudo rm /etc/systemd/system/bootnext-refind.service
 fi
 
@@ -37,6 +38,7 @@ OLD_BGRAND_SERVICE=$?
 if [ $OLD_BGRAND_SERVICE == 0 ]; then
     sudo systemctl disable --now rEFInd_bg_randomizer.service
     # Force removing old service file from previous versions
+    echo -e "\nRemoving old rEFInd_bg_randomizer.service\n"
     sudo rm /etc/systemd/system/rEFInd_bg_randomizer.service
 fi
 
