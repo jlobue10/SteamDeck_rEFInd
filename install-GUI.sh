@@ -63,5 +63,6 @@ sudo steamos-readonly enable
 cp -f /usr/bin/SteamDeck_rEFInd $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd
 cp -f /usr/share/applications/SteamDeck_rEFInd.desktop $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop
 cp -f $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop $HOME/Desktop/SteamDeck_rEFInd.desktop
+chmod +x $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop
 chmod +x $HOME/Desktop/SteamDeck_rEFInd.desktop
 echo -e "Installation complete...\n"
