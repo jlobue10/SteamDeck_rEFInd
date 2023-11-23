@@ -1,11 +1,11 @@
 [Desktop Entry]
 Categories=System;
 Comment=SteamDeck rEFInd Customization GUI
-Exec=/usr/bin/SteamDeck_rEFInd
+Exec=/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd
 GenericName=SteamDeck_rEFInd
 Name=SteamDeck_rEFInd
-Path=/usr/bin
-Icon=/usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png
+Path=/home/deck/.local/SteamDeck_rEFInd/GUI
+Icon=/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png
 StartupNotify=true
 Terminal=false
 Type=Application
