@@ -4,7 +4,7 @@ Description=Randomize Background on each rEFInd boot
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/bash -c '/usr/bin/rEFInd_bg_randomizer.sh'
+ExecStart=/bin/bash -c '/home/deck/.local/SteamDeck_rEFInd/scripts/rEFInd_bg_randomizer.sh'
 
 [Install]
 WantedBy=multi-user.target
