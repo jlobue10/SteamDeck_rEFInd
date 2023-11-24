@@ -46,25 +46,26 @@ yes | sudo cp -rf /boot/efi/EFI/refind/ /esp/efi
 # Renaming default rEFInd config file to keep for reference and backup
 sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
 CURRENT_WD=$(pwd)
-yes | sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
-yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
+yes | sudo cp $CURRENT_WD/refind-GUI.conf /esp/efi/refind/refind.conf
+yes | sudo cp -rf $CURRENT_WD/backgrounds/ /esp/efi/refind
 yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
 # Creating rEFInd EFI entry
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 
 # Granting executable permissions to EFI entry restore script
-chmod +x $CURRENT_WD/restore_EFI_entries.sh
-mkdir -p ~/.SteamDeck_rEFInd/GUI
-cp $CURRENT_WD/restore_EFI_entries.sh ~/.SteamDeck_rEFInd/
+chmod +x $CURRENT_WD/scripts/restore_EFI_entries.sh
+mkdir -p $HOME/.local/SteamDeck_rEFInd/GUI
+cp $CURRENT_WD/scripts/restore_EFI_entries.sh $HOME/.local/SteamDeck_rEFInd/
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
-yes | sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+yes | sudo cp $CURRENT_WD/systemd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+sudo systemctl daemon-reload
 sudo systemctl enable --now bootnext-refind.service
 
 # Clean up temporary files, created for code clarity
-yes | rm ~/deck_passwd_status.txt
-yes | rm ~/efibootlist.txt
+yes | rm $HOME/deck_passwd_status.txt
+yes | rm $HOME/efibootlist.txt
 
 sudo steamos-readonly enable
 
