@@ -6,7 +6,7 @@ https://github.com/ryanrudolfoba/
 Prerequisites:
 
 Place png images that you wish to use as backgrounds for rEFInd here -
-C:\refind\backgrounds
+C:\refind_scripts\backgrounds
 
 Place this script in a scheduled task to automatically run at startup.
 
@@ -16,7 +16,7 @@ Clear-Host
 
 # set variables for ESP and random background
 Set-Variable -Name "ESP" -value (Compare-Object -PassThru (Get-PsDrive [A-Z]).Name ([char[]] 'DEFGHIJKLMNOPQRSTUVWXYZ') | Select-Object -first 1)
-Set-Variable -Name "RandomBackground" -value (Get-ChildItem -Path "c:\refind\backgrounds\*.png" | Get-Random -count 1)
+Set-Variable -Name "RandomBackground" -value (Get-ChildItem -Path "c:\refind_scripts\backgrounds\*.png" | Get-Random -count 1)
 
 # mount ESP partition to the next available drive letter
 mountvol $ESP`: /s
