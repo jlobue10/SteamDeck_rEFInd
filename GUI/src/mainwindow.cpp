@@ -27,7 +27,7 @@ bool Boot_Last_OS_bool;
 bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
 int Update_Num;
-int VERSION = 132;
+int VERSION = 133;
 ostringstream user_home_path;
 QString Background;
 QString Background_fileName;
@@ -193,11 +193,11 @@ void MainWindow::on_Install_rEFInd_clicked()
     refind_install_source = ui->Install_Source_comboBox->currentText();
     if(refind_install_source == "Pacman")
     {
-        system("/usr/bin/pacman_install.sh");
+        system("/home/deck/.local/SteamDeck_rEFInd/scripts/pacman_install.sh");
     }
     if(refind_install_source == "Sourceforge")
     {
-        system("/usr/bin/sourceforge_install.sh");
+        system("/home/deck/.local/SteamDeck_rEFInd/scripts/sourceforge_install.sh");
     }
 }
 
@@ -301,7 +301,7 @@ void MainWindow::on_Create_Config_clicked()
 
 void MainWindow::on_Install_Config_clicked()
 {
-    system("/usr/bin/install_config_from_GUI.sh");
+    system("/home/deck/.local/SteamDeck_rEFInd/scripts/install_config_from_GUI.sh");
 }
 
 string MainWindow::Get_FW_BootNum() {
@@ -683,7 +683,7 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton* updateButton = new QPushButton("Check For Update");
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.3.2</a><br><br>"
+    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.3.3</a><br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
