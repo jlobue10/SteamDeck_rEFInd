@@ -8,6 +8,7 @@ mkdir -p $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/GUI/ $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/icons/ $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/backgrounds/ $HOME/.local/SteamDeck_rEFInd
+cp -rf $CURRENT_WD/scripts/ $HOME/.local/SteamDeck_rEFInd
 cp -f $CURRENT_WD/refind-GUI.conf $HOME/.local/SteamDeck_rEFInd/GUI/refind.conf
 
 #Clean up old installation...
