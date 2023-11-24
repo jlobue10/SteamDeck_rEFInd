@@ -10,6 +10,7 @@ cp -rf $CURRENT_WD/icons/ $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/backgrounds/ $HOME/.local/SteamDeck_rEFInd
 cp -rf $CURRENT_WD/scripts/ $HOME/.local/SteamDeck_rEFInd
 cp -f $CURRENT_WD/refind-GUI.conf $HOME/.local/SteamDeck_rEFInd/GUI/refind.conf
+chmod +x $HOME/.local/SteamDeck_rEFInd/scripts/*.sh
 
 #Clean up old installation...
 ls -l $HOME/.SteamDeck_rEFInd
