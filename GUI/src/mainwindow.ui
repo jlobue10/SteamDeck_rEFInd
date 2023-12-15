@@ -27,7 +27,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>../../../../deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</normaloff>../../../../deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</iconset>
+    <normaloff>/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</normaloff>/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="layoutWidget">
