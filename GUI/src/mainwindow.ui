@@ -27,123 +27,16 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</normaloff>/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</iconset>
+    <normaloff>../../../../deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</normaloff>../../../../deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="layoutWidget1">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>440</y>
-      <width>581</width>
-      <height>34</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="3" alignment="Qt::AlignRight">
-      <widget class="QPushButton" name="Install_Config">
-       <property name="minimumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Install config, icons and background</string>
-       </property>
-       <property name="text">
-        <string>Install Config</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="Create_Config">
-       <property name="minimumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Create config and copy PNG files (ready for install step)</string>
-       </property>
-       <property name="text">
-        <string>Create Config</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="Install_rEFInd">
-       <property name="minimumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Install rEFInd using selected method</string>
-       </property>
-       <property name="text">
-        <string>Install rEFInd</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QComboBox" name="Install_Source_comboBox">
-       <property name="minimumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>140</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Installation source and method</string>
-       </property>
-       <item>
-        <property name="text">
-         <string>Pacman</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Sourceforge</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-    </layout>
-   </widget>
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>15</x>
-      <y>15</y>
-      <width>591</width>
-      <height>416</height>
+      <x>6</x>
+      <y>16</y>
+      <width>601</width>
+      <height>456</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -1006,6 +899,105 @@
          <item>
           <property name="text">
            <string>Zorin</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item row="11" column="0" colspan="6">
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="3" alignment="Qt::AlignRight">
+        <widget class="QPushButton" name="Install_Config">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Install config, icons and background</string>
+         </property>
+         <property name="text">
+          <string>Install Config</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="Create_Config">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Create config and copy PNG files (ready for install step)</string>
+         </property>
+         <property name="text">
+          <string>Create Config</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="Install_rEFInd">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Install rEFInd using selected method</string>
+         </property>
+         <property name="text">
+          <string>Install rEFInd</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QComboBox" name="Install_Source_comboBox">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Installation source and method</string>
+         </property>
+         <item>
+          <property name="text">
+           <string>Pacman</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Sourceforge</string>
           </property>
          </item>
         </widget>
