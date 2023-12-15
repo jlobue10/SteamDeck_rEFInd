@@ -27,16 +27,16 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</normaloff>/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</iconset>
+    <normaloff>../../../../deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</normaloff>../../../../deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>6</x>
-      <y>16</y>
+      <x>7</x>
+      <y>17</y>
       <width>601</width>
-      <height>456</height>
+      <height>416</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -53,6 +53,22 @@
        </property>
        <property name="textFormat">
         <enum>Qt::AutoText</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2" colspan="2">
+      <widget class="QLineEdit" name="Background_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>rEFInd Background selection</string>
+       </property>
+       <property name="placeholderText">
+        <string>~/.local/SteamDeck_rEFInd/GUI/background.png</string>
        </property>
       </widget>
      </item>
@@ -275,6 +291,22 @@
        </property>
       </widget>
      </item>
+     <item row="3" column="2" colspan="2">
+      <widget class="QLineEdit" name="Boot_Option_01_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Icon 1 PNG (leftmost icon)</string>
+       </property>
+       <property name="placeholderText">
+        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon1.png</string>
+       </property>
+      </widget>
+     </item>
      <item row="3" column="5">
       <widget class="QPushButton" name="Boot_Option_01_Icon_pushButton">
        <property name="minimumSize">
@@ -361,7 +393,7 @@
        </item>
       </widget>
      </item>
-     <item row="4" column="4" alignment="Qt::AlignRight">
+     <item row="4" column="4">
       <widget class="QPushButton" name="Rand_BG_On_pushButton">
        <property name="minimumSize">
         <size>
@@ -415,6 +447,19 @@
        </property>
        <property name="text">
         <string>Boot Option #2 Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2" colspan="2">
+      <widget class="QLineEdit" name="Boot_Option_02_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon2.png</string>
        </property>
       </widget>
      </item>
@@ -544,6 +589,19 @@
        </property>
       </widget>
      </item>
+     <item row="7" column="2" colspan="2">
+      <widget class="QLineEdit" name="Boot_Option_03_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon3.png</string>
+       </property>
+      </widget>
+     </item>
      <item row="7" column="5">
       <widget class="QPushButton" name="Boot_Option_03_Icon_pushButton">
        <property name="minimumSize">
@@ -667,6 +725,19 @@
        </property>
        <property name="text">
         <string>Boot Option #4 Icon</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="2" colspan="2">
+      <widget class="QLineEdit" name="Boot_Option_04_Icon_lineEdit">
+       <property name="minimumSize">
+        <size>
+         <width>135</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon4.png</string>
        </property>
       </widget>
      </item>
@@ -905,173 +976,110 @@
        </item>
       </layout>
      </item>
-     <item row="11" column="0" colspan="6">
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="3" alignment="Qt::AlignRight">
-        <widget class="QPushButton" name="Install_Config">
-         <property name="minimumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Install config, icons and background</string>
-         </property>
-         <property name="text">
-          <string>Install Config</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="Create_Config">
-         <property name="minimumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Create config and copy PNG files (ready for install step)</string>
-         </property>
-         <property name="text">
-          <string>Create Config</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="Install_rEFInd">
-         <property name="minimumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Install rEFInd using selected method</string>
-         </property>
-         <property name="text">
-          <string>Install rEFInd</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QComboBox" name="Install_Source_comboBox">
-         <property name="minimumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>140</width>
-           <height>32</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Installation source and method</string>
-         </property>
-         <item>
-          <property name="text">
-           <string>Pacman</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Sourceforge</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="0" column="2" colspan="3">
-      <widget class="QLineEdit" name="Background_lineEdit">
+    </layout>
+   </widget>
+   <widget class="QWidget" name="">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>440</y>
+      <width>601</width>
+      <height>34</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0">
+      <widget class="QComboBox" name="Install_Source_comboBox">
        <property name="minimumSize">
         <size>
-         <width>135</width>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
          <height>32</height>
         </size>
        </property>
        <property name="toolTip">
-        <string>rEFInd Background selection</string>
+        <string>Installation source and method</string>
        </property>
-       <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/background.png</string>
-       </property>
+       <item>
+        <property name="text">
+         <string>Pacman</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Sourceforge</string>
+        </property>
+       </item>
       </widget>
      </item>
-     <item row="3" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_01_Icon_lineEdit">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="Install_rEFInd">
        <property name="minimumSize">
         <size>
-         <width>135</width>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
          <height>32</height>
         </size>
        </property>
        <property name="toolTip">
-        <string>Icon 1 PNG (leftmost icon)</string>
+        <string>Install rEFInd using selected method</string>
        </property>
-       <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon1.png</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_02_Icon_lineEdit">
-       <property name="minimumSize">
-        <size>
-         <width>135</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon2.png</string>
+       <property name="text">
+        <string>Install rEFInd</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_03_Icon_lineEdit">
+     <item row="0" column="2">
+      <widget class="QPushButton" name="Create_Config">
        <property name="minimumSize">
         <size>
-         <width>135</width>
+         <width>140</width>
          <height>32</height>
         </size>
        </property>
-       <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon3.png</string>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Create config and copy PNG files (ready for install step)</string>
+       </property>
+       <property name="text">
+        <string>Create Config</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="2" colspan="3">
-      <widget class="QLineEdit" name="Boot_Option_04_Icon_lineEdit">
+     <item row="0" column="3">
+      <widget class="QPushButton" name="Install_Config">
        <property name="minimumSize">
         <size>
-         <width>135</width>
+         <width>140</width>
          <height>32</height>
         </size>
        </property>
-       <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon4.png</string>
+       <property name="maximumSize">
+        <size>
+         <width>140</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Install config, icons and background</string>
+       </property>
+       <property name="text">
+        <string>Install Config</string>
        </property>
       </widget>
      </item>
