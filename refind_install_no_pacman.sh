@@ -4,17 +4,17 @@
 
 CURRENT_WD=$(pwd)
 cd ~/Downloads
-wget https://sourceforge.net/projects/refind/files/0.14.0.2/refind-bin-gnuefi-0.14.0.2.zip
-unzip -a refind-bin-gnuefi-0.14.0.2.zip
+wget https://sourceforge.net/projects/refind/files/0.14.1/refind-bin-gnuefi-0.14.1.zip
+unzip -a refind-bin-gnuefi-0.14.1.zip
 
 sudo steamos-readonly disable
 sudo mkdir -p /esp/efi/refind
-yes | sudo cp ~/Downloads/refind-bin-0.14.0.2/refind/refind_x64.efi /esp/efi/refind/
-yes | sudo cp -rf ~/Downloads/refind-bin-0.14.0.2/refind/drivers_x64/ /esp/efi/refind
-yes | sudo cp -rf ~/Downloads/refind-bin-0.14.0.2/refind/tools_x64/ /esp/efi/refind
-yes | sudo ./refind-bin-0.14.0.2/refind-install
-yes | sudo cp -rf ~/Downloads/refind-bin-0.14.0.2/refind/icons/ /esp/efi/refind
-yes | sudo cp -rf ~/Downloads/refind-bin-0.14.0.2/fonts/ /esp/efi/refind
+yes | sudo cp ~/Downloads/refind-bin-0.14.1/refind/refind_x64.efi /esp/efi/refind/
+yes | sudo cp -rf ~/Downloads/refind-bin-0.14.1/refind/drivers_x64/ /esp/efi/refind
+yes | sudo cp -rf ~/Downloads/refind-bin-0.14.1/refind/tools_x64/ /esp/efi/refind
+yes | sudo ./refind-bin-0.14.1/refind-install
+yes | sudo cp -rf ~/Downloads/refind-bin-0.14.1/refind/icons/ /esp/efi/refind
+yes | sudo cp -rf ~/Downloads/refind-bin-0.14.1/fonts/ /esp/efi/refind
 yes | sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
 yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
 yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
