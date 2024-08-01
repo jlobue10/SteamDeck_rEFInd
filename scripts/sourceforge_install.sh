@@ -16,20 +16,20 @@
 	echo 20
 	echo "# Downloading rEFInd zip file..."
 	cd $HOME/Downloads
-	wget https://sourceforge.net/projects/refind/files/0.14.0.2/refind-bin-gnuefi-0.14.0.2.zip
+	wget https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
 	echo 25
 	echo "# Unzipping rEFInd zip..."
-	unzip -o refind-bin-gnuefi-0.14.0.2.zip
+	unzip -o refind-bin-gnuefi-0.14.2.zip
 	sudo steamos-readonly disable
 	sudo mkdir -p /esp/efi/refind
-	yes | sudo cp -f $HOME/Downloads/refind-bin-0.14.0.2/refind/refind_x64.efi /esp/efi/refind/
-	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/drivers_x64/ /esp/efi/refind
-	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/tools_x64/ /esp/efi/refind
+	yes | sudo cp -f $HOME/Downloads/refind-bin-0.14.2/refind/refind_x64.efi /esp/efi/refind/
+	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.2/refind/drivers_x64/ /esp/efi/refind
+	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.2/refind/tools_x64/ /esp/efi/refind
 	echo 50
 	echo "# Installing rEFInd files..."
-	yes | sudo ./refind-bin-0.14.0.2/refind-install
-	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/refind/icons/ /esp/efi/refind
-	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.0.2/fonts/ /esp/efi/refind
+	yes | sudo ./refind-bin-0.14.2/refind-install
+	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.2/refind/icons/ /esp/efi/refind
+	yes | sudo cp -rf $HOME/Downloads/refind-bin-0.14.2/fonts/ /esp/efi/refind
 	yes | sudo cp $HOME/.local/SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
 	yes | sudo cp -rf $HOME/.local/SteamDeck_rEFInd/backgrounds/ /esp/efi/refind
 	yes | sudo cp -rf $HOME/.local/SteamDeck_rEFInd/icons/ /esp/efi/refind
