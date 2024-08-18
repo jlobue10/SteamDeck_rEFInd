@@ -87,7 +87,7 @@
         </size>
        </property>
        <property name="toolTip">
-        <string>Default Boot Slection</string>
+        <string>Default Boot Selection</string>
        </property>
        <item>
         <property name="text">
