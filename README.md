@@ -13,6 +13,8 @@ This is a simple rEFInd install script for the Steam Deck meant to provide easy 
 
 If you want to try out the GUI, perform these steps.
 
+💾 [as of 29/08/2024 rEFInd GUI has a bug for Windows on go (Windows installation on SD card). After installing GUI please consider following instructions from "Windows from Micro SD card instructions" below if you have your windows installed on micro SD card.] 💾
+
 ```
 cd $HOME && rm -rf $HOME/SteamDeck_rEFInd/ && git clone https://github.com/jlobue10/SteamDeck_rEFInd && cd SteamDeck_rEFInd && chmod +x install-GUI.sh && ./install-GUI.sh
 ```
@@ -53,16 +55,33 @@ If all went well, you should have rEFInd setup with SteamOS as the default loadi
 
 For additional configuration options, please refer to the rEFInd official documentation. My supplied config file uses manual OS boot stanzas on purpose to control the icon order from left to right. This feature is something that I plan to take advantage of in the config file generation (and installation) GUI that I am developing. Please feel free to deviate from this and use rEFInd's ability to detect EFI files and OSes to boot, if you want. The config file has a lot of potential options that I encourage people to explore.
 
-## **Disable Windows EFI entry or run the Windows' side script**
+## **Disable Windows EFI entry or run the Windows' side script "Dual Boot Fix"**
 
-This honestly should be in a bold flashing neon light, as it is one of the most commonly missed issues. This step is still required for SteamOS 3.4+. Unfortunately, this still requires booting from the SteamOS recovery USB or another live Linux distro.
+:heavy_exclamation_mark:***This honestly should be in a bold flashing neon light, as it is one of the most commonly missed issues. This step is still required for SteamOS 3.4+. Unfortunately, this still requires booting from the SteamOS recovery USB or another live Linux distro.***
+***This step would prevent windows to boot automatically after system restart, making it possible to access rEFInd dual boot menu on each restart of the system.***
 
-Steps:
+--Removing EFI entry from boot order using SteamOS recovery USB
+Steps (while system is booted into SteamOS recovery USB):
 ```
-efibootmgr
+1. Open "Konsole"
+2. type: efibootmgr
 ## Take note of the Windows EFI four digit number and replace the XXXX in the following command with that number.
-sudo efibootmgr -b XXXX -A
+3. type: sudo efibootmgr -b XXXX -A
 ```
+
+--Alternatively it is possible to run Windows' side script (especially if first solution doesn't work for some reason, giving `Boot entry not found` error problem)
+
+Steps (While system is booted into Windows):
+```
+1. Download Dual Boot Fix
+2. Unzip downloaded archive
+3. Run "Setup_rEFInd_Windows_RunAsAdmin" as an administrator
+4. Let the process finish, console will close itself automatically
+```
+Dual boot fix [link](https://www.mediafire.com/file/w7jswsuctvnnd7k/Dual+Boot+Fix.zip/file) **<===**
+
+Instead of deleting EFI entry as in first solution, this script creates scheduled task which runs whenever windows is accessed and will move rEFInd dual boot menu to the very top of the boot list, on top of windows boot manager.
+There's a [video](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077) from [Deck Wizard](https://www.youtube.com/@DeckWizard) on how to run this script if you want to have visual instruction. (Time code 17:57)
 
 ## **Restoring _missing_ EFI entries**
 
@@ -100,17 +119,47 @@ Powershell command:
 
 `bcdedit /set "{globalsettings}" highestmode on`
 
-## **Optional Windows from Micro SD card instructions**
+## :floppy_disk:**Windows from Micro SD card instructions**
 
-***This is automated in the GUI. Just make sure the Windows SD card is inserted for the 'Create Config' step and install the config afterwards. The manual steps below will still also work, but they are less convenient than the GUI method.***
+***~~This is automated in the GUI. Just make sure the Windows SD card is inserted for the 'Create Config' step and install the config afterwards. The manual steps below will still also work, but they are less convenient than the GUI method.~~ [as for 29/08/2024 rEFInd GUI has a bug which prevents UUID volume value pull to `refind.conf` file located in /esp folder. This means that steps below are important to do for windows on go (windows on SD card) users at this time being. Not following these instructions will lead to "[Invalid loader file! Error: Not found while loading bootmgfw.efi](https://github.com/jlobue10/SteamDeck_rEFInd/issues/121)" error.]***
 
-The updated `refind.conf` file has a manual stanza now for a Micro SD card Windows boot option. Make sure to disable the other "Windows" boot option by adding a `disabled` line in that "Windows" stanza. We need to make 2 edits to the "Windows SD card" stanza to make the Micro SD card Windows boot properly from rEFInd. First, we need to find out the Micro SD card's EFI system partition UUID. I decided to use KDE Partition Manager to find out this information for my Micro SD card. See the following picture for the highlighted partition UUID.
+`refind.conf` file has a manual config for a SD card Windows boot option. To access `refind.conf` simply follow these steps:
+```
+1. Open "Kolsole"
+2. type: sudo nano /esp/efi/refind/rEFInd.conf
+##Now you must be able to edit configuration file.
+##Following instructions will provide info about configs that located at the very bottom of this file.
+```
+Make sure to disable the other "Windows" boot option by adding a `disabled` line in that "Windows" config.
+it must look like that:
+```
+menuentry "Windows" {
+	icon /EFI/refind/icons/os_win11.png
+	loader /EFI/Microsoft/Boot/bootmgfw.efi
+	graphics on
+	disabled
+```
+ We need to make 2 edits to the "Windows SD card" config to make the micro SD card Windows boot properly from rEFInd: UUID volume value and removing "disabled" line from wingows SD card configuration.
+
+ 1. First, we need to find out the Micro SD card's EFI system partition UUID. I decided to use `KDE Partition Manager` to find out this information for Micro SD card. See the following picture for the highlighted partition UUID.
 
 
 ![SD_Windows_Part_UUID](https://user-images.githubusercontent.com/9971433/204991179-dc98df86-71ff-4016-8253-ca74eac50d91.png)
 
 
-Replace the `volume REPLACE_THIS_WITH_SD_CARD_EFI_PARTITION_UUID` line with your appropriate UUID. For my example, this line becomes `volume 2FB0D40F-C809-4C67-8B50-136D93B78543` . Then we also must delete the `disabled` line at the end of the stanza. The Micro SD card Windows rEFInd entry should now be active (after these 2 steps). In my brief test case, I found it necessary to press a key to avoid disk checking upon boot. I'm not sure if this is common for Windows from the SD card, as this is not my normal setup. It's just something to be aware of. If you miss pressing this interrupt key, the screen may look corrupted until the disk check completes and Windows continues to boot.
+Copy UUID you found and replace the `volume REPLACE_THIS_WITH_SD_CARD_EFI_PARTITION_UUID` line with your appropriate UUID. For my example, this line becomes `volume 2FB0D40F-C809-4C67-8B50-136D93B78543` .
+
+2. Then it is important to delete the `disabled` line at the end of the Windows SD card config.
+
+Press CTRL + O and follow the instructions at the bottom to save the file. The Micro SD card Windows rEFInd entry should now be active (after these 2 steps) and should look like that:
+```
+menuentry "Windows SD card" {
+    icon /EFI/refind/icons/os_win11.png
+    volume 2FB0D40F-C809-4C67-8B50-136D93B78543
+    loader /EFI/Microsoft/Boot/bootmgfw.efi
+    graphics on
+```
+In my brief test case, I found it necessary to press a key to avoid disk checking upon boot. I'm not sure if this is common for Windows from the SD card, as this is not my normal setup. It's just something to be aware of. If you miss pressing this interrupt key, the screen may look corrupted until the disk check completes and Windows continues to boot.
 
 ## **Disabling and/ or uninstalling rEFInd**
 
