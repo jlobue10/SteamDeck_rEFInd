@@ -27,7 +27,7 @@ bool Boot_Last_OS_bool;
 bool Enable_Mouse_bool;
 bool Firmware_BootNum_bool;
 int Update_Num;
-int VERSION = 133;
+int VERSION = 140;
 ostringstream user_home_path;
 QString Background;
 QString Background_fileName;
@@ -604,10 +604,10 @@ string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
     char GUID_buff[1024];
     GUID_Label.clear();
     if(GUID_Source == "USB"){
-        GUID_process = popen("lsblk -f | grep sda1 | awk '{print $5}' | tr [:lower:] [:upper:]", "r");
+        GUID_process = popen("lsblk -o NAME,UUID | grep sda1 | awk '{print $2}' | tr [:lower:] [:upper:]", "r");
     }
     if(GUID_Source == "SD"){
-        GUID_process = popen("lsblk -f | grep mmcblk0p1 | awk '{print $5}' | tr [:lower:] [:upper:]", "r");
+        GUID_process = popen("lsblk -o NAME,UUID | grep mmcblk0p1 | awk '{print $2}' | tr [:lower:] [:upper:]", "r");
     }
     if (GUID_process != NULL) {
         while (fgets(GUID_buff, sizeof(GUID_buff), GUID_process)) {
@@ -683,7 +683,7 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton* updateButton = new QPushButton("Check For Update");
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.3.3</a><br><br>"
+    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.4.0</a><br><br>"
                      "Original GUI Creator: "
                      "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
                      "Special Thanks to Deck Wizard for testing and QA"
