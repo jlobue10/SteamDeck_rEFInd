@@ -20,7 +20,7 @@ The background should be a 1,280x800 PNG file. Please use a program like GIMP to
 
 The four boot options (3 and 4 are optional) represent the icons as they will appear on the bootloader screen from left to right.
 
-Once the boot options, background and OS icons are chosen (can be left blank for default background and icons) click 'Create Config.' You can manually check (and edit) the config file if you want located at `/home/deck/.SteamDeck_rEFInd/GUI/refind.conf` . If you change the background or OS icons, please click the 'Create Config' button again, as it copies those files to the 'staging area' for when 'Install Config' is clicked and run (requires `sudo` password to install files to the `/esp` partition).
+Once the boot options, background and OS icons are chosen (can be left blank for default background and icons) click 'Create Config.' You can manually check (and edit) the config file if you want located at `/home/deck/.local/SteamDeck_rEFInd/GUI/refind.conf` . If you change the background or OS icons, please click the 'Create Config' button again, as it copies those files to the 'staging area' for when 'Install Config' is clicked and run (requires `sudo` password to install files to the `/esp` partition).
 
 The 'Use Firmware_bootnum' option is a SteamOS only option that requires the SteamOS EFI entry to be present when the config file is created. This can be checked with `efibootmgr`. This option was added so that the SteamOS icon is visible between the handoff of rEFInd to SteamOS loading (otherwise it's a blank screen).
 
