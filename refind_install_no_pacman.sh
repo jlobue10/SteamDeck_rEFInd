@@ -45,13 +45,13 @@ fi
 sudo efibootmgr -c -d /dev/nvme0n1 -p 1 -L "rEFInd" -l \\EFI\\refind\\refind_x64.efi
 
 # Granting executable permissions to EFI entry restore script
-chmod +x $CURRENT_WD/restore_EFI_entries.sh
-mkdir -p ~/.SteamDeck_rEFInd/GUI
-cp $CURRENT_WD/restore_EFI_entries.sh ~/.SteamDeck_rEFInd/
+chmod +x $CURRENT_WD/scripts/restore_EFI_entries.sh
+mkdir -p ~/.local/SteamDeck_rEFInd/scripts/
+cp $CURRENT_WD/scripts/restore_EFI_entries.sh ~/.local/SteamDeck_rEFInd/scripts/
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
-yes | sudo cp $CURRENT_WD/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+yes | sudo cp $CURRENT_WD/systemd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
 sudo systemctl enable --now bootnext-refind.service
 
 # Clean up temporary files, created for code clarity
