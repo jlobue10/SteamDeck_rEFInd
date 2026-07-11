@@ -28,11 +28,21 @@ fi
 
 # Thanks to Maclay74 steam-patch for the following syntax
 RELEASE=$(curl -s 'https://api.github.com/repos/jlobue10/SteamDeck_rEFInd/releases' | jq -r "first(.[] | select(.prerelease == "false"))")
-VERSION=$(jq -r '.tag_name' <<< ${RELEASE} )
-DOWNLOAD_URL=$(jq -r '.assets[].browser_download_url | select(endswith("x86_64.pkg.tar.zst"))' <<< ${RELEASE})
+VERSION=$(jq -r '.tag_name' <<< "${RELEASE}")
+DOWNLOAD_URL=$(jq -r '.assets[].browser_download_url | select(endswith("x86_64.pkg.tar.zst"))' <<< "${RELEASE}")
+
+if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
+    echo "Error: could not determine a release download URL from the GitHub API. Aborting." >&2
+    exit 1
+fi
 
 printf "Installing version %s...\n" "${VERSION}"
-wget $DOWNLOAD_URL
+INSTALL_PKG="$(basename "$DOWNLOAD_URL")"
+wget -O "$INSTALL_PKG" "$DOWNLOAD_URL"
+if [ $? -ne 0 ] || [ ! -s "$INSTALL_PKG" ]; then
+    echo "Error: failed to download $DOWNLOAD_URL. Aborting." >&2
+    exit 1
+fi
 
 sudo pacman -Qs SteamDeck_rEFInd
 STEAMDECK_REFIND_STATUS=$?
@@ -58,8 +68,7 @@ if [ $OLD_BGRAND_SERVICE == 0 ]; then
     sudo rm /etc/systemd/system/rEFInd_bg_randomizer.service
 fi
 
-INSTALL_PKG="$(ls | grep pkg.tar.zst)"
-sudo pacman -U --noconfirm $INSTALL_PKG
+sudo pacman -U --noconfirm "$INSTALL_PKG"
 
 # Leaving passwordless sudo stuff to try to fix another day...
 #Create file for passwordless sudo for config file, background and icon installation
@@ -78,6 +87,8 @@ sudo steamos-readonly enable
 
 cp -f /usr/bin/SteamDeck_rEFInd $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd
 cp -f /usr/share/applications/SteamDeck_rEFInd.desktop $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop
+# Desktop file ships with /home/deck hardcoded; rewrite it for the actual user's home
+sed -i "s|/home/deck|$HOME|g" $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop
 cp -f $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop $HOME/Desktop/SteamDeck_rEFInd.desktop
 chmod +x $HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop
 chmod +x $HOME/Desktop/SteamDeck_rEFInd.desktop

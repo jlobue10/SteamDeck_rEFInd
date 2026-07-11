@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <QComboBox>
+#include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIntValidator>
@@ -193,11 +194,13 @@ void MainWindow::on_Install_rEFInd_clicked()
     refind_install_source = ui->Install_Source_comboBox->currentText();
     if(refind_install_source == "Pacman")
     {
-        system("/home/deck/.local/SteamDeck_rEFInd/scripts/pacman_install.sh");
+        string cmd = user_home_path_str + "/.local/SteamDeck_rEFInd/scripts/pacman_install.sh";
+        system(cmd.c_str());
     }
     if(refind_install_source == "Sourceforge")
     {
-        system("/home/deck/.local/SteamDeck_rEFInd/scripts/sourceforge_install.sh");
+        string cmd = user_home_path_str + "/.local/SteamDeck_rEFInd/scripts/sourceforge_install.sh";
+        system(cmd.c_str());
     }
 }
 
@@ -270,38 +273,39 @@ void MainWindow::on_Create_Config_clicked()
     Background = ui->Background_lineEdit->text();
     if((Background != "") && (Background != Default_Background)){
         Background_path = Background.toStdString();
-        string cmd = string("cp -f '") + Background_path + "' '" + Default_Background_str + "'";
-        system(cmd.c_str());
+        QFile::remove(Default_Background);
+        QFile::copy(Background, Default_Background);
     }
     OS_Icon1 = ui->Boot_Option_01_Icon_lineEdit->text();
     if((OS_Icon1 != "" ) && (OS_Icon1 != Default_OS_Icon1)){
         OS_Icon1_path = OS_Icon1.toStdString();
-        string cmd1 = string("cp -f '") + OS_Icon1_path + "' '" + Default_OS_Icon1_str + "'";
-        system(cmd1.c_str());
+        QFile::remove(Default_OS_Icon1);
+        QFile::copy(OS_Icon1, Default_OS_Icon1);
         }
     OS_Icon2 = ui->Boot_Option_02_Icon_lineEdit->text();
     if((OS_Icon2 != "" ) && (OS_Icon2 != Default_OS_Icon2)){
         OS_Icon2_path = OS_Icon2.toStdString();
-        string cmd2 = string("cp -f '") + OS_Icon2_path + "' '" + Default_OS_Icon2_str + "'";
-        system(cmd2.c_str());
+        QFile::remove(Default_OS_Icon2);
+        QFile::copy(OS_Icon2, Default_OS_Icon2);
         }
     OS_Icon3 = ui->Boot_Option_03_Icon_lineEdit->text();
     if((OS_Icon3 != "" ) && (OS_Icon3 != Default_OS_Icon3)){
         OS_Icon3_path = OS_Icon3.toStdString();
-        string cmd3 = string("cp -f '") + OS_Icon3_path + "' '" + Default_OS_Icon3_str + "'";
-        system(cmd3.c_str());
+        QFile::remove(Default_OS_Icon3);
+        QFile::copy(OS_Icon3, Default_OS_Icon3);
         }
     OS_Icon4 = ui->Boot_Option_04_Icon_lineEdit->text();
     if((OS_Icon4 != "" ) && (OS_Icon4 != Default_OS_Icon4)){
         OS_Icon4_path = OS_Icon4.toStdString();
-        string cmd4 = string("cp -f '") + OS_Icon4_path + "' '" + Default_OS_Icon4_str + "'";
-        system(cmd4.c_str());
+        QFile::remove(Default_OS_Icon4);
+        QFile::copy(OS_Icon4, Default_OS_Icon4);
         }
 }
 
 void MainWindow::on_Install_Config_clicked()
 {
-    system("/home/deck/.local/SteamDeck_rEFInd/scripts/install_config_from_GUI.sh");
+    string cmd = user_home_path_str + "/.local/SteamDeck_rEFInd/scripts/install_config_from_GUI.sh";
+    system(cmd.c_str());
 }
 
 string MainWindow::Get_FW_BootNum() {
@@ -621,7 +625,7 @@ string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
 
 void MainWindow::readSettings()
 {
-    QSettings settings("/home/deck/.local/SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
+    QSettings settings(settings_path, QSettings::NativeFormat);
     settings.beginGroup("CheckBoxes");
         bool temp_Last_OS_bool = settings.value("LastOSCheckBox").toBool();
         bool FW_bool = settings.value("FW_bootNum_CheckBox").toBool();
@@ -657,7 +661,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-    QSettings settings("/home/deck/.local/SteamDeck_rEFInd/GUI/rEFInd_GUI.ini", QSettings::NativeFormat);
+    QSettings settings(settings_path, QSettings::NativeFormat);
     settings.beginGroup("ComboBoxes");
         settings.setValue("DefaultBootComboBox", ui->Default_Boot_comboBox->currentIndex());
         settings.setValue("BootComboBox01", ui->Boot_Option_01_comboBox->currentIndex());
@@ -752,7 +756,7 @@ void MainWindow::on_updateButton_Clicked()
     FILE *Update_process;
     char Update_buff[1024];
     Update_Num_str.clear();
-    Update_process = popen("echo $(curl https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION) | sed 's/\\./ /g' | sed 's/\\s\\+//g'", "r");
+    Update_process = popen("curl -s -f https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION | sed 's/\\./ /g' | sed 's/\\s\\+//g'", "r");
     if (Update_process != NULL) {
         while (fgets(Update_buff, sizeof(Update_buff), Update_process)) {
             printf("%s", Update_buff);
@@ -760,12 +764,20 @@ void MainWindow::on_updateButton_Clicked()
         }
         pclose(Update_process);
     }
-    Update_Num = stoi(Update_Num_str);
-    if(Update_Num > VERSION) {
-        UpdateBox.setText("<p align='center'>An update is available "
-                         "<a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'>here</a><br><br></p>");
+    while (!Update_Num_str.empty() && (Update_Num_str.back() == '\n' || Update_Num_str.back() == '\r')) {
+        Update_Num_str.pop_back();
+    }
+    bool Update_Num_valid = !Update_Num_str.empty() && Update_Num_str.find_first_not_of("0123456789") == string::npos;
+    if (!Update_Num_valid) {
+        UpdateBox.setText("<p align='center'>Unable to check for updates. Please check your internet connection and try again.<br><br></p>");
     } else {
-        UpdateBox.setText("<p align='center'>No update found. You are using the latest version.<br><br></p>");
+        Update_Num = stoi(Update_Num_str);
+        if(Update_Num > VERSION) {
+            UpdateBox.setText("<p align='center'>An update is available "
+                             "<a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'>here</a><br><br></p>");
+        } else {
+            UpdateBox.setText("<p align='center'>No update found. You are using the latest version.<br><br></p>");
+        }
     }
     UpdateBox.setStandardButtons(QMessageBox::Ok);
     UpdateBox.exec();

@@ -3,9 +3,14 @@
 # Please make sure that a password exists for the deck user before running
 
 CURRENT_WD=$(pwd)
-cd ~/Downloads
-wget https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
-unzip -a refind-bin-gnuefi-0.14.2.zip
+cd ~/Downloads || exit 1
+wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
+if [ $? -ne 0 ] || [ ! -s refind-bin-gnuefi-0.14.2.zip ]; then
+    echo "Error: failed to download rEFInd from Sourceforge. Aborting." >&2
+    exit 1
+fi
+unzip -t refind-bin-gnuefi-0.14.2.zip >/dev/null || { echo "Error: downloaded zip is corrupt. Aborting." >&2; exit 1; }
+unzip -a -o refind-bin-gnuefi-0.14.2.zip
 
 sudo steamos-readonly disable
 sudo mkdir -p /esp/efi/refind

@@ -1,0 +1,18 @@
+# CMake build output
+GUI/src/build/
+CMakeFiles/
+CMakeCache.txt
+
+# Compiled objects / Qt generated files
+*.o
+*.obj
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# makepkg build/package dirs (created at repo root when running `makepkg` here)
+/pkg/
+/src/
+
+# Packaged release artifacts
+*.pkg.tar.zst

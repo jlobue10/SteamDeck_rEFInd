@@ -15,10 +15,23 @@
 	fi
 	echo 20
 	echo "# Downloading rEFInd zip file..."
-	cd $HOME/Downloads
-	wget https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
+	cd $HOME/Downloads || exit 1
+	wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
+	if [ $? -ne 0 ] || [ ! -s refind-bin-gnuefi-0.14.2.zip ]; then
+		zenity --error --title="Download Error" --text="Failed to download rEFInd from Sourceforge. Please check your internet connection and try again." --width=400 2>/dev/null
+		echo 100
+		echo "# Installation Failed. Could not download rEFInd."
+		exit 1
+	fi
 	echo 25
 	echo "# Unzipping rEFInd zip..."
+	unzip -t refind-bin-gnuefi-0.14.2.zip >/dev/null 2>&1
+	if [ $? -ne 0 ]; then
+		zenity --error --title="Download Error" --text="The downloaded rEFInd archive is corrupt. Please try again." --width=400 2>/dev/null
+		echo 100
+		echo "# Installation Failed. Downloaded archive is corrupt."
+		exit 1
+	fi
 	unzip -o refind-bin-gnuefi-0.14.2.zip
 	sudo steamos-readonly disable
 	sudo mkdir -p /esp/efi/refind
