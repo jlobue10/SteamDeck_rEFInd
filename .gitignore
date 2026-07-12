@@ -1,7 +1,15 @@
 # CMake build output
 GUI/src/build/
+GUI/src/build-*/
+build-*/
 CMakeFiles/
 CMakeCache.txt
+
+# Windows packaging outputs
+/deploy/
+Windows/GUI/Output/
+*-portable.zip
+SteamDeck_rEFInd-*-setup.exe
 
 # Compiled objects / Qt generated files
 *.o

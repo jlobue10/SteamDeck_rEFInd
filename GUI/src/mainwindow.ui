@@ -89,21 +89,6 @@
        <property name="toolTip">
         <string>Default Boot Selection</string>
        </property>
-       <item>
-        <property name="text">
-         <string>SteamOS</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Linux</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="1" column="4">
@@ -158,41 +143,6 @@
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
        </property>
-       <item>
-        <property name="text">
-         <string>SteamOS</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (USB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Batocera (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Linux</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Ventoy</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="2" column="4">
@@ -282,41 +232,6 @@
        <property name="toolTip">
         <string>Boot Option #2 Selection</string>
        </property>
-       <item>
-        <property name="text">
-         <string>Windows</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>SteamOS</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Linux</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (USB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Batocera (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Ventoy</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="4" column="4" alignment="Qt::AlignRight">
@@ -412,46 +327,6 @@
        <property name="toolTip">
         <string>Boot Option #3 Selection (optional)</string>
        </property>
-       <item>
-        <property name="text">
-         <string>None</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Linux</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Batocera (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>SteamOS</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (USB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Ventoy</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="6" column="5">
@@ -525,46 +400,6 @@
        <property name="toolTip">
         <string>Boot Option #4 Selection (optional)</string>
        </property>
-       <item>
-        <property name="text">
-         <string>None</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Batocera (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Linux</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>SteamOS</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (SD)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Windows (USB)</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Ventoy</string>
-        </property>
-       </item>
       </widget>
      </item>
      <item row="8" column="5">
@@ -736,7 +571,7 @@
         </layout>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="Linux_Select_comboBox">
+        <widget class="QPushButton" name="Rescan_pushButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -756,83 +591,11 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>Linux Distro selection</string>
+          <string>Rescan for installed OSes and bootloaders</string>
          </property>
-         <item>
-          <property name="text">
-           <string>Nobara</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Arch - Systemd</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Bazzite</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>ChimeraOS</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>CentOS</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Debian</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Elementary</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Fedora</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Kali</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>KDE Neon</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Manjaro</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Mint</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>openSUSE</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Ubuntu</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Zorin</string>
-          </property>
-         </item>
+         <property name="text">
+          <string>Rescan OSes</string>
+         </property>
         </widget>
        </item>
       </layout>

@@ -1,0 +1,119 @@
+name: Windows Release
+
+# Builds the Windows executable, signs it + the installer + the bundled
+# PowerShell scripts via SignPath Foundation (free OSS code signing), bundles a
+# portable ZIP and an Inno Setup installer, and (on a version tag) attaches both
+# to the GitHub Release.
+#
+# Signing is OPTIONAL and gated on the `SIGNPATH_ORGANIZATION_ID` repo variable:
+# until it (and the SignPath project) are configured, the build still runs and
+# produces UNSIGNED artifacts. See Windows/GUI/SIGNING.md for the one-time setup.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    env:
+      SIGN: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up MSYS2 (UCRT64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-qt6-base
+            mingw-w64-ucrt-x86_64-qt6-tools
+
+      - name: Build and assemble deploy dir
+        shell: msys2 {0}
+        run: |
+          cmake -G Ninja -S GUI/src -B build-win
+          cmake --build build-win
+          bash Windows/GUI/assemble-deploy.sh build-win/SteamDeck_rEFInd.exe deploy
+
+      # --- Stage A: sign the exe + PowerShell scripts inside deploy/ ---
+      - name: Upload unsigned deploy (for signing)
+        id: unsigned_deploy
+        if: env.SIGN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-deploy
+          path: deploy
+
+      - name: Sign deploy contents (SignPath)
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_DEPLOY_CONFIG_SLUG }}
+          github-artifact-id: ${{ steps.unsigned_deploy.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: deploy-signed
+
+      - name: Replace deploy with signed contents
+        if: env.SIGN == 'true'
+        shell: pwsh
+        run: Copy-Item -Recurse -Force deploy-signed\* deploy\
+
+      # --- Portable ZIP (from signed deploy, when signing is on) ---
+      - name: Portable ZIP
+        shell: pwsh
+        run: Compress-Archive -Path deploy\* -DestinationPath SteamDeck_rEFInd-portable.zip -Force
+
+      # --- Build the installer from the (signed) deploy ---
+      - name: Build installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" Windows\GUI\SteamDeck_rEFInd.iss
+
+      # --- Stage B: sign the installer itself ---
+      - name: Upload unsigned installer (for signing)
+        id: unsigned_installer
+        if: env.SIGN == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-installer
+          path: Windows/GUI/Output/*.exe
+
+      - name: Sign installer (SignPath)
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          artifact-configuration-slug: ${{ vars.SIGNPATH_INSTALLER_CONFIG_SLUG }}
+          github-artifact-id: ${{ steps.unsigned_installer.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: Windows/GUI/Output
+
+      # --- Publish ---
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: |
+            Windows/GUI/Output/*.exe
+            SteamDeck_rEFInd-portable.zip
+
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            Windows/GUI/Output/*.exe
+            SteamDeck_rEFInd-portable.zip
