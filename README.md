@@ -9,6 +9,12 @@ Please feel free to donate and support me at the following link. Donations are n
 
 This is a simple rEFInd install script for the Steam Deck meant to provide easy dual boot setup when using both SteamOS and Windows on the internal NVMe. Since the initial version of this script, optional support has been added for Windows from the SD card, Batocera from the SD card and an example boot stanza for Ubuntu (or other Ubuntu based flavors / distros). The options really are pretty limitless, but require some understanding and manual edits to the `refind.conf` file.
 
+## Automatic OS detection & Windows support (new in 2.0.0)
+
+The GUI now scans the EFI System Partition at startup (and via a **Rescan OSes** button) and auto-populates the boot options with what's actually installed — SteamOS, Windows, and any Linux distro — instead of picking a distro by hand. This also resolves the Windows-on-SD-card partition GUID automatically, so the manual `volume` edit described further below is no longer needed when the SD card is inserted at "Create Config" time.
+
+The GUI also **builds and runs on Windows** now (Qt6), so you can configure/install rEFInd from the Windows side of a dual-boot Deck. Download `SteamDeck_rEFInd-<version>-setup.exe` from the Releases page (per-user install; the app requests Administrator at launch for EFI access), or build from source per `CLAUDE.md`. Code signing is set up via SignPath Foundation — see `Windows/GUI/SIGNING.md`. This is separate from the existing `Windows/` dual-boot-fix PowerShell tooling.
+
 ## [**The GUI is available and is the recommended installation method**](https://github.com/jlobue10/SteamDeck_rEFInd/tree/main/GUI)
 
 If you want to try out the GUI, perform these steps.

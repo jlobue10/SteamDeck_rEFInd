@@ -1,135 +1,74 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include <iostream>
-#include <fstream>
-#include <QComboBox>
+#include "osdetect.h"
+#include "platform.h"
+
+#include <QDir>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIntValidator>
-#include <QLineEdit>
 #include <QMessageBox>
+#include <QProcess>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QSettings>
-#include <QString>
-#include <sstream>
-#include <string>
-#include <unistd.h>
+#include <QTextStream>
+#include <QVariant>
+#include <QVersionNumber>
 
-using std::cout;
-using std::endl;
-using std::ifstream;
-using std::ofstream;
-using std::ostringstream;
-using std::stoi;
-using std::string;
-
-bool Boot_Last_OS_bool;
-bool Enable_Mouse_bool;
-bool Firmware_BootNum_bool;
-int Update_Num;
-int VERSION = 140;
-ostringstream user_home_path;
-QString Background;
-QString Background_fileName;
-QString Boot_Option_1;
-QString Boot_Option_2;
-QString Boot_Option_3;
-QString Boot_Option_4;
-QString default_sel;
-QString Linux_Select;
-QString OS_Icon1;
-QString OS_Icon2;
-QString OS_Icon3;
-QString OS_Icon4;
-QString OS_Icon1_fileName;
-QString OS_Icon2_fileName;
-QString OS_Icon3_fileName;
-QString OS_Icon4_fileName;
-QString refind_install_source;
-QString refind_GUI_timeout;
-QString user_home_path_q;
-QString Default_Background;
-QString Default_OS_Icon1;
-QString Default_OS_Icon2;
-QString Default_OS_Icon3;
-QString Default_OS_Icon4;
-QString settings_path;
-QString Default_Background_Suffix{"/.local/SteamDeck_rEFInd/GUI/background.png"};
-QString Default_OS_Icon1_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon1.png"};
-QString Default_OS_Icon2_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon2.png"};
-QString Default_OS_Icon3_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon3.png"};
-QString Default_OS_Icon4_Suffix{"/.local/SteamDeck_rEFInd/GUI/os_icon4.png"};
-QString settings_path_suffix{"/.local/SteamDeck_rEFInd/GUI/rEFInd_GUI.ini"};
-string Default_Background_str;
-string Default_OS_Icon1_str;
-string Default_OS_Icon2_str;
-string Default_OS_Icon3_str;
-string Default_OS_Icon4_str;
-string Background_path;
-string Boot_Opt1_str;
-string Boot_Opt2_str;
-string Boot_Opt3_str;
-string Boot_Opt4_str;
-string Boot_Stanza_GUI;
-string Boot_Stanza_1;
-string Boot_Stanza_2;
-string Boot_Stanza_3;
-string Boot_Stanza_4;
-string Config_FW_BootNum;
-string default_OS_sel;
-string FW_BootNum_SteamOS;
-string GUID_Label;
-string Linux_Select_str;
-string OS_Icon1_path;
-string OS_Icon2_path;
-string OS_Icon3_path;
-string OS_Icon4_path;
-string refind_background;
-string refind_enable_mouse = "";
-string refind_timeout = "5";
-string refind_USER = getlogin();
-string user_home_path_str;
-string MICRO_SD_GUID = "SD";
-string USB_GUID = "USB";
-string Update_Num_str;
-string VERSION_str;
-string Windows_SD_GUID;
-string Windows_USB_GUID;
+static const char APP_VERSION[] = "2.0.0";
+static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
+static const QString NONE_OPTION = QStringLiteral("None");
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QValidator *INT_validator = new QIntValidator(-1, 99, this);
-    ui->TimeOut_lineEdit->setValidator(INT_validator);
-    user_home_path << "/home/" << refind_USER;
-    user_home_path_str = user_home_path.str();
-    user_home_path_q = QString::fromStdString(user_home_path_str);
-    Default_Background.reserve(user_home_path_q.length() + Default_Background_Suffix.length());
-    Default_Background.append(user_home_path_q);
-    Default_Background.append(Default_Background_Suffix);
-    Default_Background_str = Default_Background.toStdString();
-    settings_path.reserve(user_home_path_q.length() + settings_path_suffix.length());
-    settings_path.append(user_home_path_q);
-    settings_path.append(settings_path_suffix);
-    Default_OS_Icon1.reserve(user_home_path_q.length() + Default_OS_Icon1_Suffix.length());
-    Default_OS_Icon1.append(user_home_path_q);
-    Default_OS_Icon1.append(Default_OS_Icon1_Suffix);
-    Default_OS_Icon1_str = Default_OS_Icon1.toStdString();
-    Default_OS_Icon2.reserve(user_home_path_q.length() + Default_OS_Icon2_Suffix.length());
-    Default_OS_Icon2.append(user_home_path_q);
-    Default_OS_Icon2.append(Default_OS_Icon2_Suffix);
-    Default_OS_Icon2_str = Default_OS_Icon2.toStdString();
-    Default_OS_Icon3.reserve(user_home_path_q.length() + Default_OS_Icon3_Suffix.length());
-    Default_OS_Icon3.append(user_home_path_q);
-    Default_OS_Icon3.append(Default_OS_Icon3_Suffix);
-    Default_OS_Icon3_str = Default_OS_Icon3.toStdString();
-    Default_OS_Icon4.reserve(user_home_path_q.length() + Default_OS_Icon4_Suffix.length());
-    Default_OS_Icon4.append(user_home_path_q);
-    Default_OS_Icon4.append(Default_OS_Icon4_Suffix);
-    Default_OS_Icon4_str = Default_OS_Icon4.toStdString();
+    ui->TimeOut_lineEdit->setValidator(new QIntValidator(-1, 99, this));
+
+    homePath = QDir::homePath();
+    guiDataDir = Platform::dataDir();
+    guiConfigDir = guiDataDir + "/GUI";
+    settingsPath = guiConfigDir + "/rEFInd_GUI.ini";
+    QDir().mkpath(guiConfigDir);
+
+    // Placeholder hints must reflect the real data dir on each platform
+    // (Windows shows %LOCALAPPDATA%, not ~/.local).
+    auto pathHint = [this](const QString &name) {
+        QString p = guiConfigDir + "/" + name;
+        if (p.startsWith(homePath))
+            p = "~" + p.mid(homePath.length());
+        return QDir::toNativeSeparators(p);
+    };
+    ui->Background_lineEdit->setPlaceholderText(pathHint(QStringLiteral("background.png")));
+    ui->Boot_Option_01_Icon_lineEdit->setPlaceholderText(pathHint(QStringLiteral("os_icon1.png")));
+    ui->Boot_Option_02_Icon_lineEdit->setPlaceholderText(pathHint(QStringLiteral("os_icon2.png")));
+    ui->Boot_Option_03_Icon_lineEdit->setPlaceholderText(pathHint(QStringLiteral("os_icon3.png")));
+    ui->Boot_Option_04_Icon_lineEdit->setPlaceholderText(pathHint(QStringLiteral("os_icon4.png")));
+
+    if (!Platform::firmwareBootnumSupported()) {
+        ui->Firmware_bootnum_CheckBox->setEnabled(false);
+        ui->Firmware_bootnum_CheckBox->setToolTip(tr("Requires efibootmgr (Linux only)"));
+    }
+    if (!Platform::systemdFeaturesAvailable()) {
+        // The bootnext-refind.service toggles are systemd-only.
+        ui->Enable_sysd_pushButton->setEnabled(false);
+        ui->Disable_sysd_pushButton->setEnabled(false);
+        ui->Enable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
+        ui->Disable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
+    }
+    ui->Install_Source_comboBox->clear();
+    ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
+
+    const QList<QComboBox *> combos = bootCombos();
+    for (QComboBox *combo : combos) {
+        connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+                this, [this](int) { refreshDefaultBootCombo(); });
+    }
+
+    detected = detector.detect();
     readSettings();
 }
 
@@ -139,581 +78,331 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+QList<QComboBox *> MainWindow::bootCombos() const
+{
+    return {ui->Boot_Option_01_comboBox, ui->Boot_Option_02_comboBox,
+            ui->Boot_Option_03_comboBox, ui->Boot_Option_04_comboBox};
+}
+
+// Detected entries plus static fallbacks for removable media that may not be
+// inserted right now.
+QList<BootEntry> MainWindow::comboOptions()
+{
+    QList<BootEntry> options = detected;
+    auto addFallback = [&options](const BootEntry &e) {
+        for (const BootEntry &existing : options) {
+            if (existing.displayName == e.displayName)
+                return;
+        }
+        options.append(e);
+    };
+    addFallback({QStringLiteral("Windows (SD)"), QStringLiteral("Windows Micro SD"),
+                 QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"),
+                 detector.removableEspPartUuid(true), false});
+    addFallback({QStringLiteral("Windows (USB)"), QStringLiteral("Windows USB"),
+                 QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"),
+                 detector.removableEspPartUuid(false), false});
+    addFallback({QStringLiteral("Ventoy"), QStringLiteral("Ventoy"),
+                 QStringLiteral("/EFI/BOOT/grubx64_real.efi"), QStringLiteral("VTOYEFI"), false});
+    addFallback({QStringLiteral("Batocera (SD)"), QStringLiteral("Batocera"),
+                 QStringLiteral("/EFI/BOOT/bootx64.efi"), QStringLiteral("BATOCERA"), false});
+    return options;
+}
+
+void MainWindow::populateBootCombos()
+{
+    populating = true;
+    const QList<BootEntry> options = comboOptions();
+    const QList<QComboBox *> combos = bootCombos();
+    for (QComboBox *combo : combos) {
+        const QString previous = combo->currentText();
+        combo->clear();
+        for (const BootEntry &e : options)
+            combo->addItem(e.displayName, QVariant::fromValue(e));
+        combo->addItem(NONE_OPTION);
+        const int idx = combo->findText(previous);
+        combo->setCurrentIndex(idx >= 0 ? idx : combo->count() - 1);
+    }
+    populating = false;
+    refreshDefaultBootCombo();
+}
+
+void MainWindow::setComboText(QComboBox *combo, const QString &text)
+{
+    const int idx = combo->findText(text);
+    if (idx >= 0)
+        combo->setCurrentIndex(idx);
+}
+
+// First-run defaults: the platform's preferred OS leads (SteamOS on the Deck,
+// Windows on the Windows build), then the others. Entries pack into slots
+// 1, 2, ... with no gaps; the leading OS is also the default boot.
+void MainWindow::applyAutoSelection()
+{
+    QString windowsPick, linuxPick, steamPick;
+    for (const BootEntry &e : detected) {
+        if (e.displayName == QLatin1String("Windows")) {
+            windowsPick = e.displayName;
+            break;
+        }
+    }
+    for (const BootEntry &e : detected) {
+        if (!e.supportsFirmwareBootnum && !e.loaderPath.contains(QLatin1String("Microsoft"))) {
+            linuxPick = e.displayName;
+            break;
+        }
+    }
+    for (const BootEntry &e : detected) {
+        if (e.supportsFirmwareBootnum) {
+            steamPick = e.displayName;
+            break;
+        }
+    }
+
+    QStringList ordered;
+    if (Platform::preferWindowsAsDefault())
+        ordered << windowsPick << steamPick << linuxPick;
+    else
+        ordered << steamPick << windowsPick << linuxPick;
+
+    QStringList picks;
+    for (const QString &name : ordered) {
+        if (!name.isEmpty())
+            picks << name;
+    }
+
+    const QList<QComboBox *> combos = bootCombos();
+    for (int i = 0; i < combos.size(); ++i)
+        setComboText(combos.at(i), i < picks.size() ? picks.at(i) : NONE_OPTION);
+
+    if (!picks.isEmpty())
+        setComboText(ui->Default_Boot_comboBox, picks.first());
+}
+
+// Pull selected OSes toward slot 1 with no gaps, preserving their order, so a
+// saved settings file that left slots 1/2 as None with OSes in 3/4 is packed
+// back into 1, 2, ... on load.
+void MainWindow::compactBootSelections()
+{
+    const QList<QComboBox *> combos = bootCombos();
+    QStringList chosen;
+    for (QComboBox *combo : combos) {
+        const QString text = combo->currentText();
+        if (text != NONE_OPTION && !text.isEmpty())
+            chosen << text;
+    }
+    for (int i = 0; i < combos.size(); ++i)
+        setComboText(combos.at(i), i < chosen.size() ? chosen.at(i) : NONE_OPTION);
+}
+
+void MainWindow::refreshDefaultBootCombo()
+{
+    if (populating)
+        return;
+    const QString previous = ui->Default_Boot_comboBox->currentText();
+    ui->Default_Boot_comboBox->clear();
+    const QList<QComboBox *> combos = bootCombos();
+    for (QComboBox *combo : combos) {
+        const QString text = combo->currentText();
+        if (text != NONE_OPTION && !text.isEmpty()
+            && ui->Default_Boot_comboBox->findText(text) < 0)
+            ui->Default_Boot_comboBox->addItem(text);
+    }
+    setComboText(ui->Default_Boot_comboBox, previous);
+}
+
+void MainWindow::on_Rescan_pushButton_clicked()
+{
+    // Re-detect and reset the slots to the detected defaults (packed into
+    // 1, 2, ... with the preferred OS leading), discarding any manual arrangement.
+    detected = detector.detect();
+    populateBootCombos();
+    applyAutoSelection();
+}
+
+void MainWindow::browsePng(QLineEdit *edit, const QString &title)
+{
+    const QString fileName = QFileDialog::getOpenFileName(this, title, homePath, tr("Image (*.png)"));
+    if (!fileName.isEmpty())
+        edit->setText(fileName);
+}
+
 void MainWindow::on_Background_pushButton_clicked()
 {
-    QFileDialog Background_File_Dialog(this, tr("Select Background PNG"));
-    Background_fileName = Background_File_Dialog.getOpenFileName(this, tr("Select Background PNG"), "/home/deck", tr("Image (*.png)"));
-    if (Background_fileName != "")
-    {
-        ui->Background_lineEdit->setText(Background_fileName);
-    }
+    browsePng(ui->Background_lineEdit, tr("Select Background PNG"));
 }
 
 void MainWindow::on_Boot_Option_01_Icon_pushButton_clicked()
 {
-    QFileDialog OS_Icon1_File_Dialog(this, tr("Select OS Icon 1 PNG"));
-    OS_Icon1_fileName = OS_Icon1_File_Dialog.getOpenFileName(this, tr("Select OS Icon 1 PNG"), "/home/deck", tr("Image (*.png)"));
-    if (OS_Icon1_fileName != "")
-    {
-        ui->Boot_Option_01_Icon_lineEdit->setText(OS_Icon1_fileName);
-    }
+    browsePng(ui->Boot_Option_01_Icon_lineEdit, tr("Select OS Icon 1 PNG"));
 }
 
 void MainWindow::on_Boot_Option_02_Icon_pushButton_clicked()
 {
-    QFileDialog OS_Icon2_File_Dialog(this, tr("Select OS Icon 2 PNG"));
-    OS_Icon2_fileName = OS_Icon2_File_Dialog.getOpenFileName(this, tr("Select OS Icon 2 PNG"), "/home/deck", tr("Image (*.png)"));
-    if (OS_Icon2_fileName != "")
-    {
-        ui->Boot_Option_02_Icon_lineEdit->setText(OS_Icon2_fileName);
-    }
+    browsePng(ui->Boot_Option_02_Icon_lineEdit, tr("Select OS Icon 2 PNG"));
 }
 
 void MainWindow::on_Boot_Option_03_Icon_pushButton_clicked()
 {
-    QFileDialog OS_Icon3_File_Dialog(this, tr("Select OS Icon 3 PNG"));
-    OS_Icon3_fileName = OS_Icon3_File_Dialog.getOpenFileName(this, tr("Select OS Icon 3 PNG"), "/home/deck", tr("Image (*.png)"));
-    if (OS_Icon3_fileName != "")
-    {
-        ui->Boot_Option_03_Icon_lineEdit->setText(OS_Icon3_fileName);
-    }
+    browsePng(ui->Boot_Option_03_Icon_lineEdit, tr("Select OS Icon 3 PNG"));
 }
 
 void MainWindow::on_Boot_Option_04_Icon_pushButton_clicked()
 {
-    QFileDialog OS_Icon4_File_Dialog(this, tr("Select OS Icon 4 PNG"));
-    OS_Icon4_fileName = OS_Icon4_File_Dialog.getOpenFileName(this, tr("Select OS Icon 4 PNG"), "/home/deck", tr("Image (*.png)"));
-    if (OS_Icon4_fileName != "")
-    {
-        ui->Boot_Option_04_Icon_lineEdit->setText(OS_Icon4_fileName);
-    }
+    browsePng(ui->Boot_Option_04_Icon_lineEdit, tr("Select OS Icon 4 PNG"));
 }
 
 void MainWindow::on_Install_rEFInd_clicked()
 {
-    refind_install_source = ui->Install_Source_comboBox->currentText();
-    if(refind_install_source == "Pacman")
-    {
-        string cmd = user_home_path_str + "/.local/SteamDeck_rEFInd/scripts/pacman_install.sh";
-        system(cmd.c_str());
+    if (!Platform::runInstallerScript(ui->Install_Source_comboBox->currentText()))
+        QMessageBox::warning(this, tr("Install rEFInd"),
+                             tr("Failed to launch the installation script."));
+}
+
+QString MainWindow::steamFirmwareBootNum()
+{
+    bool ok = false;
+    const QString out = OSDetector::runCommand(QStringLiteral("efibootmgr"), {}, &ok);
+    if (!ok)
+        return {};
+    static const QRegularExpression re(QStringLiteral("^Boot([0-9A-Fa-f]{4})\\*?\\s+.*steam"),
+                                       QRegularExpression::CaseInsensitiveOption
+                                           | QRegularExpression::MultilineOption);
+    const QRegularExpressionMatch match = re.match(out);
+    return match.hasMatch() ? match.captured(1) : QString();
+}
+
+QString MainWindow::createBootStanza(const BootEntry &entry, int slot)
+{
+    QString stanza;
+    QTextStream out(&stanza);
+    out << "\nmenuentry \"" << entry.menuName << "\" {\n";
+    out << "\ticon /EFI/refind/os_icon" << slot << ".png\n";
+    if (entry.supportsFirmwareBootnum && ui->Firmware_bootnum_CheckBox->isChecked()) {
+        const QString bootNum = steamFirmwareBootNum();
+        if (!bootNum.isEmpty()) {
+            out << "\tfirmware_bootnum " << bootNum << "\n";
+            out << "}\n";
+            return stanza;
+        }
+        // Lookup failed: fall through to the regular loader entry.
     }
-    if(refind_install_source == "Sourceforge")
-    {
-        string cmd = user_home_path_str + "/.local/SteamDeck_rEFInd/scripts/sourceforge_install.sh";
-        system(cmd.c_str());
-    }
+    if (!entry.volume.isEmpty())
+        out << "\tvolume \"" << entry.volume << "\"\n";
+    out << "\tloader " << entry.loaderPath << "\n";
+    out << "\tgraphics on\n}\n";
+    return stanza;
 }
 
 void MainWindow::on_Create_Config_clicked()
 {
-    Background.clear();
-    OS_Icon1.clear();
-    OS_Icon2.clear();
-    OS_Icon3.clear();
-    OS_Icon4.clear();
-    Background_path.clear();
-    OS_Icon1_path.clear();
-    OS_Icon2_path.clear();
-    OS_Icon3_path.clear();
-    OS_Icon4_path.clear();
-    ostringstream refind_temp_path;
-    refind_temp_path << "/home/" << refind_USER << "/.local/SteamDeck_rEFInd/GUI/refind.conf";
-    string refind_conf_path = refind_temp_path.str();
-    ofstream refind_conf(refind_conf_path);
-    cout << refind_conf.is_open() << endl;
-    refind_conf << "# GUI generated refind.conf Config File\n";
-    refind_GUI_timeout = ui->TimeOut_lineEdit->text();
-    refind_timeout = refind_GUI_timeout.toStdString();
-    if(refind_timeout == "") {
-        refind_timeout = "5";
-        }
-    refind_conf << "timeout " << refind_timeout << "\n";
-    refind_conf << "use_nvram false\n";
-    refind_conf << "hideui singleuser,hints,arrows,label,badges\n";
-    refind_background = "background.png";
-    refind_conf << "banner " << refind_background << "\n";
-    refind_conf << "banner_scale fillscreen\n";
-    refind_conf << "resolution 3\n";
-    refind_conf << "enable_touch\n";
-    Boot_Last_OS_bool = ui->Last_OS_CheckBox->isChecked();
-    Enable_Mouse_bool = ui->Enable_Mouse_checkBox->isChecked();
-    if(Enable_Mouse_bool) {
-        refind_enable_mouse = "";
+    QDir().mkpath(guiConfigDir);
+    QFile conf(guiConfigDir + "/refind.conf");
+    if (!conf.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        QMessageBox::critical(this, tr("Create Config"),
+                              tr("Could not write %1").arg(conf.fileName()));
+        return;
     }
-    else {
-        refind_enable_mouse = "#";
+
+    QString timeout = ui->TimeOut_lineEdit->text();
+    if (timeout.isEmpty())
+        timeout = QStringLiteral("5");
+
+    QTextStream out(&conf);
+    out << "# GUI generated refind.conf Config File\n";
+    out << "timeout " << timeout << "\n";
+    out << "use_nvram false\n";
+    out << "hideui singleuser,hints,arrows,label,badges\n";
+    out << "banner background.png\n";
+    out << "banner_scale fillscreen\n";
+    out << "resolution 3\n";
+    out << "enable_touch\n";
+    out << (ui->Enable_Mouse_checkBox->isChecked() ? "" : "#") << "enable_mouse\n";
+    out << "showtools\n";
+    out << "scanfor manual\n";
+
+    struct Selection {
+        BootEntry entry;
+        int slot;
+    };
+    QList<Selection> selections;
+    const QList<QComboBox *> combos = bootCombos();
+    for (int i = 0; i < combos.size(); ++i) {
+        QComboBox *combo = combos.at(i);
+        if (combo->currentText() == NONE_OPTION || combo->currentText().isEmpty())
+            continue;
+        const QVariant data = combo->currentData();
+        if (!data.canConvert<BootEntry>())
+            continue;
+        selections.append({data.value<BootEntry>(), i + 1});
     }
-    refind_conf << refind_enable_mouse << "enable_mouse\n";
-    refind_conf << "showtools\n";
-    refind_conf << "#scanfor manual,external\n";
-    refind_conf << "scanfor manual\n";
-    default_sel = ui->Default_Boot_comboBox->currentText();
-    Firmware_BootNum_bool = ui->Firmware_bootnum_CheckBox->isChecked();
-    Boot_Option_1 = ui->Boot_Option_01_comboBox->currentText();
-    Boot_Option_2 = ui->Boot_Option_02_comboBox->currentText();
-    Boot_Option_3 = ui->Boot_Option_03_comboBox->currentText();
-    Boot_Option_4 = ui->Boot_Option_04_comboBox->currentText();
-    default_OS_sel = getDefaultBoot(default_sel, Boot_Last_OS_bool, Firmware_BootNum_bool, Boot_Option_1, Boot_Option_2, Boot_Option_3, Boot_Option_4);
-    refind_conf << "default_selection \"" << default_OS_sel << "\"\n";
-    Boot_Stanza_1 = CreateBootStanza(Boot_Option_1, "1", Firmware_BootNum_bool);
-    refind_conf << Boot_Stanza_1;
-    Boot_Stanza_2 = CreateBootStanza(Boot_Option_2, "2", Firmware_BootNum_bool);
-    refind_conf << Boot_Stanza_2;
-    Boot_Stanza_3 = CreateBootStanza(Boot_Option_3, "3", Firmware_BootNum_bool);
-    refind_conf << Boot_Stanza_3;
-    Boot_Stanza_4 = CreateBootStanza(Boot_Option_4, "4", Firmware_BootNum_bool);
-    refind_conf << Boot_Stanza_4;
-    refind_conf.close();
-    // Double checksing for valid PNG files
-    checkPNGFile(ui->Background_lineEdit);
-    checkPNGFile(ui->Boot_Option_01_Icon_lineEdit);
-    checkPNGFile(ui->Boot_Option_02_Icon_lineEdit);
-    checkPNGFile(ui->Boot_Option_03_Icon_lineEdit);
-    checkPNGFile(ui->Boot_Option_04_Icon_lineEdit);
-    Background = ui->Background_lineEdit->text();
-    if((Background != "") && (Background != Default_Background)){
-        Background_path = Background.toStdString();
-        QFile::remove(Default_Background);
-        QFile::copy(Background, Default_Background);
+
+    // default_selection: position of the chosen default among generated
+    // stanzas (scanfor is manual-only, so row numbers match stanza order).
+    const QString defaultName = ui->Default_Boot_comboBox->currentText();
+    QString defaultSelection;
+    if (ui->Last_OS_CheckBox->isChecked())
+        defaultSelection = QStringLiteral("+");
+    for (int i = 0; i < selections.size(); ++i) {
+        if (selections.at(i).entry.displayName == defaultName) {
+            if (!defaultSelection.isEmpty())
+                defaultSelection += QLatin1Char(',');
+            defaultSelection += QString::number(i + 1);
+            break;
+        }
     }
-    OS_Icon1 = ui->Boot_Option_01_Icon_lineEdit->text();
-    if((OS_Icon1 != "" ) && (OS_Icon1 != Default_OS_Icon1)){
-        OS_Icon1_path = OS_Icon1.toStdString();
-        QFile::remove(Default_OS_Icon1);
-        QFile::copy(OS_Icon1, Default_OS_Icon1);
-        }
-    OS_Icon2 = ui->Boot_Option_02_Icon_lineEdit->text();
-    if((OS_Icon2 != "" ) && (OS_Icon2 != Default_OS_Icon2)){
-        OS_Icon2_path = OS_Icon2.toStdString();
-        QFile::remove(Default_OS_Icon2);
-        QFile::copy(OS_Icon2, Default_OS_Icon2);
-        }
-    OS_Icon3 = ui->Boot_Option_03_Icon_lineEdit->text();
-    if((OS_Icon3 != "" ) && (OS_Icon3 != Default_OS_Icon3)){
-        OS_Icon3_path = OS_Icon3.toStdString();
-        QFile::remove(Default_OS_Icon3);
-        QFile::copy(OS_Icon3, Default_OS_Icon3);
-        }
-    OS_Icon4 = ui->Boot_Option_04_Icon_lineEdit->text();
-    if((OS_Icon4 != "" ) && (OS_Icon4 != Default_OS_Icon4)){
-        OS_Icon4_path = OS_Icon4.toStdString();
-        QFile::remove(Default_OS_Icon4);
-        QFile::copy(OS_Icon4, Default_OS_Icon4);
-        }
+    if (defaultSelection.isEmpty())
+        defaultSelection = QStringLiteral("1");
+    out << "default_selection \"" << defaultSelection << "\"\n";
+
+    for (const Selection &sel : selections)
+        out << createBootStanza(sel.entry, sel.slot);
+    conf.close();
+
+    copyPng(ui->Background_lineEdit, guiConfigDir + "/background.png");
+    copyPng(ui->Boot_Option_01_Icon_lineEdit, guiConfigDir + "/os_icon1.png");
+    copyPng(ui->Boot_Option_02_Icon_lineEdit, guiConfigDir + "/os_icon2.png");
+    copyPng(ui->Boot_Option_03_Icon_lineEdit, guiConfigDir + "/os_icon3.png");
+    copyPng(ui->Boot_Option_04_Icon_lineEdit, guiConfigDir + "/os_icon4.png");
 }
 
 void MainWindow::on_Install_Config_clicked()
 {
-    string cmd = user_home_path_str + "/.local/SteamDeck_rEFInd/scripts/install_config_from_GUI.sh";
-    system(cmd.c_str());
+    // On Linux the script shows its own zenity password + result dialogs, so a
+    // nonzero return only means the launch itself failed.
+    const int rc = Platform::installConfig();
+    if (rc != 0)
+        QMessageBox::critical(this, tr("Install Config"),
+                              tr("Installing the config failed (code %1).").arg(rc));
 }
 
-string MainWindow::Get_FW_BootNum() {
-    FW_BootNum_SteamOS.clear();
-    FILE *process;
-    char buff[1024];
-    process = popen("efibootmgr | grep steam | grep -Eo '[0-9]{1,4}' | head -1", "r");
-    if (process != NULL) {
-        while (fgets(buff, sizeof(buff), process)) {
-            printf("%s", buff);
-            FW_BootNum_SteamOS += buff;
-        }
-        pclose(process);
-    }
-    return FW_BootNum_SteamOS;
-}
-
-string MainWindow::CreateBootStanza(QString &BootOption, const char *BootNum, bool FW_BootNum_bool) {
-    Boot_Stanza_GUI.clear();
-    Config_FW_BootNum.clear();
-    if(BootOption == "SteamOS") {
-        Boot_Stanza_GUI.append("\nmenuentry \"SteamOS\" {\n");
-        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-        Boot_Stanza_GUI.append(BootNum);
-        Boot_Stanza_GUI.append(".png\n");
-        if(FW_BootNum_bool) {
-            Config_FW_BootNum = Get_FW_BootNum();
-            Boot_Stanza_GUI.append("\tfirmware_bootnum ");
-            Boot_Stanza_GUI.append(Config_FW_BootNum);
-            Boot_Stanza_GUI.append("}\n");
-            return Boot_Stanza_GUI;
-        }
-        else {
-            Boot_Stanza_GUI.append("\tloader /EFI/steamos/steamcl.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-    }
-    if(BootOption == "Windows") {
-        Boot_Stanza_GUI.append("\nmenuentry \"Windows\" {\n");
-        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-        Boot_Stanza_GUI.append(BootNum);
-        Boot_Stanza_GUI.append(".png\n");
-        Boot_Stanza_GUI.append("\tloader /EFI/Microsoft/Boot/bootmgfw.efi\n");
-        Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-        return Boot_Stanza_GUI;
-    }
-    if(BootOption == "Batocera (SD)") {
-        Boot_Stanza_GUI.append("\nmenuentry \"Batocera\" {\n");
-        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-        Boot_Stanza_GUI.append(BootNum);
-        Boot_Stanza_GUI.append(".png\n");
-        Boot_Stanza_GUI.append("\tvolume \"BATOCERA\"\n");
-        Boot_Stanza_GUI.append("\tloader /EFI/BOOT/bootx64.efi\n");
-        Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-        return Boot_Stanza_GUI;
-    }
-    if(BootOption == "Windows (SD)") {
-        Windows_SD_GUID = getPartitionGUIDLabel(MICRO_SD_GUID);
-        Boot_Stanza_GUI.append("\nmenuentry \"Windows Micro SD\" {\n");
-        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-        Boot_Stanza_GUI.append(BootNum);
-        Boot_Stanza_GUI.append(".png\n");
-        Boot_Stanza_GUI.append("\tvolume ");
-        Boot_Stanza_GUI.append(Windows_SD_GUID);
-        Boot_Stanza_GUI.append("\tloader /EFI/Microsoft/Boot/bootmgfw.efi\n");
-        Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-        return Boot_Stanza_GUI;
-    }
-    if(BootOption == "Windows (USB)") {
-        Windows_USB_GUID = getPartitionGUIDLabel(USB_GUID);
-        Boot_Stanza_GUI.append("\nmenuentry \"Windows USB\" {\n");
-        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-        Boot_Stanza_GUI.append(BootNum);
-        Boot_Stanza_GUI.append(".png\n");
-        Boot_Stanza_GUI.append("\tvolume ");
-        Boot_Stanza_GUI.append(Windows_USB_GUID);
-        Boot_Stanza_GUI.append("\tloader /EFI/Microsoft/Boot/bootmgfw.efi\n");
-        Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-        return Boot_Stanza_GUI;
-    }
-    if(BootOption == "Ventoy") {
-        Boot_Stanza_GUI.append("\nmenuentry \"Ventoy\" {\n");
-        Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-        Boot_Stanza_GUI.append(BootNum);
-        Boot_Stanza_GUI.append(".png\n");
-        Boot_Stanza_GUI.append("\tvolume \"VTOYEFI\"\n");
-        Boot_Stanza_GUI.append("\tloader /EFI/BOOT/grubx64_real.efi\n");
-        Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-        return Boot_Stanza_GUI;
-    }
-    if(BootOption == "Linux") {
-        Linux_Select = ui->Linux_Select_comboBox->currentText();
-        Linux_Select_str = Linux_Select.toStdString();
-        if(Linux_Select_str == "Ubuntu") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Ubuntu\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/ubuntu/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Arch - Systemd") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Arch\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/systemd/systemd-bootx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Bazzite") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Bazzite\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/fedora/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-            }
-        if(Linux_Select_str == "CentOS") {
-            Boot_Stanza_GUI.append("\nmenuentry \"CentOS\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/CentOS/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "ChimeraOS") {
-            Boot_Stanza_GUI.append("\nmenuentry \"ChimeraOS\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tvolume \"frzr_efi\"\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/systemd/systemd-bootx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Debian") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Debian\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/debian/grubx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Elementary") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Elementary\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/elementary/grubx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Fedora") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Fedora\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/fedora/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Kali") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Kali\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/kali/grubx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "KDE Neon") {
-            Boot_Stanza_GUI.append("\nmenuentry \"KDE Neon\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/neon/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Manjaro") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Manjaro\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/manjaro/grubx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Mint") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Mint\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/ubuntu/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Nobara") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Nobara\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/fedora/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-            }
-        if(Linux_Select_str == "openSUSE") {
-            Boot_Stanza_GUI.append("\nmenuentry \"openSUSE\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/opensuse/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-        if(Linux_Select_str == "Zorin") {
-            Boot_Stanza_GUI.append("\nmenuentry \"Zorin\" {\n");
-            Boot_Stanza_GUI.append("\ticon /EFI/refind/os_icon");
-            Boot_Stanza_GUI.append(BootNum);
-            Boot_Stanza_GUI.append(".png\n");
-            Boot_Stanza_GUI.append("\tloader /EFI/ubuntu/shimx64.efi\n");
-            Boot_Stanza_GUI.append("\tgraphics on\n}\n");
-            return Boot_Stanza_GUI;
-        }
-    }
-    if(BootOption == "None") {
-        return Boot_Stanza_GUI;
-    }
-    return Boot_Stanza_GUI;
-}
-
-string MainWindow::getDefaultBoot(QString &DefaultBootOption, bool Last_OS, bool FW_BootNum_boot_bool, QString &Boot_Opt1, QString &Boot_Opt2, QString &Boot_Opt3, QString &Boot_Opt4)
+bool MainWindow::copyPng(QLineEdit *edit, const QString &destPath)
 {
-    default_OS_sel.clear();
-    Boot_Opt1_str = Boot_Opt1.toStdString();
-    Boot_Opt2_str = Boot_Opt2.toStdString();
-    Boot_Opt3_str = Boot_Opt3.toStdString();
-    Boot_Opt4_str = Boot_Opt4.toStdString();
-    if(Last_OS){
-        default_OS_sel.append("+,");
+    checkPNGFile(edit);
+    const QString source = edit->text();
+    if (source.isEmpty() || source == destPath)
+        return true;
+    if (QFile::exists(destPath))
+        QFile::remove(destPath);
+    if (!QFile::copy(source, destPath)) {
+        QMessageBox::warning(this, tr("Copy PNG"),
+                             tr("Could not copy %1 to %2").arg(source, destPath));
+        return false;
     }
-    if(DefaultBootOption == "SteamOS") {
-        if(FW_BootNum_boot_bool) {
-            if(Boot_Opt1_str == "SteamOS"){
-                default_OS_sel.append("1");
-                return default_OS_sel;
-            }
-            if(Boot_Opt2_str == "SteamOS"){
-                default_OS_sel.append("2");
-                return default_OS_sel;
-            }
-            if(Boot_Opt3_str == "SteamOS"){
-                default_OS_sel.append("3");
-                return default_OS_sel;
-            }
-            if(Boot_Opt4_str == "SteamOS"){
-                default_OS_sel.append("4");
-                return default_OS_sel;
-            }
-        }
-        else {
-            default_OS_sel.append("steam");
-            return default_OS_sel;
-        }
-
-    }
-    if(DefaultBootOption == "Windows") {
-        default_OS_sel.append("Microsoft");
-        return default_OS_sel;
-    }
-    if(DefaultBootOption == "Linux") {
-        if(Boot_Opt1_str == "Linux"){
-            default_OS_sel.append("1");
-            return default_OS_sel;
-        }
-        if(Boot_Opt2_str == "Linux"){
-            default_OS_sel.append("2");
-            return default_OS_sel;
-        }
-        if(Boot_Opt3_str == "Linux"){
-            default_OS_sel.append("3");
-            return default_OS_sel;
-        }
-        if(Boot_Opt4_str == "Linux"){
-            default_OS_sel.append("4");
-            return default_OS_sel;
-        }
-    }
-    return default_OS_sel;
+    return true;
 }
 
-string MainWindow::getPartitionGUIDLabel(string &GUID_Source){
-    FILE *GUID_process;
-    char GUID_buff[1024];
-    GUID_Label.clear();
-    if(GUID_Source == "USB"){
-        GUID_process = popen("lsblk -o NAME,UUID | grep sda1 | awk '{print $2}' | tr [:lower:] [:upper:]", "r");
-    }
-    if(GUID_Source == "SD"){
-        GUID_process = popen("lsblk -o NAME,UUID | grep mmcblk0p1 | awk '{print $2}' | tr [:lower:] [:upper:]", "r");
-    }
-    if (GUID_process != NULL) {
-        while (fgets(GUID_buff, sizeof(GUID_buff), GUID_process)) {
-            printf("%s", GUID_buff);
-            GUID_Label += GUID_buff;
-        }
-        pclose(GUID_process);
-    }
-    return GUID_Label;
-}
-
-void MainWindow::readSettings()
+void MainWindow::checkPNGFile(QLineEdit *edit)
 {
-    QSettings settings(settings_path, QSettings::NativeFormat);
-    settings.beginGroup("CheckBoxes");
-        bool temp_Last_OS_bool = settings.value("LastOSCheckBox").toBool();
-        bool FW_bool = settings.value("FW_bootNum_CheckBox").toBool();
-        bool use_Mouse_bool = settings.value("Enable_Mouse_CheckBox").toBool();
-    settings.endGroup();
-    settings.beginGroup("ComboBoxes");
-        int tempDefaultBoot = settings.value("DefaultBootComboBox").toInt();
-        int tempBoot01 = settings.value("BootComboBox01").toInt();
-        int tempBoot02 = settings.value("BootComboBox02").toInt();
-        int tempBoot03 = settings.value("BootComboBox03").toInt();
-        int tempBoot04 = settings.value("BootComboBox04").toInt();
-        int LinuxChoice = settings.value("LinuxComboBox").toInt();
-        int InstallSource = settings.value("InstallSourceComboBox").toInt();
-    settings.endGroup();
-    settings.beginGroup("Timeout");
-        QString tempTimeout = settings.value("Timeout").toString();
-    settings.endGroup();
-    ui->Default_Boot_comboBox->setCurrentIndex(tempDefaultBoot);
-    ui->Boot_Option_01_comboBox->setCurrentIndex(tempBoot01);
-    ui->Boot_Option_02_comboBox->setCurrentIndex(tempBoot02);
-    ui->Boot_Option_03_comboBox->setCurrentIndex(tempBoot03);
-    ui->Boot_Option_04_comboBox->setCurrentIndex(tempBoot04);
-    ui->Linux_Select_comboBox->setCurrentIndex(LinuxChoice);
-    ui->Install_Source_comboBox->setCurrentIndex(InstallSource);
-    ui->Last_OS_CheckBox->setChecked(temp_Last_OS_bool);
-    ui->Firmware_bootnum_CheckBox->setChecked(FW_bool);
-    ui->Enable_Mouse_checkBox->setChecked(use_Mouse_bool);
-    if (tempTimeout != "")
-    {
-        ui->TimeOut_lineEdit->setText(tempTimeout);
-    }
-}
-
-void MainWindow::writeSettings()
-{
-    QSettings settings(settings_path, QSettings::NativeFormat);
-    settings.beginGroup("ComboBoxes");
-        settings.setValue("DefaultBootComboBox", ui->Default_Boot_comboBox->currentIndex());
-        settings.setValue("BootComboBox01", ui->Boot_Option_01_comboBox->currentIndex());
-        settings.setValue("BootComboBox02", ui->Boot_Option_02_comboBox->currentIndex());
-        settings.setValue("BootComboBox03", ui->Boot_Option_03_comboBox->currentIndex());
-        settings.setValue("BootComboBox04", ui->Boot_Option_04_comboBox->currentIndex());
-        settings.setValue("LinuxComboBox", ui->Linux_Select_comboBox->currentIndex());
-        settings.setValue("InstallSourceComboBox", ui->Install_Source_comboBox->currentIndex());
-    settings.endGroup();
-    settings.beginGroup("CheckBoxes");
-        settings.setValue("LastOSCheckBox", ui->Last_OS_CheckBox->isChecked());
-        settings.setValue("FW_bootNum_CheckBox", ui->Firmware_bootnum_CheckBox->isChecked());
-        settings.setValue("Enable_Mouse_CheckBox", ui->Enable_Mouse_checkBox->isChecked());
-    settings.endGroup();
-    settings.beginGroup("Timeout");
-        settings.setValue("Timeout", ui->TimeOut_lineEdit->text());
-    settings.endGroup();
-}
-
-void MainWindow::on_About_pushButton_clicked()
-{
-    QMessageBox AboutBox;
-    QPushButton* updateButton = new QPushButton("Check For Update");
-    connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
-    AboutBox.setTextFormat(Qt::RichText);
-    AboutBox.setText("<p align='center'><a href='https://github.com/jlobue10/SteamDeck_rEFInd'>rEFInd Customization GUI v1.4.0</a><br><br>"
-                     "Original GUI Creator: "
-                     "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
-                     "Special Thanks to Deck Wizard for testing and QA"
-                     "<br><br><a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'>Deck Wizard Dual Boot Tutorial</a><br></p>");
-    AboutBox.setStandardButtons(QMessageBox::Ok);
-    AboutBox.addButton(updateButton, QMessageBox::ActionRole);
-    AboutBox.exec();
-}
-
-void MainWindow::checkPNGFile(QLineEdit *PNGlineEdit) {
-    QString text_PNG = PNGlineEdit->text();
-    QFileInfo fileInfo(text_PNG);
-    if (fileInfo.exists() && fileInfo.isFile() && fileInfo.suffix() == "png") {
-        // Do nothing to text, keep valid PNG entry
-    } else {
-        // The file does not exist or is not a .png file.
-        // Clear the QLineEdit.
-        PNGlineEdit->clear();
-    }
+    const QFileInfo fileInfo(edit->text());
+    if (!(fileInfo.exists() && fileInfo.isFile() && fileInfo.suffix().toLower() == QLatin1String("png")))
+        edit->clear();
 }
 
 void MainWindow::on_Background_lineEdit_editingFinished()
 {
-   checkPNGFile(ui->Background_lineEdit);
+    checkPNGFile(ui->Background_lineEdit);
 }
-
 
 void MainWindow::on_Boot_Option_01_Icon_lineEdit_editingFinished()
 {
@@ -735,64 +424,139 @@ void MainWindow::on_Boot_Option_04_Icon_lineEdit_editingFinished()
     checkPNGFile(ui->Boot_Option_04_Icon_lineEdit);
 }
 
-void MainWindow::on_Enable_sysd_pushButton_clicked()
+void MainWindow::readSettings()
 {
-    string sysd_on = string("xterm -e \"sudo systemctl enable --now bootnext-refind.service &&");
-           sysd_on.append(" sudo systemctl status bootnext-refind.service; $SHELL\"");
-    system(sysd_on.c_str());
+    QSettings settings(settingsPath, QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("CheckBoxes"));
+    ui->Last_OS_CheckBox->setChecked(settings.value(QStringLiteral("LastOSCheckBox")).toBool());
+    ui->Firmware_bootnum_CheckBox->setChecked(settings.value(QStringLiteral("FW_bootNum_CheckBox")).toBool());
+    ui->Enable_Mouse_checkBox->setChecked(settings.value(QStringLiteral("Enable_Mouse_CheckBox"), true).toBool());
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("ComboBoxes"));
+    const QString boot1 = settings.value(QStringLiteral("BootOption01Text")).toString();
+    const QString boot2 = settings.value(QStringLiteral("BootOption02Text")).toString();
+    const QString boot3 = settings.value(QStringLiteral("BootOption03Text")).toString();
+    const QString boot4 = settings.value(QStringLiteral("BootOption04Text")).toString();
+    const QString defaultBoot = settings.value(QStringLiteral("DefaultBootText")).toString();
+    const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("Timeout"));
+    const QString timeout = settings.value(QStringLiteral("Timeout")).toString();
+    settings.endGroup();
+
+    populateBootCombos();
+    if (boot1.isEmpty() && boot2.isEmpty() && boot3.isEmpty() && boot4.isEmpty()) {
+        applyAutoSelection();
+    } else {
+        const QList<QComboBox *> combos = bootCombos();
+        const QStringList saved = {boot1, boot2, boot3, boot4};
+        for (int i = 0; i < combos.size(); ++i)
+            setComboText(combos.at(i), saved.at(i));
+        // Repack any gaps a stale settings file may have left (OSes in 3/4,
+        // 1/2 empty) so detected OSes always start at slot 1.
+        compactBootSelections();
+    }
+    setComboText(ui->Default_Boot_comboBox, defaultBoot);
+    ui->Install_Source_comboBox->setCurrentIndex(installSource);
+    if (!timeout.isEmpty())
+        ui->TimeOut_lineEdit->setText(timeout);
 }
 
-void MainWindow::on_Disable_sysd_pushButton_clicked()
+void MainWindow::writeSettings()
 {
-    string sysd_off = string("xterm -e \"sudo systemctl disable --now bootnext-refind.service &&");
-           sysd_off.append(" sudo efibootmgr -N && sudo systemctl status bootnext-refind.service; $SHELL\"");
-    system(sysd_off.c_str());
+    QSettings settings(settingsPath, QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("ComboBoxes"));
+    settings.setValue(QStringLiteral("BootOption01Text"), ui->Boot_Option_01_comboBox->currentText());
+    settings.setValue(QStringLiteral("BootOption02Text"), ui->Boot_Option_02_comboBox->currentText());
+    settings.setValue(QStringLiteral("BootOption03Text"), ui->Boot_Option_03_comboBox->currentText());
+    settings.setValue(QStringLiteral("BootOption04Text"), ui->Boot_Option_04_comboBox->currentText());
+    settings.setValue(QStringLiteral("DefaultBootText"), ui->Default_Boot_comboBox->currentText());
+    settings.setValue(QStringLiteral("InstallSourceComboBox"), ui->Install_Source_comboBox->currentIndex());
+    settings.remove(QStringLiteral("LinuxComboBox"));
+    settings.endGroup();
+    settings.beginGroup(QStringLiteral("CheckBoxes"));
+    settings.setValue(QStringLiteral("LastOSCheckBox"), ui->Last_OS_CheckBox->isChecked());
+    settings.setValue(QStringLiteral("FW_bootNum_CheckBox"), ui->Firmware_bootnum_CheckBox->isChecked());
+    settings.setValue(QStringLiteral("Enable_Mouse_CheckBox"), ui->Enable_Mouse_checkBox->isChecked());
+    settings.endGroup();
+    settings.beginGroup(QStringLiteral("Timeout"));
+    settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());
+    settings.endGroup();
+}
+
+void MainWindow::on_About_pushButton_clicked()
+{
+    QMessageBox aboutBox;
+    QPushButton *updateButton = new QPushButton(tr("Check For Update"), &aboutBox);
+    connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
+    aboutBox.setTextFormat(Qt::RichText);
+    aboutBox.setText(QStringLiteral("<p align='center'>"
+                                    "<a href='https://github.com/jlobue10/SteamDeck_rEFInd'>"
+                                    "rEFInd Customization GUI v%1</a><br><br>"
+                                    "Original GUI Creator: "
+                                    "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
+                                    "Special Thanks to Deck Wizard for testing and QA"
+                                    "<br><br><a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'>"
+                                    "Deck Wizard Dual Boot Tutorial</a><br></p>")
+                         .arg(QLatin1String(APP_VERSION)));
+    aboutBox.setStandardButtons(QMessageBox::Ok);
+    aboutBox.addButton(updateButton, QMessageBox::ActionRole);
+    aboutBox.exec();
 }
 
 void MainWindow::on_updateButton_Clicked()
 {
-    QMessageBox UpdateBox;
-    UpdateBox.setTextFormat(Qt::RichText);
-    FILE *Update_process;
-    char Update_buff[1024];
-    Update_Num_str.clear();
-    Update_process = popen("curl -s -f https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION | sed 's/\\./ /g' | sed 's/\\s\\+//g'", "r");
-    if (Update_process != NULL) {
-        while (fgets(Update_buff, sizeof(Update_buff), Update_process)) {
-            printf("%s", Update_buff);
-            Update_Num_str += Update_buff;
-        }
-        pclose(Update_process);
-    }
-    while (!Update_Num_str.empty() && (Update_Num_str.back() == '\n' || Update_Num_str.back() == '\r')) {
-        Update_Num_str.pop_back();
-    }
-    bool Update_Num_valid = !Update_Num_str.empty() && Update_Num_str.find_first_not_of("0123456789") == string::npos;
-    if (!Update_Num_valid) {
-        UpdateBox.setText("<p align='center'>Unable to check for updates. Please check your internet connection and try again.<br><br></p>");
+    bool ok = false;
+    const QString remoteRaw = OSDetector::runCommand(
+        QStringLiteral("curl"),
+        {QStringLiteral("-fsSL"), QStringLiteral("--max-time"), QStringLiteral("10"),
+         QLatin1String(VERSION_URL)}, &ok).trimmed();
+    const QVersionNumber remote = QVersionNumber::fromString(remoteRaw);
+    const QVersionNumber local = QVersionNumber::fromString(QLatin1String(APP_VERSION));
+
+    QMessageBox updateBox;
+    updateBox.setTextFormat(Qt::RichText);
+    if (!ok || remote.isNull()) {
+        updateBox.setText(tr("<p align='center'>Update check failed. "
+                             "Please check your internet connection and try again.<br><br></p>"));
+    } else if (remote > local) {
+        updateBox.setText(tr("<p align='center'>An update is available "
+                             "<a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'>here</a>"
+                             "<br><br></p>"));
     } else {
-        Update_Num = stoi(Update_Num_str);
-        if(Update_Num > VERSION) {
-            UpdateBox.setText("<p align='center'>An update is available "
-                             "<a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'>here</a><br><br></p>");
-        } else {
-            UpdateBox.setText("<p align='center'>No update found. You are using the latest version.<br><br></p>");
-        }
+        updateBox.setText(tr("<p align='center'>No update found. "
+                             "You are using the latest version.<br><br></p>"));
     }
-    UpdateBox.setStandardButtons(QMessageBox::Ok);
-    UpdateBox.exec();
+    updateBox.setStandardButtons(QMessageBox::Ok);
+    updateBox.exec();
+}
+
+void MainWindow::on_Enable_sysd_pushButton_clicked()
+{
+    if (!Platform::setBootnextService(true))
+        QMessageBox::warning(this, tr("systemd service"),
+                             tr("Failed to launch the service toggle."));
+}
+
+void MainWindow::on_Disable_sysd_pushButton_clicked()
+{
+    if (!Platform::setBootnextService(false))
+        QMessageBox::warning(this, tr("systemd service"),
+                             tr("Failed to launch the service toggle."));
 }
 
 void MainWindow::on_Rand_BG_On_pushButton_clicked()
 {
-    string rand_bg_on = string("xterm -e \"sudo systemctl enable --now rEFInd_bg_randomizer.service &&");
-           rand_bg_on.append(" sudo systemctl status rEFInd_bg_randomizer.service; $SHELL\"");
-    system(rand_bg_on.c_str());
+    if (!Platform::setBackgroundRandomizer(true))
+        QMessageBox::warning(this, tr("Background Randomizer"),
+                             tr("Failed to launch the randomizer setup."));
 }
 
 void MainWindow::on_Rand_BG_Off_pushButton_clicked()
 {
-    string rand_bg_off = string("xterm -e \"sudo systemctl disable --now rEFInd_bg_randomizer.service &&");
-           rand_bg_off.append(" sudo systemctl status rEFInd_bg_randomizer.service; $SHELL\"");
-    system(rand_bg_off.c_str());
+    if (!Platform::setBackgroundRandomizer(false))
+        QMessageBox::warning(this, tr("Background Randomizer"),
+                             tr("Failed to launch the randomizer setup."));
 }
