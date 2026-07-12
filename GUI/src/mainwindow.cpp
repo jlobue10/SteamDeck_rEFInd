@@ -429,7 +429,10 @@ void MainWindow::readSettings()
     QSettings settings(settingsPath, QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("CheckBoxes"));
     ui->Last_OS_CheckBox->setChecked(settings.value(QStringLiteral("LastOSCheckBox")).toBool());
-    ui->Firmware_bootnum_CheckBox->setChecked(settings.value(QStringLiteral("FW_bootNum_CheckBox")).toBool());
+    // SteamOS firmware_bootnum defaults on for the Deck (efibootmgr present);
+    // on the Windows build the feature is unsupported and the box is disabled.
+    ui->Firmware_bootnum_CheckBox->setChecked(
+        settings.value(QStringLiteral("FW_bootNum_CheckBox"), Platform::firmwareBootnumSupported()).toBool());
     ui->Enable_Mouse_checkBox->setChecked(settings.value(QStringLiteral("Enable_Mouse_CheckBox"), true).toBool());
     settings.endGroup();
 
