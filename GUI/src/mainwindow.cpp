@@ -394,9 +394,29 @@ bool MainWindow::copyPng(QLineEdit *edit, const QString &destPath)
 
 void MainWindow::checkPNGFile(QLineEdit *edit)
 {
-    const QFileInfo fileInfo(edit->text());
-    if (!(fileInfo.exists() && fileInfo.isFile() && fileInfo.suffix().toLower() == QLatin1String("png")))
+    const QString path = edit->text();
+    if (path.isEmpty())
+        return;
+    const QFileInfo fileInfo(path);
+    bool valid = fileInfo.exists() && fileInfo.isFile()
+                 && fileInfo.suffix().toLower() == QLatin1String("png");
+    if (valid) {
+        // The extension check alone lets a renamed JPEG through; rEFInd would
+        // then silently fail to render it, so require the PNG signature too.
+        QFile file(path);
+        valid = file.open(QIODevice::ReadOnly)
+                && file.read(8) == QByteArrayLiteral("\x89PNG\r\n\x1a\n");
+    }
+    if (!valid) {
+        // Clear before the dialog: the modal steals focus, which can re-fire
+        // editingFinished, and the empty-path guard above stops the loop.
         edit->clear();
+        QMessageBox::warning(this, tr("Invalid PNG"),
+                             tr("%1 is not a valid PNG file.\n\nBackgrounds and OS "
+                                "icons must be real PNG images (not just files with "
+                                "a .png extension).")
+                                 .arg(QDir::toNativeSeparators(path)));
+    }
 }
 
 void MainWindow::on_Background_lineEdit_editingFinished()
