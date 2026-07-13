@@ -1,0 +1,55 @@
+name: Arch Package Release
+
+# Builds the Arch/SteamOS package (.pkg.tar.zst) with makepkg inside an Arch
+# container and attaches it to the GitHub Release for the tag — replaces the
+# manual build previously done in a ChimeraOS VM.
+#
+# Runs automatically on version tags; workflow_dispatch takes an existing tag
+# so a package can be (re)built for a release after the fact.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing v* tag to build and attach the package to'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    env:
+      TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+    steps:
+      # Exact makedepends from the PKGBUILD (plus git for the source clone);
+      # makepkg then runs without -s, so a drifting PKGBUILD fails loudly here.
+      - name: Install build dependencies
+        run: pacman -Syu --noconfirm git cmake gcc glibc make qt5-base qt5-tools
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+      - name: Check PKGBUILD pkgver matches the tag
+        run: |
+          pkgver="$(sed -n 's/^pkgver=//p' PKGBUILD)"
+          if [ "v${pkgver}" != "${TAG}" ]; then
+            echo "::error::PKGBUILD pkgver=${pkgver} does not match tag ${TAG}; bump pkgver before tagging."
+            exit 1
+          fi
+
+      - name: Build package (makepkg)
+        run: |
+          useradd -m builder
+          chown -R builder: .
+          su builder -c 'makepkg --noconfirm'
+
+      - name: Attach package to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          files: '*.pkg.tar.zst'
