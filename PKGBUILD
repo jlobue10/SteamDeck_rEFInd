@@ -11,7 +11,9 @@ license=('MIT')
 depends=()
 makedepends=('cmake' 'gcc' 'glibc' 'make' 'qt5-base' 'qt5-tools')
 source=(
-    "SteamDeck_rEFInd::git+https://github.com/jlobue10/SteamDeck_rEFInd.git"
+    # Pinned to the release tag so rebuilding an old version never silently
+    # packages newer main-branch code.
+    "SteamDeck_rEFInd::git+https://github.com/jlobue10/SteamDeck_rEFInd.git#tag=v${pkgver}"
 )
 md5sums=(
     'SKIP'
