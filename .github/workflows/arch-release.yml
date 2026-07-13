@@ -30,9 +30,12 @@ jobs:
       - name: Install build dependencies
         run: pacman -Syu --noconfirm git cmake gcc glibc make qt5-base qt5-tools
 
+      # Default checkout: the tag itself on tag pushes, the dispatched branch
+      # on manual runs. Either way the packaging recipe (PKGBUILD + .install)
+      # comes from that ref, while the packaged source is the tag the PKGBUILD
+      # pins — so dispatching from main rebuilds an old release with the
+      # current recipe, and the pkgver guard below keeps the pairing honest.
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
       - name: Check PKGBUILD pkgver matches the tag
         run: |
