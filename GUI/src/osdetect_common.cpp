@@ -64,7 +64,7 @@ QString OSDetector::displayNameForVendorDir(const QString &dirName)
     return name;
 }
 
-QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath)
+QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString &runningDistroName)
 {
     QList<BootEntry> entries;
     QDir efiDir(rootPath + "/EFI");
@@ -117,7 +117,13 @@ QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath)
         if (loaderFile.isEmpty())
             continue;
         BootEntry e;
-        e.displayName = displayNameForVendorDir(dirName);
+        // A bare systemd-boot install (loader in /EFI/systemd, no distro dir)
+        // has no vendor name of its own; on the running system's ESP, name it
+        // after the running distro instead of the generic "systemd-boot".
+        if (lower == QLatin1String("systemd") && !runningDistroName.isEmpty())
+            e.displayName = runningDistroName;
+        else
+            e.displayName = displayNameForVendorDir(dirName);
         e.menuName = e.displayName;
         e.loaderPath = QStringLiteral("/EFI/") + dirName + "/" + loaderFile;
         linuxEntries.append(e);
@@ -137,7 +143,9 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
 
     bool haveWindows = false;
     for (const BootEntry &e : entries) {
-        if (e.loaderPath == QLatin1String("/EFI/Microsoft/Boot/bootmgfw.efi") && e.volume.isEmpty())
+        // Any already-found Windows counts, whether it was scanned (now tagged
+        // with its ESP's volume) or added earlier without one.
+        if (e.loaderPath == QLatin1String("/EFI/Microsoft/Boot/bootmgfw.efi"))
             haveWindows = true;
     }
 
@@ -170,13 +178,16 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
         const bool windowsLabel = p.label.compare(QLatin1String("SYSTEM"), Qt::CaseInsensitive) == 0
                                   || p.label.compare(QLatin1String("SYSTEM_DRV"), Qt::CaseInsensitive) == 0;
         if (windowsLabel && !p.removable && !onSdCard && !onUsb) {
-            // Windows ESP on another internal drive/partition (e.g. Bazzite
-            // auto-partitioning on ROG Ally / Legion Go): reference by label.
+            // Windows ESP on another internal drive/partition (e.g. a separate
+            // Windows disk, or Bazzite auto-partitioning on ROG Ally / Legion
+            // Go). This ESP is usually unmounted, so it isn't scanned above;
+            // reference it by partition GUID so the stanza boots from whichever
+            // ESP rEFInd itself launched from.
             BootEntry w;
             w.displayName = haveWindows ? QStringLiteral("Windows (") + p.label + ")" : QStringLiteral("Windows");
             w.menuName = QStringLiteral("Windows");
             w.loaderPath = QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi");
-            w.volume = p.label;
+            w.volume = espVolumeId(p);
             addUnique(w);
             haveWindows = true;
         } else if ((onSdCard || onUsb || p.removable) && !p.partUuid.isEmpty()) {
@@ -191,17 +202,73 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
     return entries;
 }
 
+QString OSDetector::espVolumeId(const Partition &p)
+{
+    // rEFInd resolves a volume by partition GUID, filesystem label, or number.
+    // The GUID is unique and stable, so prefer it; fall back to the label.
+    return !p.partUuid.isEmpty() ? p.partUuid : p.label;
+}
+
+bool OSDetector::isRunningSystemEsp(const Partition &p)
+{
+    // The running OS's ESP is the one mounted at its EFI location. The Steam
+    // Deck mounts its ESP at /esp, so check that first. On Windows these
+    // paths never match a drive-letter mount point, so this is false there
+    // (where a running-distro name is unavailable anyway).
+    return p.mountPoint == QLatin1String("/esp")
+           || p.mountPoint == QLatin1String("/boot")
+           || p.mountPoint == QLatin1String("/boot/efi")
+           || p.mountPoint == QLatin1String("/efi");
+}
+
 QList<BootEntry> OSDetector::detect()
 {
     cachedPartitions = listPartitions();
     cacheValid = true;
-    bool release = false;
-    const QString espRoot = acquireEspRoot(cachedPartitions, release);
+
+    // Scan every reachable ESP (not just one), tagging each discovered entry
+    // with its ESP's volume so the generated stanza boots regardless of which
+    // ESP rEFInd itself lives on. Unreachable ESPs (e.g. an unmounted Windows
+    // ESP on Linux) are still picked up by the label/removable rules in
+    // assembleEntries().
     QList<BootEntry> mounted;
-    if (!espRoot.isEmpty())
-        mounted = scanEspRoot(espRoot);
-    if (release)
-        releaseEspRoot(espRoot);
+    for (const Partition &p : cachedPartitions) {
+        if (!isEsp(p))
+            continue;
+        bool release = false;
+        const QString root = espScanRoot(p, release);
+        if (root.isEmpty())
+            continue;
+        const QString runningName = isRunningSystemEsp(p) ? runningOsName() : QString();
+        const QString volume = espVolumeId(p);
+        const QList<BootEntry> here = scanEspRoot(root, runningName);
+        for (BootEntry e : here) {
+            if (e.volume.isEmpty())
+                e.volume = volume;
+            // Skip an exact duplicate (same loader on the same volume); a
+            // display-name clash across different volumes is disambiguated so
+            // both stay selectable.
+            bool duplicate = false;
+            bool nameClash = false;
+            for (const BootEntry &existing : mounted) {
+                if (existing.loaderPath == e.loaderPath && existing.volume == e.volume) {
+                    duplicate = true;
+                    break;
+                }
+                if (existing.displayName == e.displayName)
+                    nameClash = true;
+            }
+            if (duplicate)
+                continue;
+            if (nameClash) {
+                const QString tag = !p.label.isEmpty() ? p.label : e.volume.left(8);
+                e.displayName = e.displayName + " (" + tag + ")";
+            }
+            mounted.append(e);
+        }
+        if (release)
+            releaseEspRoot(root);
+    }
     return assembleEntries(cachedPartitions, mounted);
 }
 

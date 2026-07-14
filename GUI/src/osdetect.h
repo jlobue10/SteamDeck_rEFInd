@@ -28,6 +28,7 @@ public:
     QList<BootEntry> detect();
 
     static bool isLegionGo();
+    static bool isLegionGo2();
     // Partition GUID of the first ESP on removable media (SD card or USB), for
     // the static "Windows (SD)"/"Windows (USB)" combo fallbacks.
     QString removableEspPartUuid(bool sdCard);
@@ -45,9 +46,15 @@ private:
     };
 
     // Shared implementation (osdetect_common.cpp)
-    QList<BootEntry> scanEspRoot(const QString &rootPath);
+    // runningDistroName, when non-empty, renames a generic systemd-boot loader
+    // on this ESP to the running distro (so CachyOS shows as "CachyOS").
+    QList<BootEntry> scanEspRoot(const QString &rootPath, const QString &runningDistroName);
     QList<BootEntry> assembleEntries(const QList<Partition> &partitions, QList<BootEntry> mounted);
     static bool isEsp(const Partition &p);
+    // Volume token for cross-ESP entries: partition GUID (preferred) or label.
+    static QString espVolumeId(const Partition &p);
+    // True for the ESP that belongs to the running OS (its EFI/ mount).
+    static bool isRunningSystemEsp(const Partition &p);
     static QString displayNameForVendorDir(const QString &dirName);
 
     // Platform backends (osdetect_linux.cpp / osdetect_win.cpp)
@@ -56,9 +63,10 @@ private:
     // (enumeration shells out and is slow, especially on Windows).
     QList<Partition> cachedPartitions;
     bool cacheValid = false;
-    // Path under which the system ESP's EFI/ tree is reachable ("" if not).
-    // Sets release=true when releaseEspRoot() must be called after scanning.
-    QString acquireEspRoot(const QList<Partition> &partitions, bool &release);
+    // Path under which ESP `p`'s EFI/ tree is reachable ("" if unreachable),
+    // mounting it if needed. Sets release=true when releaseEspRoot() must be
+    // called after scanning.
+    QString espScanRoot(const Partition &p, bool &release);
     void releaseEspRoot(const QString &root);
     static QStringList runningOsIds();  // os-release ID/ID_LIKE; empty on Windows
     static QString runningOsName();     // os-release NAME; empty on Windows
