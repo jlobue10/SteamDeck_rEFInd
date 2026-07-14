@@ -9,6 +9,16 @@ $ErrorActionPreference = 'Stop'
 $EspGuid = '{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}'
 $RefindLoader = 'EFI\refind\refind_x64.efi'
 
+# mountvol reports failure on stderr, which Windows PowerShell 5.1 turns into a
+# terminating RemoteException when redirected under ErrorActionPreference Stop;
+# run it with the preference relaxed so a failed mount stays a plain exit code.
+function Invoke-Mountvol([string[]]$mvArgs) {
+    $eap = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try { mountvol @mvArgs 2>$null | Out-Null } finally { $ErrorActionPreference = $eap }
+    return $LASTEXITCODE
+}
+
 # Make a specific ESP partition reachable, returning its filesystem root and how
 # it was mounted. Handles: an already-lettered ESP, the letterless system ESP
 # (mountvol /S), and a letterless non-system ESP (temporary directory access
@@ -21,8 +31,7 @@ function Mount-EspPartition($part) {
         $used = (Get-PSDrive -PSProvider FileSystem).Name
         foreach ($c in 'Z','Y','X','W','V','U','T') {
             if ($used -notcontains $c) {
-                mountvol "${c}:" /S 2>$null | Out-Null
-                if ($LASTEXITCODE -eq 0) {
+                if ((Invoke-Mountvol @("${c}:", '/S')) -eq 0) {
                     return @{ Root = "${c}:"; Kind = 'mountvol' }
                 }
             }
@@ -38,7 +47,7 @@ function Mount-EspPartition($part) {
 
 function Dismount-Esp($m) {
     switch ($m.Kind) {
-        'mountvol' { mountvol $m.Root /D | Out-Null }
+        'mountvol' { $null = Invoke-Mountvol @($m.Root, '/D') }
         'accesspath' {
             Remove-PartitionAccessPath -DiskNumber $m.DiskNumber -PartitionNumber $m.PartitionNumber `
                 -AccessPath $m.Dir -ErrorAction SilentlyContinue
