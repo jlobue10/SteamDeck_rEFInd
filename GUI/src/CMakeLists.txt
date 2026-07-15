@@ -23,6 +23,7 @@ set(PROJECT_SOURCES
         osdetect_common.cpp
         platform.cpp
         platform.h
+        resources.qrc
         ${TS_FILES}
 )
 
