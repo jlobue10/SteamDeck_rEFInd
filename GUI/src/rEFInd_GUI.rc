@@ -1,2 +1,4 @@
-// Embeds the UAC manifest (RT_MANIFEST resource id 1).
+// Embeds the UAC manifest (RT_MANIFEST resource id 1) and the app icon
+// (shown by Explorer, shortcuts, and the taskbar).
 1 24 "rEFInd_GUI.manifest"
+IDI_ICON1 ICON "SteamDeck_rEFInd.ico"
