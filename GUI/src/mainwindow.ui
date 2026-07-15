@@ -402,6 +402,28 @@
        </property>
       </widget>
      </item>
+     <item row="8" column="4" alignment="Qt::AlignRight">
+      <widget class="QPushButton" name="Open_Folder_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>92</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>92</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Open the folder holding refind.conf and the background/icon PNGs</string>
+       </property>
+       <property name="text">
+        <string>Open Folder</string>
+       </property>
+      </widget>
+     </item>
      <item row="8" column="5">
       <widget class="QPushButton" name="Disable_sysd_pushButton">
        <property name="minimumSize">

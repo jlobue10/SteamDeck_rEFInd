@@ -42,6 +42,9 @@ Source: "..\..\deploy\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdi
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"; Tasks: desktopicon
+; Shortcut inside GUI\ (the folder the app's Open Folder button shows) to the
+; backgrounds folder the randomizer picks from.
+Name: "{app}\GUI\backgrounds"; Filename: "{app}\backgrounds"
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent runascurrentuser

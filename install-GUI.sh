@@ -12,6 +12,9 @@ cp -rf "$CURRENT_WD/icons/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/backgrounds/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/scripts/" "$HOME/.local/SteamDeck_rEFInd"
 cp -f "$CURRENT_WD/refind-GUI.conf" "$HOME/.local/SteamDeck_rEFInd/GUI/refind.conf"
+# Shortcut inside GUI/ (the folder the app's Open Folder button shows) to the
+# backgrounds folder the randomizer picks from.
+ln -sfn ../backgrounds "$HOME/.local/SteamDeck_rEFInd/GUI/backgrounds"
 chmod +x "$HOME"/.local/SteamDeck_rEFInd/scripts/*.sh
 
 #Clean up old installation...

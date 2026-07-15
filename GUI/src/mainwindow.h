@@ -42,6 +42,7 @@ private slots:
     void on_Disable_sysd_pushButton_clicked();
     void on_Rand_BG_On_pushButton_clicked();
     void on_Rand_BG_Off_pushButton_clicked();
+    void on_Open_Folder_pushButton_clicked();
 
 private:
     void readSettings();
