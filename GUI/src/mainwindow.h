@@ -62,6 +62,7 @@ private:
 
     Ui::MainWindow *ui;
     QString homePath;
+    QString lastBrowseDir; // last folder a browse dialog picked from
     QString guiDataDir;   // Platform::dataDir()
     QString guiConfigDir; // <dataDir>/GUI
     QString settingsPath;
