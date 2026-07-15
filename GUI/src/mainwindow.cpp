@@ -224,9 +224,17 @@ void MainWindow::on_Rescan_pushButton_clicked()
 
 void MainWindow::browsePng(QLineEdit *edit, const QString &title)
 {
-    const QString fileName = QFileDialog::getOpenFileName(this, title, homePath, tr("Image (*.png)"));
-    if (!fileName.isEmpty())
+    // Reopen the folder the previous browse picked from; fall back to the
+    // home directory when there's no history or that folder no longer
+    // exists (deleted, or a settings file carried over from another setup).
+    QString startDir = lastBrowseDir;
+    if (startDir.isEmpty() || !QDir(startDir).exists())
+        startDir = homePath;
+    const QString fileName = QFileDialog::getOpenFileName(this, title, startDir, tr("Image (*.png)"));
+    if (!fileName.isEmpty()) {
         edit->setText(fileName);
+        lastBrowseDir = QFileInfo(fileName).absolutePath();
+    }
 }
 
 void MainWindow::on_Background_pushButton_clicked()
@@ -471,6 +479,10 @@ void MainWindow::readSettings()
     const QString timeout = settings.value(QStringLiteral("Timeout")).toString();
     settings.endGroup();
 
+    settings.beginGroup(QStringLiteral("Paths"));
+    lastBrowseDir = settings.value(QStringLiteral("LastBrowseDir")).toString();
+    settings.endGroup();
+
     populateBootCombos();
     if (boot1.isEmpty() && boot2.isEmpty() && boot3.isEmpty() && boot4.isEmpty()) {
         applyAutoSelection();
@@ -508,6 +520,9 @@ void MainWindow::writeSettings()
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Timeout"));
     settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());
+    settings.endGroup();
+    settings.beginGroup(QStringLiteral("Paths"));
+    settings.setValue(QStringLiteral("LastBrowseDir"), lastBrowseDir);
     settings.endGroup();
 }
 
