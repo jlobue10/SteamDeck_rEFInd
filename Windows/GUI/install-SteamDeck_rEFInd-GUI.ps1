@@ -27,6 +27,14 @@ New-Item -ItemType Directory -Force (Join-Path $dest 'windows') | Out-Null
 Copy-Item -Force (Join-Path $PSScriptRoot '*.ps1') (Join-Path $dest 'windows')
 Copy-Item -Force (Join-Path $repo 'refind-GUI.conf') (Join-Path $dest 'GUI\refind.conf')
 
+$ws = New-Object -ComObject WScript.Shell
+# Shortcut inside GUI\ (the folder the app's Open Folder button shows) to the
+# backgrounds folder the randomizer picks from.
+$bgLnk = $ws.CreateShortcut((Join-Path $dest 'GUI\backgrounds.lnk'))
+$bgLnk.TargetPath = Join-Path $dest 'backgrounds'
+$bgLnk.Description = 'Backgrounds used by the rEFInd background randomizer'
+$bgLnk.Save()
+
 if ($ExePath -and (Test-Path $ExePath)) {
     $exeDir = Split-Path -Parent $ExePath
     Copy-Item -Force $ExePath (Join-Path $dest 'SteamDeck_rEFInd.exe')
@@ -43,7 +51,6 @@ if ($ExePath -and (Test-Path $ExePath)) {
 
 $exeTarget = Join-Path $dest 'SteamDeck_rEFInd.exe'
 if (Test-Path $exeTarget) {
-    $ws = New-Object -ComObject WScript.Shell
     $startMenu = Join-Path ([Environment]::GetFolderPath('StartMenu')) 'Programs'
     foreach ($lnkDir in ([Environment]::GetFolderPath('Desktop')), $startMenu) {
         if (-not (Test-Path $lnkDir)) { continue }

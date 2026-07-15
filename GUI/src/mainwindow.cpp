@@ -3,6 +3,7 @@
 #include "osdetect.h"
 #include "platform.h"
 
+#include <QDesktopServices>
 #include <QDir>
 #include <QFile>
 #include <QFileDialog>
@@ -14,6 +15,7 @@
 #include <QRegularExpression>
 #include <QSettings>
 #include <QTextStream>
+#include <QUrl>
 #include <QVariant>
 #include <QVersionNumber>
 
@@ -582,4 +584,12 @@ void MainWindow::on_Rand_BG_Off_pushButton_clicked()
     if (!Platform::setBackgroundRandomizer(false))
         QMessageBox::warning(this, tr("Background Randomizer"),
                              tr("Failed to launch the randomizer setup."));
+}
+
+void MainWindow::on_Open_Folder_pushButton_clicked()
+{
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(guiConfigDir)))
+        QMessageBox::warning(this, tr("Open Folder"),
+                             tr("Failed to open %1 in the file manager.")
+                                 .arg(QDir::toNativeSeparators(guiConfigDir)));
 }
