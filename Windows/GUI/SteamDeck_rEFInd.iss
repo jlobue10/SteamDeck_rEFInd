@@ -47,7 +47,8 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app
 Name: "{app}\GUI\backgrounds"; Filename: "{app}\backgrounds"
 
 [Run]
-Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent runascurrentuser
+; unchecked: don't launch the GUI by default when the installer finishes.
+Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent runascurrentuser unchecked
 
 [UninstallRun]
 ; Undo the rEFInd boot entry and ESP files before the app files disappear.
