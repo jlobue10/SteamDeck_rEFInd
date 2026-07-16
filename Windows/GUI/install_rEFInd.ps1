@@ -13,6 +13,20 @@
 # %LOCALAPPDATA%\SteamDeck_rEFInd\bootmgr-backup.txt.
 $ErrorActionPreference = 'Stop'
 
+# Visual feedback: numbered, colored step banners plus an overall progress bar
+# so the elevated console shows at a glance how far the install has gotten.
+$TotalSteps = 6
+$script:StepNum = 0
+function Write-Step([string]$Message) {
+    $script:StepNum++
+    Write-Progress -Activity 'Installing rEFInd' `
+        -Status "Step $script:StepNum of ${TotalSteps}: $Message" `
+        -PercentComplete ((($script:StepNum - 1) / $TotalSteps) * 100)
+    Write-Host ''
+    Write-Host "[$script:StepNum/$TotalSteps] $Message" -ForegroundColor Cyan
+}
+try { $Host.UI.RawUI.WindowTitle = 'rEFInd installation' } catch {}
+
 $RefindVer = '0.14.2'
 $EspGuid = '{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}'
 $RefindLoader = '\EFI\refind\refind_x64.efi'
@@ -169,12 +183,12 @@ $backup = $null
 $installError = $null
 $entryId = $null
 try {
-    Write-Host 'Downloading rEFInd zip file...'
+    Write-Step 'Downloading rEFInd from SourceForge...'
     $zip = Join-Path $env:TEMP "refind-bin-$RefindVer.zip"
     $zipUrl = "https://sourceforge.net/projects/refind/files/$RefindVer/refind-bin-gnuefi-$RefindVer.zip/download"
     Invoke-WebRequest -Uri $zipUrl -OutFile $zip -UserAgent 'Wget' -MaximumRedirection 10
 
-    Write-Host 'Extracting...'
+    Write-Step 'Extracting...'
     $extract = Join-Path $env:TEMP 'refind-bin-extract'
     Remove-Item -Recurse -Force $extract -ErrorAction SilentlyContinue
     Expand-Archive -Path $zip -DestinationPath $extract -Force
@@ -185,7 +199,7 @@ try {
 
     $esp = Mount-Esp
     $dest = Join-Path $esp.Root 'EFI\refind'
-    Write-Host "Installing rEFInd files to $dest ..."
+    Write-Step "Installing rEFInd files to $dest ..."
     New-Item -ItemType Directory -Force $dest | Out-Null
     Copy-Item -Force (Join-Path $bin 'refind\refind_x64.efi') $dest
     foreach ($d in 'drivers_x64','tools_x64','icons') {
@@ -199,7 +213,7 @@ try {
     # \EFI\Xbox360\config.ini on first boot, so only the .efi is needed here.
     # NOTE: temporarily fetched from the jlobue10 fork (adds Legion Go 2 PIDs +
     # Ally lockup fix); revert to SkorionOS once upstream PR #6 is merged/released.
-    Write-Host 'Downloading UsbXbox360Dxe.efi controller driver...'
+    Write-Step 'Downloading UsbXbox360Dxe.efi controller driver...'
     $driverDest = Join-Path $dest 'drivers_x64\UsbXbox360Dxe.efi'
     $driverUrl = 'https://github.com/jlobue10/UsbXbox360Dxe/releases/latest/download/UsbXbox360Dxe.efi'
     try {
@@ -209,6 +223,7 @@ try {
     }
 
     # Back up any existing config, then apply the GUI-generated one.
+    Write-Step 'Applying the GUI-generated configuration...'
     $conf = Join-Path $dest 'refind.conf'
     if (Test-Path $conf) {
         Copy-Item -Force $conf (Join-Path $dest 'refind-bkp.conf')
@@ -223,7 +238,7 @@ try {
         if (Test-Path $p) { Copy-Item -Recurse -Force $p $dest }
     }
 
-    Write-Host 'Creating the rEFInd firmware boot entry...'
+    Write-Step 'Creating the rEFInd firmware boot entry...'
     if (-not $esp.Part) {
         throw 'Could not identify the system EFI System Partition for the boot entry.'
     }
@@ -306,10 +321,11 @@ try {
 
 # Verify the result from live NVRAM rather than trusting the steps above --
 # the Windows analog of the Linux scripts' efibootmgr read-back summary.
+Write-Progress -Activity 'Installing rEFInd' -Completed
 Write-Host ''
-Write-Host '==================== Installation summary ===================='
+Write-Host '==================== Installation summary ====================' -ForegroundColor Cyan
 if ($installError) {
-    Write-Host "ERROR: $installError"
+    Write-Host "ERROR: $installError" -ForegroundColor Red
     Write-Host '---------------------------------------------------------------'
 }
 $entryOk = $false
@@ -327,17 +343,18 @@ if ($bootmgrNow.Ok -and $m) { $bcdPath = $m.Matches[0].Groups[1].Value }
 Write-Host "Windows Boot Manager path: $bcdPath"
 Write-Host '---------------------------------------------------------------'
 if ($installError) {
-    Write-Host '*** FAILED: the installation did not complete -- see the error above. ***'
+    Write-Host '*** FAILED: the installation did not complete -- see the error above. ***' -ForegroundColor Red
 } elseif (-not $entryOk) {
-    Write-Host '*** FAILED: the rEFInd boot entry is not present in NVRAM.          ***'
-    Write-Host '*** rEFInd will NOT load at boot -- see any errors above.           ***'
+    Write-Host '*** FAILED: the rEFInd boot entry is not present in NVRAM.          ***' -ForegroundColor Red
+    Write-Host '*** rEFInd will NOT load at boot -- see any errors above.           ***' -ForegroundColor Red
 } elseif ($orderIds.Count -and $orderIds[0] -ne $entryId) {
-    Write-Host "WARNING: the rEFInd entry exists, but is NOT first in the firmware"
-    Write-Host "boot order (it starts with Boot$($orderIds[0]))."
+    Write-Host "WARNING: the rEFInd entry exists, but is NOT first in the firmware" -ForegroundColor Yellow
+    Write-Host "boot order (it starts with Boot$($orderIds[0]))." -ForegroundColor Yellow
 } else {
-    Write-Host 'SUCCESS: rEFInd is installed and first in the firmware boot order.'
+    Write-Host 'SUCCESS: rEFInd is installed and first in the firmware boot order.' -ForegroundColor Green
     Write-Host '(Windows Boot Manager was left untouched; rEFInd chainloads it.)'
 }
+
 if ($backup) {
     Write-Host ''
     Write-Host "Previous boot settings were saved to: $backup"
@@ -345,3 +362,12 @@ if ($backup) {
     Write-Host "  powershell -ExecutionPolicy Bypass -File `"$env:LOCALAPPDATA\SteamDeck_rEFInd\windows\uninstall_rEFInd.ps1`""
     Write-Host 'or uninstall "SteamDeck rEFInd GUI" from Windows Settings > Apps.'
 }
+
+# Hold the window open so the log and summary can actually be read (the
+# Windows analog of the Linux scripts' tty-guarded pause), then close it --
+# Environment.Exit ends the process even under the GUI launcher's -NoExit,
+# so the user isn't left at a stray PowerShell prompt. The catch covers
+# non-interactive hosts, where Read-Host cannot prompt.
+Write-Host ''
+try { $null = Read-Host 'Press Enter to close this window' } catch {}
+[Environment]::Exit($(if ($installError) { 1 } else { 0 }))
