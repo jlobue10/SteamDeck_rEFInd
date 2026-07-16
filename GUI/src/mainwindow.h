@@ -55,7 +55,6 @@ private:
     void refreshDefaultBootCombo();
     static void setComboText(QComboBox *combo, const QString &text);
     void browsePng(QLineEdit *edit, const QString &title);
-    QString pickPng(const QString &title, const QString &startDir);
     void checkPNGFile(QLineEdit *edit);
     bool copyPng(QLineEdit *edit, const QString &destPath);
     QString createBootStanza(const BootEntry &entry, int slot);

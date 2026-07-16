@@ -8,11 +8,8 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QGridLayout>
 #include <QIntValidator>
-#include <QLabel>
 #include <QMessageBox>
-#include <QPixmap>
 #include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
@@ -225,49 +222,6 @@ void MainWindow::on_Rescan_pushButton_clicked()
     applyAutoSelection();
 }
 
-QString MainWindow::pickPng(const QString &title, const QString &startDir)
-{
-    // Windows' native Explorer dialog already previews images, so use it.
-    if (!Platform::useImagePreviewDialog())
-        return QFileDialog::getOpenFileName(this, title, startDir, tr("Image (*.png)"));
-
-    // On Linux the native file dialog only shows PNG thumbnails / a view-mode
-    // menu when the desktop's Qt platform integration is installed (e.g.
-    // plasma-integration on KDE); otherwise Qt's built-in dialog previews
-    // nothing. Drive that built-in dialog ourselves and bolt on a live preview
-    // pane so the chosen PNG is always visible before it's picked.
-    QFileDialog dialog(this, title, startDir, tr("Image (*.png)"));
-    dialog.setAcceptMode(QFileDialog::AcceptOpen);
-    dialog.setFileMode(QFileDialog::ExistingFile);
-    dialog.setOption(QFileDialog::DontUseNativeDialog, true);
-
-    QLabel *preview = new QLabel(tr("(no preview)"), &dialog);
-    preview->setAlignment(Qt::AlignCenter);
-    preview->setMinimumWidth(200);
-    preview->setWordWrap(true);
-    // The built-in dialog lays its widgets out in a QGridLayout; add the preview
-    // as a full-height column on the right. Guarded so a future Qt layout change
-    // just drops the preview rather than crashing.
-    if (QGridLayout *grid = qobject_cast<QGridLayout *>(dialog.layout())) {
-        grid->addWidget(preview, 0, grid->columnCount(), grid->rowCount(), 1);
-        connect(&dialog, &QFileDialog::currentChanged, preview,
-                [preview](const QString &path) {
-                    const QPixmap pm(path);
-                    if (pm.isNull())
-                        preview->setText(tr("(no preview)"));
-                    else
-                        preview->setPixmap(pm.scaled(preview->width(), 200,
-                                                     Qt::KeepAspectRatio,
-                                                     Qt::SmoothTransformation));
-                });
-    }
-
-    if (dialog.exec() != QDialog::Accepted)
-        return QString();
-    const QStringList selected = dialog.selectedFiles();
-    return selected.isEmpty() ? QString() : selected.first();
-}
-
 void MainWindow::browsePng(QLineEdit *edit, const QString &title)
 {
     // Reopen the folder the previous browse picked from; fall back to the
@@ -276,8 +230,7 @@ void MainWindow::browsePng(QLineEdit *edit, const QString &title)
     QString startDir = lastBrowseDir;
     if (startDir.isEmpty() || !QDir(startDir).exists())
         startDir = homePath;
-
-    const QString fileName = pickPng(title, startDir);
+    const QString fileName = QFileDialog::getOpenFileName(this, title, startDir, tr("Image (*.png)"));
     if (!fileName.isEmpty()) {
         edit->setText(fileName);
         lastBrowseDir = QFileInfo(fileName).absolutePath();
