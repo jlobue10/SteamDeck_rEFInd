@@ -36,7 +36,8 @@ QList<OSDetector::Partition> OSDetector::listPartitions()
         "    guid=[string]$_.Guid; letter=[string]$_.DriveLetter;"
         "    issystem=[bool]$_.IsSystem; bustype=[string]$d.BusType;"
         "    removable=[bool]($d.BusType -in @('USB','SD','MMC'));"
-        "    label=[string]$v.FileSystemLabel"
+        "    label=[string]$v.FileSystemLabel;"
+        "    volpath=[string](@($_.AccessPaths) | Where-Object { $_ -like '\\\\?\\Volume*' } | Select-Object -First 1)"
         "  }"
         "} | ConvertTo-Json -Compress");
 
@@ -74,6 +75,7 @@ QList<OSDetector::Partition> OSDetector::listPartitions()
         else if (obj.value(QLatin1String("issystem")).toBool())
             p.mountPoint = QStringLiteral("(system)"); // in use by Windows; not "free" for cross-volume logic
         p.transport = obj.value(QLatin1String("bustype")).toString().toLower();
+        p.volumePath = obj.value(QLatin1String("volpath")).toString();
         p.removable = obj.value(QLatin1String("removable")).toBool();
         partitions.append(p);
     }
@@ -87,9 +89,7 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
     if (!p.mountPoint.isEmpty() && p.mountPoint != QLatin1String("(system)"))
         return p.mountPoint;
     // The letterless system ESP is mounted on a free letter (requires
-    // Administrator, which the Windows build always has). Non-system ESPs
-    // without a letter can't be mounted this way (mountvol /S targets only the
-    // system ESP), so they fall through to the label/removable rules.
+    // Administrator, which the Windows build always has).
     if (p.mountPoint == QLatin1String("(system)")) {
         for (char letter = 'Z'; letter >= 'T'; --letter) {
             const QString drive = QString(QLatin1Char(letter)) + QLatin1Char(':');
@@ -102,6 +102,24 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
                 return drive;
             }
         }
+        return {};
+    }
+    // A letterless non-system ESP (e.g. a Linux distro's ESP seen from
+    // Windows) is mounted on a temporary directory via its \\?\Volume{guid}
+    // name -- mountvol /S only handles the system ESP, and a directory mount
+    // point doesn't consume a drive letter.
+    if (!p.volumePath.isEmpty()) {
+        const QString dir = QDir::toNativeSeparators(
+            QDir::tempPath() + QStringLiteral("/refind-esp-scan-") + p.path);
+        if (QDir().mkpath(dir)) {
+            bool ok = false;
+            runCommand(QStringLiteral("mountvol"), {dir, p.volumePath}, &ok);
+            if (ok) {
+                release = true;
+                return dir;
+            }
+            QDir().rmdir(dir);
+        }
     }
     return {};
 }
@@ -109,6 +127,10 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
 void OSDetector::releaseEspRoot(const QString &root)
 {
     runCommand(QStringLiteral("mountvol"), {root, QStringLiteral("/D")});
+    // Directory mount points (anything longer than "Z:") were created by
+    // espScanRoot and are removed once unmounted.
+    if (root.length() > 2)
+        QDir().rmdir(root);
 }
 
 bool OSDetector::isLegionGo()
@@ -130,6 +152,55 @@ bool OSDetector::isLegionGo2()
         return false;
     const QString mt = model.trimmed();
     return mt == QStringLiteral("83N0") || mt == QStringLiteral("83N1");
+}
+
+bool OSDetector::isXboxAlly()
+{
+    bool ok = false;
+    const QString product = runPowerShell(
+        QStringLiteral("(Get-CimInstance -ClassName Win32_BaseBoard).Product"), &ok);
+    if (!ok)
+        return false;
+    const QString board = product.trimmed();
+    // RC73XA = ROG Xbox Ally X, RC73YA = ROG Xbox Ally (prefix match to allow
+    // for board revision suffixes).
+    return board.startsWith(QLatin1String("RC73XA")) || board.startsWith(QLatin1String("RC73YA"));
+}
+
+QSize OSDetector::nativePanelResolution()
+{
+    // Preferred timing (first 18-byte DTD, bytes 54-71) of the panel's EDID,
+    // fetched via WMI. The internal display is preferred over external
+    // outputs: VideoOutputTechnology 0x80000000 = INTERNAL, 11 = embedded
+    // DisplayPort (eDP), 6 = LVDS.
+    static const QString script = QStringLiteral(
+        "$c=@(Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorConnectionParams"
+        " -ErrorAction SilentlyContinue | Where-Object { $_.Active });"
+        "$p=$c | Where-Object { $_.VideoOutputTechnology -in @(2147483648,11,6) } | Select-Object -First 1;"
+        "if(-not $p){$p=$c | Select-Object -First 1};"
+        "if($p){"
+        "  $m=Get-CimInstance -Namespace root/wmi -ClassName WmiMonitorDescriptorMethods"
+        "   -ErrorAction SilentlyContinue | Where-Object { $_.InstanceName -eq $p.InstanceName } | Select-Object -First 1;"
+        "  if($m){"
+        "    $r=$m | Invoke-CimMethod -MethodName WmiGetMonitorRawEEdidV1Block -Arguments @{BlockId=[byte]0};"
+        "    $e=$r.BlockContent;"
+        "    if($e -and $e.Count -ge 72){"
+        "      $h=$e[56]+(($e[58] -band 0xF0)*16);"
+        "      $v=$e[59]+(($e[61] -band 0xF0)*16);"
+        "      if($h -gt 0 -and $v -gt 0){('{0}x{1}' -f $h,$v)}"
+        "    }"
+        "  }"
+        "}");
+    bool ok = false;
+    const QString out = runPowerShell(script, &ok).trimmed();
+    if (!ok)
+        return {};
+    const QStringList parts = out.split('x');
+    if (parts.size() != 2)
+        return {};
+    const int w = parts.at(0).toInt();
+    const int h = parts.at(1).toInt();
+    return (w > 0 && h > 0) ? QSize(w, h) : QSize();
 }
 
 QStringList OSDetector::runningOsIds()

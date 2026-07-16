@@ -26,17 +26,8 @@ bool OSDetector::isEsp(const Partition &p)
     return type == ESP_PARTTYPE_GPT || type == ESP_PARTTYPE_MBR;
 }
 
-QString OSDetector::displayNameForVendorDir(const QString &dirName)
+static const QMap<QString, QString> &knownDistroNames()
 {
-    const QString lower = dirName.toLower();
-    // If this vendor dir belongs to the running distro's family, use its real
-    // name (e.g. Nobara and Bazzite both boot from /EFI/fedora). On Windows
-    // runningOsIds() is empty and the static map below decides.
-    if (runningOsIds().contains(lower)) {
-        const QString name = runningOsName();
-        if (!name.isEmpty())
-            return name;
-    }
     static const QMap<QString, QString> known = {
         {QStringLiteral("fedora"), QStringLiteral("Fedora")},
         {QStringLiteral("ubuntu"), QStringLiteral("Ubuntu")},
@@ -57,11 +48,60 @@ QString OSDetector::displayNameForVendorDir(const QString &dirName)
         {QStringLiteral("chimeraos"), QStringLiteral("ChimeraOS")},
         {QStringLiteral("systemd"), QStringLiteral("systemd-boot")},
     };
+    return known;
+}
+
+QString OSDetector::displayNameForVendorDir(const QString &dirName)
+{
+    const QString lower = dirName.toLower();
+    // If this vendor dir belongs to the running distro's family, use its real
+    // name (e.g. Nobara and Bazzite both boot from /EFI/fedora). On Windows
+    // runningOsIds() is empty and the static map below decides.
+    if (runningOsIds().contains(lower)) {
+        const QString name = runningOsName();
+        if (!name.isEmpty())
+            return name;
+    }
+    const QMap<QString, QString> &known = knownDistroNames();
     if (known.contains(lower))
         return known.value(lower);
     QString name = dirName;
     name[0] = name.at(0).toUpper();
     return name;
+}
+
+// A bare systemd-boot vendor dir (/EFI/systemd) carries no distro name of its
+// own, but the boot entries it was installed with do. Read the first `title`
+// from loader/entries/*.conf and map any word of it onto a known distro name
+// ("Linux Cachyos Deckify" -> "CachyOS"), falling back to the raw title. This
+// is what names a foreign systemd-boot ESP (e.g. CachyOS scanned from Windows,
+// where os-release isn't available).
+static QString systemdBootDistroName(const QString &rootPath)
+{
+    QDir entriesDir(rootPath + "/loader/entries");
+    const QStringList confs = entriesDir.entryList({QStringLiteral("*.conf")},
+                                                   QDir::Files, QDir::Name);
+    for (const QString &conf : confs) {
+        QFile f(entriesDir.filePath(conf));
+        if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+            continue;
+        const QStringList lines = QString::fromUtf8(f.readAll()).split('\n');
+        for (const QString &line : lines) {
+            const QString trimmed = line.trimmed();
+            if (!trimmed.startsWith(QLatin1String("title")))
+                continue;
+            const QString title = trimmed.mid(5).trimmed();
+            if (title.isEmpty())
+                break;
+            const QStringList words = title.toLower().split(' ', Qt::SkipEmptyParts);
+            for (const QString &word : words) {
+                if (knownDistroNames().contains(word))
+                    return knownDistroNames().value(word);
+            }
+            return title;
+        }
+    }
+    return {};
 }
 
 QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString &runningDistroName)
@@ -119,11 +159,18 @@ QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString 
         BootEntry e;
         // A bare systemd-boot install (loader in /EFI/systemd, no distro dir)
         // has no vendor name of its own; on the running system's ESP, name it
-        // after the running distro instead of the generic "systemd-boot".
-        if (lower == QLatin1String("systemd") && !runningDistroName.isEmpty())
+        // after the running distro, and elsewhere (e.g. a Linux ESP scanned
+        // from Windows) after its loader/entries titles, before settling for
+        // the generic "systemd-boot".
+        if (lower == QLatin1String("systemd") && !runningDistroName.isEmpty()) {
             e.displayName = runningDistroName;
-        else
+        } else if (lower == QLatin1String("systemd")) {
+            const QString fromEntries = systemdBootDistroName(rootPath);
+            e.displayName = !fromEntries.isEmpty() ? fromEntries
+                                                   : displayNameForVendorDir(dirName);
+        } else {
             e.displayName = displayNameForVendorDir(dirName);
+        }
         e.menuName = e.displayName;
         e.loaderPath = QStringLiteral("/EFI/") + dirName + "/" + loaderFile;
         linuxEntries.append(e);
@@ -157,6 +204,18 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
         entries.append(e);
     };
 
+    // True when a scanned entry already covers this exact loader on this
+    // volume -- the cross-volume fallbacks below must not duplicate an ESP
+    // that was reachable and scanned (on Windows even letterless non-system
+    // ESPs are mounted and scanned now).
+    auto haveOnVolume = [&entries](const QString &loader, const QString &volume) {
+        for (const BootEntry &existing : entries) {
+            if (existing.loaderPath == loader && existing.volume == volume)
+                return true;
+        }
+        return false;
+    };
+
     for (const Partition &p : partitions) {
         // Removable media recognized by well-known labels, ESP-typed or not.
         if (p.label.compare(QLatin1String("BATOCERA"), Qt::CaseInsensitive) == 0) {
@@ -177,6 +236,8 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
         const bool onUsb = p.transport == QLatin1String("usb");
         const bool windowsLabel = p.label.compare(QLatin1String("SYSTEM"), Qt::CaseInsensitive) == 0
                                   || p.label.compare(QLatin1String("SYSTEM_DRV"), Qt::CaseInsensitive) == 0;
+        if (haveOnVolume(QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"), espVolumeId(p)))
+            continue;
         if (windowsLabel && !p.removable && !onSdCard && !onUsb) {
             // Windows ESP on another internal drive/partition (e.g. a separate
             // Windows disk, or Bazzite auto-partitioning on ROG Ally / Legion

@@ -1,16 +1,25 @@
 #Requires -RunAsAdministrator
 # Downloads rEFInd from SourceForge, installs it to the EFI System Partition,
-# applies the GUI-generated config, and points the Windows Boot Manager
-# firmware entry at rEFInd.
+# applies the GUI-generated config, and creates a dedicated "rEFInd" firmware
+# boot entry (a Boot#### EFI variable, byte-identical to what efibootmgr -c
+# creates on Linux). The Windows Boot Manager entry is left untouched --
+# repointing {bootmgr}, as older versions did, dragged Windows' optional-data
+# blob ("WINDOWS...BCDOBJECT={...}") along into the entry, which efibootmgr
+# shows as a long hex tail after refind_x64.efi and rEFInd receives as junk
+# load options (issue #23).
 #
-# Reversible: the previous {bootmgr} values are saved to
-# %LOCALAPPDATA%\SteamDeck_rEFInd\bootmgr-backup.txt, and the revert command is
-# printed at the end.
+# Reversible: run windows\uninstall_rEFInd.ps1 (also run by the app's
+# uninstaller); the previous boot state is saved to
+# %LOCALAPPDATA%\SteamDeck_rEFInd\bootmgr-backup.txt.
 $ErrorActionPreference = 'Stop'
 
 $RefindVer = '0.14.2'
 $EspGuid = '{c12a7328-f81f-11d2-ba4b-00a0c93ec93b}'
 $RefindLoader = '\EFI\refind\refind_x64.efi'
+$EfiGlobalGuid = '{8BE4DF61-93CA-11D2-AA0D-00E098032B8C}'
+# Optional-data signature of Windows Boot Manager's own Boot#### entry; any
+# entry carrying it belongs to {bootmgr} and must never be overwritten.
+$BootmgrBlobHex = '57494e444f5753'
 
 # mountvol reports failure on stderr, which Windows PowerShell 5.1 turns into a
 # terminating RemoteException when redirected under ErrorActionPreference Stop;
@@ -25,13 +34,13 @@ function Invoke-Mountvol([string[]]$mvArgs) {
 function Mount-Esp {
     $esp = Get-Partition | Where-Object { $_.GptType -eq $EspGuid -and $_.IsSystem } | Select-Object -First 1
     if ($esp -and $esp.DriveLetter) {
-        return @{ Root = "$($esp.DriveLetter):"; Dismount = $false }
+        return @{ Root = "$($esp.DriveLetter):"; Dismount = $false; Part = $esp }
     }
     $used = (Get-PSDrive -PSProvider FileSystem).Name
     foreach ($c in 'Z','Y','X','W','V','U','T') {
         if ($used -notcontains $c) {
             if ((Invoke-Mountvol @("${c}:", '/S')) -eq 0) {
-                return @{ Root = "${c}:"; Dismount = $true }
+                return @{ Root = "${c}:"; Dismount = $true; Part = $esp }
             }
         }
     }
@@ -43,9 +52,8 @@ function Dismount-Esp($esp) {
 }
 
 # bcdedit is a native exe: under $ErrorActionPreference = 'Stop' a failed call
-# neither throws nor stops the script (so errors would sail past unnoticed --
-# the same silent-failure class the Linux scripts' efibootmgr phase had), and
-# stderr captured via 2>&1 becomes a terminating NativeCommandError. Run it
+# neither throws nor stops the script (so errors would sail past unnoticed),
+# and stderr captured via 2>&1 becomes a terminating NativeCommandError. Run it
 # with the preference relaxed and report success via the exit code.
 function Invoke-Bcdedit {
     param([string[]]$BcdArgs)
@@ -59,9 +67,107 @@ function Invoke-Bcdedit {
     }
 }
 
+# ---- UEFI NVRAM access (the Windows equivalent of efibootmgr) ----
+# bcdedit on current Windows 11 cannot create firmware boot entries at all
+# (/application firmware was removed, and {fwbootmgr} displayorder silently
+# ignores non-firmware objects), so the Boot#### variable is written directly.
+# Keep these helpers in sync with windows\uninstall_rEFInd.ps1.
+Add-Type -Namespace RefindUefi -Name Native -MemberDefinition @'
+[DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+public static extern uint GetFirmwareEnvironmentVariableW(string lpName, string lpGuid, byte[] pBuffer, uint nSize);
+[DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+public static extern bool SetFirmwareEnvironmentVariableW(string lpName, string lpGuid, byte[] pValue, uint nSize);
+[DllImport("advapi32.dll", SetLastError=true)]
+public static extern bool OpenProcessToken(IntPtr h, uint acc, out IntPtr tok);
+[DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+public static extern bool LookupPrivilegeValueW(string sys, string name, out long luid);
+[DllImport("advapi32.dll", SetLastError=true)]
+public static extern bool AdjustTokenPrivileges(IntPtr tok, bool dis, ref TOKPRIV newst, int len, IntPtr prev, IntPtr ret);
+[DllImport("kernel32.dll")]
+public static extern IntPtr GetCurrentProcess();
+[StructLayout(LayoutKind.Sequential, Pack=4)]
+public struct TOKPRIV { public uint Count; public long Luid; public uint Attr; }
+'@
+
+function Enable-UefiPrivilege {
+    $tok = [IntPtr]::Zero
+    [RefindUefi.Native]::OpenProcessToken([RefindUefi.Native]::GetCurrentProcess(), 0x28, [ref]$tok) | Out-Null
+    $luid = 0L
+    [RefindUefi.Native]::LookupPrivilegeValueW($null, 'SeSystemEnvironmentPrivilege', [ref]$luid) | Out-Null
+    $tp = New-Object RefindUefi.Native+TOKPRIV
+    $tp.Count = 1; $tp.Luid = $luid; $tp.Attr = 2  # SE_PRIVILEGE_ENABLED
+    [RefindUefi.Native]::AdjustTokenPrivileges($tok, $false, [ref]$tp, 0, [IntPtr]::Zero, [IntPtr]::Zero) | Out-Null
+}
+
+function Get-UefiVar([string]$name) {
+    $buf = New-Object byte[] 4096
+    $n = [RefindUefi.Native]::GetFirmwareEnvironmentVariableW($name, $EfiGlobalGuid, $buf, $buf.Length)
+    if ($n -eq 0) { return $null }
+    return ,$buf[0..($n - 1)]
+}
+
+# Empty/absent $value deletes the variable.
+function Set-UefiVar([string]$name, [byte[]]$value) {
+    $len = if ($value) { $value.Length } else { 0 }
+    return [RefindUefi.Native]::SetFirmwareEnvironmentVariableW($name, $EfiGlobalGuid, $value, $len)
+}
+
+function ConvertTo-HexString([byte[]]$bytes) {
+    if (-not $bytes) { return '' }
+    return (($bytes | ForEach-Object { $_.ToString('x2') }) -join '')
+}
+
+# EFI_LOAD_OPTION: attributes, file-path-list length, UTF-16 description,
+# then HD(partition) + File(loader) + End device path nodes.
+function New-EfiLoadOption($part, [uint32]$sectorSize, [string]$description, [string]$loaderPath) {
+    $bytes = New-Object System.Collections.Generic.List[byte]
+
+    $hd = New-Object System.Collections.Generic.List[byte]
+    $hd.AddRange([byte[]]@(4, 1, 42, 0))  # media device path, HD node, length 42
+    0..3 | ForEach-Object { $hd.Add((([uint32]$part.PartitionNumber) -shr (8 * $_)) -band 0xFF) }
+    $startLba = [uint64]($part.Offset / $sectorSize)
+    $sizeLba = [uint64]($part.Size / $sectorSize)
+    0..7 | ForEach-Object { $hd.Add([byte](($startLba -shr (8 * $_)) -band 0xFF)) }
+    0..7 | ForEach-Object { $hd.Add([byte](($sizeLba -shr (8 * $_)) -band 0xFF)) }
+    $hd.AddRange(([guid]$part.Guid).ToByteArray())  # partition signature
+    $hd.Add(2)                                      # partition format: GPT
+    $hd.Add(2)                                      # signature type: GUID
+
+    $file = New-Object System.Collections.Generic.List[byte]
+    $fileChars = [System.Text.Encoding]::Unicode.GetBytes($loaderPath + [char]0)
+    $fileLen = 4 + $fileChars.Length
+    $file.AddRange([byte[]]@(4, 4, ($fileLen -band 0xFF), (($fileLen -shr 8) -band 0xFF)))
+    $file.AddRange($fileChars)
+
+    $end = [byte[]]@(0x7f, 0xff, 4, 0)
+    $fpLen = $hd.Count + $file.Count + $end.Length
+
+    0..3 | ForEach-Object { $bytes.Add((([uint32]1) -shr (8 * $_)) -band 0xFF) }  # LOAD_OPTION_ACTIVE
+    $bytes.Add($fpLen -band 0xFF); $bytes.Add(($fpLen -shr 8) -band 0xFF)
+    $bytes.AddRange([System.Text.Encoding]::Unicode.GetBytes($description + [char]0))
+    $bytes.AddRange($hd); $bytes.AddRange($file); $bytes.AddRange($end)
+    return ,$bytes.ToArray()
+}
+
+function Get-BootOrderIds {
+    $bo = Get-UefiVar 'BootOrder'
+    if (-not $bo) { return @() }
+    return @(for ($i = 0; $i + 1 -lt $bo.Length; $i += 2) { '{0:X4}' -f ($bo[$i] + ($bo[$i + 1] * 256)) })
+}
+
+function Set-BootOrderIds([string[]]$ids) {
+    $bytes = New-Object System.Collections.Generic.List[byte]
+    foreach ($id in $ids) {
+        $v = [convert]::ToUInt16($id, 16)
+        $bytes.Add($v -band 0xFF); $bytes.Add(($v -shr 8) -band 0xFF)
+    }
+    return Set-UefiVar 'BootOrder' $bytes.ToArray()
+}
+
 $esp = $null
 $backup = $null
 $installError = $null
+$entryId = $null
 try {
     Write-Host 'Downloading rEFInd zip file...'
     $zip = Join-Path $env:TEMP "refind-bin-$RefindVer.zip"
@@ -117,11 +223,15 @@ try {
         if (Test-Path $p) { Copy-Item -Recurse -Force $p $dest }
     }
 
-    Write-Host 'Pointing the Windows Boot Manager firmware entry at rEFInd...'
+    Write-Host 'Creating the rEFInd firmware boot entry...'
+    if (-not $esp.Part) {
+        throw 'Could not identify the system EFI System Partition for the boot entry.'
+    }
+    Enable-UefiPrivilege
     $backupDir = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd'
     New-Item -ItemType Directory -Force $backupDir | Out-Null
-    # Snapshot {bootmgr} and the firmware boot order before modifying either;
-    # if the BCD store can't even be read, abort while nothing has changed.
+    # Snapshot {bootmgr}, the firmware boot order, and raw BootOrder bytes
+    # before modifying anything; abort untouched if the BCD store is unreadable.
     $bootmgrBefore = Invoke-Bcdedit '/enum', '{bootmgr}'
     if (-not $bootmgrBefore.Ok) {
         throw ("Could not read the {bootmgr} entry; boot settings were left untouched.`n" +
@@ -129,23 +239,64 @@ try {
     }
     $fwBefore = Invoke-Bcdedit '/enum', '{fwbootmgr}'
     $backup = Join-Path $backupDir 'bootmgr-backup.txt'
-    $bootmgrBefore.Output + $fwBefore.Output | Out-File -FilePath $backup -Encoding utf8
+    $bootmgrBefore.Output + $fwBefore.Output +
+        @('', ('BootOrder(hex): ' + (ConvertTo-HexString (Get-UefiVar 'BootOrder')))) |
+        Out-File -FilePath $backup -Encoding utf8
 
-    $set = Invoke-Bcdedit '/set', '{bootmgr}', 'path', $RefindLoader
-    if (-not $set.Ok) {
-        throw ("Pointing {bootmgr} at rEFInd failed; boot settings were left untouched.`n" +
-               ($set.Output -join "`n"))
+    # Older versions repointed {bootmgr} at rEFInd; undo that so Windows Boot
+    # Manager is a normal Windows entry again (rEFInd chainloads it).
+    $m = $bootmgrBefore.Output | Select-String -Pattern '^\s*path\s+(\S+)\s*$' | Select-Object -First 1
+    if ($m -and $m.Matches[0].Groups[1].Value -ieq $RefindLoader) {
+        Write-Host 'Restoring the Windows Boot Manager entry (repointed by an older version)...'
+        $r = Invoke-Bcdedit '/set', '{bootmgr}', 'path', '\EFI\Microsoft\Boot\bootmgfw.efi'
+        if (-not $r.Ok) { Write-Warning "Could not restore {bootmgr} path: $($r.Output -join ' ')" }
+        $r = Invoke-Bcdedit '/set', '{bootmgr}', 'description', 'Windows Boot Manager'
+        if (-not $r.Ok) { Write-Warning "Could not restore {bootmgr} description: $($r.Output -join ' ')" }
     }
-    $desc = Invoke-Bcdedit '/set', '{bootmgr}', 'description', 'rEFInd Boot Manager'
-    if (-not $desc.Ok) {
-        Write-Warning "Could not rename the boot entry (cosmetic only): $($desc.Output -join ' ')"
+
+    $sectorSize = (Get-Disk -Number $esp.Part.DiskNumber).LogicalSectorSize
+    $loadOption = New-EfiLoadOption $esp.Part $sectorSize 'rEFInd' $RefindLoader
+    $loadOptionHex = ConvertTo-HexString $loadOption
+    $espGuidHex = ConvertTo-HexString (([guid]$esp.Part.Guid).ToByteArray())
+    $loaderHex = ConvertTo-HexString ([System.Text.Encoding]::Unicode.GetBytes($RefindLoader))
+
+    # Reuse an existing rEFInd entry for this ESP (rerun/upgrade) instead of
+    # accumulating duplicates; otherwise take the first free Boot#### slot.
+    # Entries carrying Windows Boot Manager's optional-data blob are always
+    # left alone -- overwriting {bootmgr}'s own variable would break Windows.
+    $freeId = $null
+    foreach ($i in 0..255) {
+        $id = '{0:X4}' -f $i
+        $existing = Get-UefiVar "Boot$id"
+        if (-not $existing) {
+            if (-not $freeId) { $freeId = $id }
+            continue
+        }
+        $hex = ConvertTo-HexString $existing
+        if (-not $entryId -and $hex.Contains($loaderHex) -and $hex.Contains($espGuidHex) -and
+            -not $hex.Contains($BootmgrBlobHex)) {
+            $entryId = $id
+        }
     }
-    # Repointing {bootmgr} only takes effect if the firmware actually boots
-    # Windows Boot Manager -- put it first in the firmware boot order, the
-    # same guarantee efibootmgr -c gives the Linux scripts.
-    $order = Invoke-Bcdedit '/set', '{fwbootmgr}', 'displayorder', '{bootmgr}', '/addfirst'
-    if (-not $order.Ok) {
-        Write-Warning "Could not put Windows Boot Manager first in the firmware boot order: $($order.Output -join ' ')"
+    if (-not $entryId) { $entryId = $freeId }
+    if (-not $entryId) { throw 'No free Boot#### slot found in NVRAM.' }
+
+    if (-not (Set-UefiVar "Boot$entryId" $loadOption)) {
+        throw ("Writing the Boot$entryId NVRAM variable failed (error " +
+               [System.Runtime.InteropServices.Marshal]::GetLastWin32Error() +
+               '). Boot settings are unchanged; Windows still boots normally.')
+    }
+    if ((ConvertTo-HexString (Get-UefiVar "Boot$entryId")) -ne $loadOptionHex) {
+        throw "Boot$entryId did not read back as written."
+    }
+    Write-Host "rEFInd boot entry written as Boot$entryId."
+
+    # Put rEFInd first in the boot order -- the same guarantee efibootmgr -c
+    # gives on Linux. Windows stays bootable throughout: its own entry is
+    # untouched and merely follows rEFInd in the order.
+    $order = @(Get-BootOrderIds) | Where-Object { $_ -ne $entryId }
+    if (-not (Set-BootOrderIds (@($entryId) + $order))) {
+        Write-Warning 'Could not put rEFInd first in the firmware boot order.'
     }
 } catch {
     $installError = $_
@@ -153,44 +304,44 @@ try {
     if ($esp) { Dismount-Esp $esp }
 }
 
-# Verify the result from the live BCD store rather than trusting the steps
-# above -- the Windows analog of the Linux scripts' NVRAM read-back summary.
+# Verify the result from live NVRAM rather than trusting the steps above --
+# the Windows analog of the Linux scripts' efibootmgr read-back summary.
 Write-Host ''
 Write-Host '==================== Installation summary ===================='
 if ($installError) {
     Write-Host "ERROR: $installError"
     Write-Host '---------------------------------------------------------------'
 }
+$entryOk = $false
+$orderIds = @()
+if ($entryId) {
+    $entryOk = $null -ne (Get-UefiVar "Boot$entryId")
+    $orderIds = @(Get-BootOrderIds)
+    Write-Host "rEFInd entry:        Boot$entryId $(if ($entryOk) { '(present in NVRAM)' } else { '(MISSING from NVRAM)' })"
+    Write-Host "Firmware boot order: $($orderIds -join ', ')"
+}
 $bootmgrNow = Invoke-Bcdedit '/enum', '{bootmgr}'
-$fwNow = Invoke-Bcdedit '/enum', '{fwbootmgr}'
-$bootmgrNow.Output | ForEach-Object { Write-Host $_ }
-Write-Host '---------------------------------------------------------------'
 $bcdPath = $null
 $m = $bootmgrNow.Output | Select-String -Pattern '^\s*path\s+(\S+)\s*$' | Select-Object -First 1
 if ($bootmgrNow.Ok -and $m) { $bcdPath = $m.Matches[0].Groups[1].Value }
-# First identifier after "displayorder" is the head of the firmware boot order.
-$fwFirst = $null
-$m = $fwNow.Output | Select-String -Pattern '^\s*displayorder\s+(\S+)\s*$' | Select-Object -First 1
-if ($fwNow.Ok -and $m) { $fwFirst = $m.Matches[0].Groups[1].Value }
-
+Write-Host "Windows Boot Manager path: $bcdPath"
+Write-Host '---------------------------------------------------------------'
 if ($installError) {
     Write-Host '*** FAILED: the installation did not complete -- see the error above. ***'
-    if ($bcdPath -eq $RefindLoader) {
-        Write-Host '(The boot entry currently points at rEFInd, likely from an earlier install.)'
-    }
-} elseif ($bcdPath -ne $RefindLoader) {
-    Write-Host '*** FAILED: the Windows Boot Manager entry does not point at rEFInd. ***'
-    Write-Host '*** rEFInd will NOT load at boot -- see any errors above.            ***'
-} elseif ($fwFirst -and $fwFirst -ne '{bootmgr}') {
-    Write-Host 'WARNING: the boot entry points at rEFInd, but Windows Boot Manager is'
-    Write-Host "NOT first in the firmware boot order (it starts with $fwFirst)."
+} elseif (-not $entryOk) {
+    Write-Host '*** FAILED: the rEFInd boot entry is not present in NVRAM.          ***'
+    Write-Host '*** rEFInd will NOT load at boot -- see any errors above.           ***'
+} elseif ($orderIds.Count -and $orderIds[0] -ne $entryId) {
+    Write-Host "WARNING: the rEFInd entry exists, but is NOT first in the firmware"
+    Write-Host "boot order (it starts with Boot$($orderIds[0]))."
 } else {
-    Write-Host 'SUCCESS: rEFInd is installed and the firmware boot entry points at it.'
+    Write-Host 'SUCCESS: rEFInd is installed and first in the firmware boot order.'
+    Write-Host '(Windows Boot Manager was left untouched; rEFInd chainloads it.)'
 }
 if ($backup) {
     Write-Host ''
-    Write-Host "Previous boot manager settings were saved to: $backup"
-    Write-Host 'To revert to booting Windows directly, run (as Administrator):'
-    Write-Host '  bcdedit /set "{bootmgr}" path \EFI\Microsoft\Boot\bootmgfw.efi'
-    Write-Host '  bcdedit /set "{bootmgr}" description "Windows Boot Manager"'
+    Write-Host "Previous boot settings were saved to: $backup"
+    Write-Host 'To remove rEFInd again, run (as Administrator):'
+    Write-Host "  powershell -ExecutionPolicy Bypass -File `"$env:LOCALAPPDATA\SteamDeck_rEFInd\windows\uninstall_rEFInd.ps1`""
+    Write-Host 'or uninstall "SteamDeck rEFInd GUI" from Windows Settings > Apps.'
 }

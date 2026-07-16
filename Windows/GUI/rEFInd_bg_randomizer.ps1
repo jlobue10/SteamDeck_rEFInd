@@ -65,6 +65,87 @@ function Dismount-Esp($m) {
     }
 }
 
+# bcdedit is a native exe: under $ErrorActionPreference='Stop' a failed call
+# neither throws nor stops the script, and stderr via 2>&1 becomes a
+# terminating NativeCommandError. Run it relaxed and report via the exit code.
+function Invoke-Bcdedit {
+    param([string[]]$BcdArgs)
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $out = & bcdedit @BcdArgs 2>&1 | ForEach-Object { "$_" }
+        return [pscustomobject]@{ Ok = ($LASTEXITCODE -eq 0); Output = @($out) }
+    } finally {
+        $ErrorActionPreference = $prev
+    }
+}
+
+# Map a bcdedit device string ("Z:" or "\Device\HarddiskVolumeN") onto one of
+# the candidate ESP partitions, using QueryDosDevice to resolve each ESP's
+# \\?\Volume{guid} name to its kernel \Device\HarddiskVolumeN path.
+function Resolve-DevicePartition([string]$device, $esps) {
+    if ($device -match '^([A-Za-z]):$') {
+        $letter = $Matches[1]
+        return $esps | Where-Object { "$($_.DriveLetter)" -ieq $letter } | Select-Object -First 1
+    }
+    if ($device -notlike '\Device\*') { return $null }
+    if (-not ('Win32.Native' -as [type])) {
+        Add-Type -Namespace Win32 -Name Native -MemberDefinition @'
+[DllImport("kernel32.dll", CharSet=CharSet.Auto, SetLastError=true)]
+public static extern uint QueryDosDevice(string lpDeviceName, System.Text.StringBuilder lpTargetPath, int ucchMax);
+'@
+    }
+    foreach ($p in $esps) {
+        $vol = @($p.AccessPaths) | Where-Object { $_ -like '\\?\Volume*' } | Select-Object -First 1
+        if (-not $vol) { continue }
+        $name = $vol.Substring(4).TrimEnd('\')
+        $sb = New-Object System.Text.StringBuilder 512
+        if ([Win32.Native]::QueryDosDevice($name, $sb, $sb.Capacity) -gt 0 -and
+            $sb.ToString() -ieq $device) {
+            return $p
+        }
+    }
+    return $null
+}
+
+# The ESP partition holding the rEFInd that firmware actually boots, per the
+# BCD firmware entries ({bootmgr} included); $null when no entry points at a
+# \EFI\refind\refind*.efi loader. Among several matches, the one earliest in
+# the {fwbootmgr} display order (= what firmware runs first) wins.
+function Get-RefindNvramEsp($esps) {
+    $enum = Invoke-Bcdedit @('/enum', 'firmware')
+    if (-not $enum.Ok) { return $null }
+    $entries = @{}
+    $displayOrder = @()
+    $cur = $null
+    $inDisplayOrder = $false
+    foreach ($line in $enum.Output) {
+        if ($line -match '^identifier\s+(\S+)') {
+            $cur = $Matches[1]; $entries[$cur] = @{}; $inDisplayOrder = $false; continue
+        }
+        if ($line -match '^displayorder\s+(\{\S+\})') {
+            if ($cur -eq '{fwbootmgr}') { $displayOrder += $Matches[1]; $inDisplayOrder = $true }
+            continue
+        }
+        if ($inDisplayOrder -and $line -match '^\s+(\{\S+\})\s*$') { $displayOrder += $Matches[1]; continue }
+        $inDisplayOrder = $false
+        if (-not $cur) { continue }
+        if ($line -match '^device\s+partition=(\S+)') { $entries[$cur].Device = $Matches[1]; continue }
+        if ($line -match '^path\s+(\S+)') { $entries[$cur].Path = $Matches[1]; continue }
+    }
+    $cands = @($entries.Keys | Where-Object {
+        $entries[$_].Path -match '^\\EFI\\refind\\refind[^\\]*\.efi$' -and $entries[$_].Device
+    } | Sort-Object {
+        $i = [array]::IndexOf($displayOrder, $_)
+        if ($i -lt 0) { [int]::MaxValue } else { $i }
+    })
+    foreach ($id in $cands) {
+        $part = Resolve-DevicePartition $entries[$id].Device $esps
+        if ($part) { return $part }
+    }
+    return $null
+}
+
 try {
     $bgDir = Join-Path $DataDir 'backgrounds'
     $pngs = @(Get-ChildItem -Path $bgDir -Filter '*.png' -File -ErrorAction SilentlyContinue)
@@ -73,17 +154,37 @@ try {
         exit 0
     }
 
-    # Pick the ESP that actually contains rEFInd, system ESP first.
     $esps = @(Get-Partition | Where-Object { $_.GptType -eq $EspGuid })
-    $ordered = @($esps | Where-Object { $_.IsSystem }) + @($esps | Where-Object { -not $_.IsSystem })
+
+    # First choice: the ESP the firmware's rEFInd boot entry points at -- on
+    # multi-ESP machines a stale EFI\refind on another ESP must not shadow it.
     $mount = $null
-    foreach ($p in $ordered) {
-        try { $m = Mount-EspPartition $p } catch {
-            Log "Skipping unreachable ESP (disk $($p.DiskNumber) partition $($p.PartitionNumber)): $_"
-            continue
+    $nvramPart = Get-RefindNvramEsp $esps
+    if ($nvramPart) {
+        try {
+            $m = Mount-EspPartition $nvramPart
+            if (Test-Path (Join-Path $m.Root $RefindLoader)) {
+                Log "Using the ESP from the firmware rEFInd boot entry (disk $($nvramPart.DiskNumber), partition $($nvramPart.PartitionNumber))."
+                $mount = $m
+            } else {
+                Dismount-Esp $m
+            }
+        } catch {
+            Log "Could not mount the firmware rEFInd entry's ESP: $_"
         }
-        if (Test-Path (Join-Path $m.Root $RefindLoader)) { $mount = $m; break }
-        Dismount-Esp $m
+    }
+
+    # No usable firmware entry: pick the ESP that contains rEFInd, system ESP first.
+    if (-not $mount) {
+        $ordered = @($esps | Where-Object { $_.IsSystem }) + @($esps | Where-Object { -not $_.IsSystem })
+        foreach ($p in $ordered) {
+            try { $m = Mount-EspPartition $p } catch {
+                Log "Skipping unreachable ESP (disk $($p.DiskNumber) partition $($p.PartitionNumber)): $_"
+                continue
+            }
+            if (Test-Path (Join-Path $m.Root $RefindLoader)) { $mount = $m; break }
+            Dismount-Esp $m
+        }
     }
     if (-not $mount) {
         Log 'rEFInd was not found on any EFI System Partition; nothing to do.'
