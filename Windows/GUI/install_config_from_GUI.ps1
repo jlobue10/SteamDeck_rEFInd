@@ -80,14 +80,22 @@ function Get-RefindNvramEsp($esps) {
         if (-not $cur) { continue }
         if ($line -match '^device\s+partition=(\S+)') { $entries[$cur].Device = $Matches[1]; continue }
         if ($line -match '^path\s+(\S+)') { $entries[$cur].Path = $Matches[1]; continue }
+        if ($line -match '^description\s+(.+?)\s*$') { $entries[$cur].Description = $Matches[1]; continue }
     }
-    $cands = @($entries.Keys | Where-Object {
+    # Prefer entries whose loader path is \EFI\refind\refind*.efi; then, mirroring
+    # the Linux install_config_from_GUI.sh, fall back to any firmware entry the
+    # Linux refind-install labelled exactly "rEFInd". bcdedit can render an
+    # efibootmgr-created entry's path in a form the strict match misses (or as
+    # "device unknown"); without this fallback the scan below would prefer the
+    # Windows ESP and shadow the live rEFInd on the Linux ESP.
+    $orderOf = { $i = [array]::IndexOf($displayOrder, $_); if ($i -lt 0) { [int]::MaxValue } else { $i } }
+    $byPath = @($entries.Keys | Where-Object {
         $entries[$_].Path -match '^\\EFI\\refind\\refind[^\\]*\.efi$' -and $entries[$_].Device
-    } | Sort-Object {
-        $i = [array]::IndexOf($displayOrder, $_)
-        if ($i -lt 0) { [int]::MaxValue } else { $i }
-    })
-    foreach ($id in $cands) {
+    } | Sort-Object $orderOf)
+    $byLabel = @($entries.Keys | Where-Object {
+        "$($entries[$_].Description)" -ieq 'rEFInd' -and $entries[$_].Device -and $byPath -notcontains $_
+    } | Sort-Object $orderOf)
+    foreach ($id in @($byPath + $byLabel)) {
         $part = Resolve-DevicePartition $entries[$id].Device $esps
         if ($part) { return $part }
     }
