@@ -169,36 +169,18 @@ In my brief test case, I found it necessary to press a key to avoid disk checkin
 
 ## **Disabling and/ or uninstalling rEFInd**
 
-If you've tried rEFInd and decide you just don't want to use it any more, you can delete the rEFInd EFI entry with this command (replace XXXX with rEFInd EFI entry number).
-
-`sudo efibootmgr -b XXXX -B`
-
-To uninstall the package and files that came with the `pacman` installed rEFInd package run.
+Uninstalling is automated now. Run the uninstall script (staged by the GUI install; also available in this repo under `scripts/`):
 
 ```
-sudo steamos-readonly disable
-# These next two commands may not be necessary, but they don't hurt anything either
-sudo pacman-key --init
-sudo pacman-key --populate archlinux
-# The following command performs the pacman refind package removal
-sudo pacman -R --noconfirm refind
-sudo steamos-readonly enable
+~/.local/SteamDeck_rEFInd/scripts/uninstall_rEFInd.sh
 ```
 
-Once refind is uninstalled, the GUI can be removed with the following commands:
-```
-rm -rf ~/SteamDeck_rEFInd
-rm -rf ~/.SteamDeck_rEFInd
-rm -f ~/Desktop/refind_GUI.desktop
-```
+It disables the `bootnext-refind` and background-randomizer services first (otherwise the boot entry would be recreated on the next boot), deletes the rEFInd boot entries that target the Deck's ESP (a rEFInd installed from the Windows side, e.g. on an SD card, is detected and left alone), re-activates the Windows boot entry, removes `EFI/refind` and `EFI/Xbox360` from `/esp` plus `/boot/refind_linux.conf`, and removes the pacman `refind` package. Flags:
 
-The non-pacman installation script files would be a little bit more complicated to delete, but not too difficult if somebody insists on steps for it. Since those files only take up a very small amount of space on the 5GB root partition (not taking up any space for games on the `/home` partition), I am not going to go over that in more detail here.
+- `--keep-esp-files` — undo only the services and boot entries; keep rEFInd's files on `/esp`
+- `--remove-app` — also remove the SteamDeck_rEFInd GUI package, `~/.local/SteamDeck_rEFInd`, and the desktop shortcuts
 
-To remove the rEFInd directory from the `/esp` partition **_(be forewarned that making a mistake here and deleting the wrong files or folders on the `/esp` partition could render your Steam Deck unbootable and in need of the recovery image. Consider this a fair warning and me taking no responsibility for user error here.)_** run this command.
-
-```
-sudo rm -rf /esp/efi/refind/
-```
+On the Windows side, uninstalling "SteamDeck rEFInd GUI" from Settings > Apps asks whether to also remove rEFInd itself and then performs the equivalent cleanup automatically.
 
 ## **[SteamOS reinstallation Considerations](https://github.com/jlobue10/SteamDeck_rEFInd/issues/49)**
 

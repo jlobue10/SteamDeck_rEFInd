@@ -48,3 +48,32 @@ Name: "{app}\GUI\backgrounds"; Filename: "{app}\backgrounds"
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent runascurrentuser
+
+[UninstallRun]
+; Undo the rEFInd boot entry and ESP files before the app files disappear.
+; The per-user uninstaller is unelevated, so the script elevates via UAC.
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\uninstall_rEFInd.ps1"""; Flags: shellexec waituntilterminated; Verb: runas; RunOnceId: "UninstallRefind"; Check: ShouldRemoveRefind
+
+[UninstallDelete]
+; The app generates data the uninstaller's manifest doesn't cover (the
+; GUI-generated refind.conf and PNGs, settings ini, logs, boot-entry backup);
+; scrub the whole per-user app dir so nothing lingers in %LOCALAPPDATA%.
+Type: filesandordirs; Name: "{app}"
+
+[Code]
+var
+  RemoveRefind: Boolean;
+
+function InitializeUninstall(): Boolean;
+begin
+  RemoveRefind := MsgBox('Also remove the rEFInd boot manager itself?' + #13#10#13#10 +
+    'Yes: delete the rEFInd firmware boot entry and the EFI\refind files, restoring direct Windows boot.' + #13#10 +
+    'No: keep rEFInd bootable and remove only the GUI app.',
+    mbConfirmation, MB_YESNO) = IDYES;
+  Result := True;
+end;
+
+function ShouldRemoveRefind(): Boolean;
+begin
+  Result := RemoveRefind;
+end;

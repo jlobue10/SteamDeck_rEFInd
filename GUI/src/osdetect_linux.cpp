@@ -5,6 +5,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QRegularExpression>
 
 #include <functional>
 
@@ -117,6 +118,54 @@ bool OSDetector::isLegionGo2()
     // Machine-type product names, as matched by the kernel's pmc quirk list.
     const QString product = readDmiId("product_name");
     return product == QStringLiteral("83N0") || product == QStringLiteral("83N1");
+}
+
+bool OSDetector::isXboxAlly()
+{
+    const QString board = readDmiId("board_name");
+    // RC73XA = ROG Xbox Ally X, RC73YA = ROG Xbox Ally (prefix match to allow
+    // for board revision suffixes).
+    return board.startsWith(QLatin1String("RC73XA")) || board.startsWith(QLatin1String("RC73YA"));
+}
+
+QSize OSDetector::nativePanelResolution()
+{
+    // The first line of a connected DRM connector's modes list is its
+    // preferred (native) mode. Internal panels (eDP/LVDS/DSI) are checked
+    // first so a docked handheld still reports its built-in screen.
+    const QDir drm(QStringLiteral("/sys/class/drm"));
+    const QStringList connectors = drm.entryList({QStringLiteral("card*-*")},
+                                                 QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    static const QStringList internalPrefixes = {
+        QStringLiteral("eDP"), QStringLiteral("LVDS"), QStringLiteral("DSI"),
+    };
+    static const QRegularExpression modeRe(QStringLiteral("^(\\d+)x(\\d+)"));
+    for (int pass = 0; pass < 2; ++pass) {
+        for (const QString &name : connectors) {
+            const QString connector = name.section('-', 1, -1); // "card1-eDP-1" -> "eDP-1"
+            bool internal = false;
+            for (const QString &prefix : internalPrefixes) {
+                if (connector.startsWith(prefix, Qt::CaseInsensitive)) {
+                    internal = true;
+                    break;
+                }
+            }
+            if ((pass == 0) != internal)
+                continue;
+            QFile status(drm.filePath(name) + "/status");
+            if (!status.open(QIODevice::ReadOnly | QIODevice::Text)
+                || QString::fromUtf8(status.readAll()).trimmed() != QLatin1String("connected"))
+                continue;
+            QFile modes(drm.filePath(name) + "/modes");
+            if (!modes.open(QIODevice::ReadOnly | QIODevice::Text))
+                continue;
+            const QRegularExpressionMatch m =
+                modeRe.match(QString::fromUtf8(modes.readLine()).trimmed());
+            if (m.hasMatch())
+                return QSize(m.captured(1).toInt(), m.captured(2).toInt());
+        }
+    }
+    return {};
 }
 
 QStringList OSDetector::runningOsIds()
