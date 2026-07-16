@@ -1,11 +1,21 @@
 #!/bin/bash
 
-# A simple script to install the rEFInd customization GUI
+# A simple script to install the rEFInd customization GUI.
+# Designed to be piped from curl:
+#   curl -L https://github.com/jlobue10/SteamDeck_rEFInd/raw/main/install-GUI.sh | sh
+echo -e "Installing SteamDeck rEFInd...\n"
+cd "$HOME" || exit 1
+rm -rf "$HOME/SteamDeck_rEFInd"
+if ! git clone --depth 1 https://github.com/jlobue10/SteamDeck_rEFInd; then
+    echo "Error: failed to clone the SteamDeck_rEFInd repository. Aborting." >&2
+    exit 1
+fi
+cd SteamDeck_rEFInd || exit 1
+CURRENT_WD="$(pwd)"
+
 sudo steamos-readonly disable
 # Make sure readonly gets re-enabled even if the script aborts partway through
 trap 'sudo steamos-readonly enable' EXIT
-echo -e "Installing SteamDeck rEFInd...\n"
-CURRENT_WD=$(pwd)
 mkdir -p "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/GUI/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/icons/" "$HOME/.local/SteamDeck_rEFInd"
