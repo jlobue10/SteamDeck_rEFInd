@@ -8,7 +8,7 @@
 ; app itself requests Administrator at launch via its embedded manifest.
 
 #define AppName "SteamDeck rEFInd GUI"
-#define AppVersion "2.1.3"
+#define AppVersion "2.3.1"
 #define AppExe "SteamDeck_rEFInd.exe"
 
 [Setup]
