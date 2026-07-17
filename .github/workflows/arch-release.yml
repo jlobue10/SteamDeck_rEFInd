@@ -28,7 +28,7 @@ jobs:
       # Exact makedepends from the PKGBUILD (plus git for the source clone);
       # makepkg then runs without -s, so a drifting PKGBUILD fails loudly here.
       - name: Install build dependencies
-        run: pacman -Syu --noconfirm git cmake gcc glibc make qt5-base qt5-tools
+        run: pacman -Syu --noconfirm git cmake gcc glibc make qt6-base qt6-tools
 
       # Default checkout: the tag itself on tag pushes, the dispatched branch
       # on manual runs. Either way the packaging recipe (PKGBUILD + .install)
