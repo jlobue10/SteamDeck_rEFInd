@@ -182,6 +182,8 @@ $esp = $null
 $backup = $null
 $installError = $null
 $entryId = $null
+$driverError = $null
+$espFiles = $null
 try {
     Write-Step 'Downloading rEFInd from SourceForge...'
     $zip = Join-Path $env:TEMP "refind-bin-$RefindVer.zip"
@@ -219,6 +221,10 @@ try {
     try {
         Invoke-WebRequest -Uri $driverUrl -OutFile $driverDest -MaximumRedirection 10
     } catch {
+        # Non-fatal, but remember why: the summary must not report plain
+        # success when the driver never made it to the ESP (issue #23 -- the
+        # only sign was a warning that had long scrolled off screen).
+        $driverError = "$($_.Exception.Message)"
         Write-Warning "Failed to download UsbXbox360Dxe.efi; skipping controller driver. $_"
     }
 
@@ -236,6 +242,17 @@ try {
     foreach ($d in 'backgrounds','icons') {
         $p = Join-Path $env:LOCALAPPDATA "SteamDeck_rEFInd\$d"
         if (Test-Path $p) { Copy-Item -Recurse -Force $p $dest }
+    }
+
+    # Record what actually landed on the ESP while it is still mounted; the
+    # summary prints this after the dismount. The timestamp exposes a stale
+    # controller driver (a failed download silently keeps the old copy).
+    $espFiles = [ordered]@{}
+    foreach ($check in @(
+            @{ Name = 'rEFInd loader (refind_x64.efi)';          Path = (Join-Path $dest 'refind_x64.efi') },
+            @{ Name = 'GUI config (refind.conf)';                Path = $conf },
+            @{ Name = 'Controller driver (UsbXbox360Dxe.efi)';   Path = $driverDest })) {
+        $espFiles[$check.Name] = Get-Item -LiteralPath $check.Path -ErrorAction SilentlyContinue
     }
 
     Write-Step 'Creating the rEFInd firmware boot entry...'
@@ -336,6 +353,25 @@ if ($entryId) {
     Write-Host "rEFInd entry:        Boot$entryId $(if ($entryOk) { '(present in NVRAM)' } else { '(MISSING from NVRAM)' })"
     Write-Host "Firmware boot order: $($orderIds -join ', ')"
 }
+# Per-file state of the ESP, captured while it was mounted: what is actually
+# installed, not what the steps above intended to install.
+if ($espFiles) {
+    foreach ($name in $espFiles.Keys) {
+        $item = $espFiles[$name]
+        if ($item) {
+            Write-Host ('{0}: on the ESP, modified {1}' -f $name, $item.LastWriteTime.ToString('yyyy-MM-dd HH:mm'))
+        } else {
+            Write-Host ("{0}: MISSING from the ESP" -f $name) -ForegroundColor Red
+        }
+    }
+}
+$driverOnEsp = $espFiles -and $null -ne $espFiles['Controller driver (UsbXbox360Dxe.efi)']
+if ($driverError) {
+    Write-Host "Controller driver download failed: $driverError" -ForegroundColor Yellow
+    if ($driverOnEsp) {
+        Write-Host 'A PREVIOUS copy of the driver was kept -- it may be outdated.' -ForegroundColor Yellow
+    }
+}
 $bootmgrNow = Invoke-Bcdedit '/enum', '{bootmgr}'
 $bcdPath = $null
 $m = $bootmgrNow.Output | Select-String -Pattern '^\s*path\s+(\S+)\s*$' | Select-Object -First 1
@@ -350,6 +386,13 @@ if ($installError) {
 } elseif ($orderIds.Count -and $orderIds[0] -ne $entryId) {
     Write-Host "WARNING: the rEFInd entry exists, but is NOT first in the firmware" -ForegroundColor Yellow
     Write-Host "boot order (it starts with Boot$($orderIds[0]))." -ForegroundColor Yellow
+} elseif ($driverError -or -not $driverOnEsp) {
+    Write-Host 'SUCCESS, with a warning: rEFInd is installed and first in the firmware' -ForegroundColor Yellow
+    Write-Host 'boot order, but the Xbox 360 controller driver was NOT updated (see' -ForegroundColor Yellow
+    Write-Host 'above) -- gamepads may not work, or keep old behavior, in the boot menu.' -ForegroundColor Yellow
+    Write-Host 'Fix: re-run Install rEFInd with a working network connection, or download' -ForegroundColor Yellow
+    Write-Host 'UsbXbox360Dxe.efi from github.com/jlobue10/UsbXbox360Dxe/releases and' -ForegroundColor Yellow
+    Write-Host 'copy it to EFI\refind\drivers_x64\ on the ESP.' -ForegroundColor Yellow
 } else {
     Write-Host 'SUCCESS: rEFInd is installed and first in the firmware boot order.' -ForegroundColor Green
     Write-Host '(Windows Boot Manager was left untouched; rEFInd chainloads it.)'
