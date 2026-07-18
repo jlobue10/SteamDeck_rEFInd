@@ -10,7 +10,7 @@ url="https://github.com/jlobue10/SteamDeck_rEFInd"
 license=('MIT')
 install=${_pkgname}.install
 depends=()
-makedepends=('cmake' 'gcc' 'glibc' 'make' 'qt5-base' 'qt5-tools')
+makedepends=('cmake' 'gcc' 'glibc' 'make' 'qt6-base' 'qt6-tools')
 source=(
     # Pinned to the release tag so rebuilding an old version never silently
     # packages newer main-branch code.
