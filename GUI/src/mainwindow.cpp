@@ -19,7 +19,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "2.3.3";
+static const char APP_VERSION[] = "2.3.7";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 static const QString NONE_OPTION = QStringLiteral("None");
 
@@ -335,6 +335,7 @@ void MainWindow::on_Create_Config_clicked()
     out << "resolution 3\n";
     out << "enable_touch\n";
     out << (ui->Enable_Mouse_checkBox->isChecked() ? "" : "#") << "enable_mouse\n";
+    out << "log_level 0\n";
     out << "showtools\n";
     out << "scanfor manual\n";
 
