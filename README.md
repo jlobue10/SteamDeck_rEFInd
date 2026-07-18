@@ -135,7 +135,7 @@ Credit to GitHub user **CryoByte33** (maker of [steam-deck-utilities](https://gi
 
 Also thank you to GitHub user **YoshiAye** for the updated background that I made default for the GUI installation.
 
-Thanks to the [original rEFInd developer](https://www.rodsbooks.com/refind/) — this project just makes rEFInd installation and customization easy for the Steam Deck; rEFInd itself performs the complicated bootloader tasks.
+This project (and its sibling [rEFInd_GUI](https://github.com/jlobue10/rEFInd_GUI)) is only intended to simplify the installation and configuration of the rEFInd boot manager. All credit for the rEFInd boot manager itself goes to **Roderick W. Smith** ([rodsbooks.com/refind](https://www.rodsbooks.com/refind/)); rEFInd performs all of the complicated bootloader tasks.
 
 ## Additional comments
 
