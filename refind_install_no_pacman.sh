@@ -29,7 +29,7 @@ yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
 # boot menu. The driver auto-creates its own config at \EFI\Xbox360\config.ini
 # on first boot, so only the .efi is needed here.
 # NOTE: temporarily fetched from the jlobue10 fork (adds Legion Go 2 PIDs +
-# Ally lockup fix); revert to SkorionOS once upstream PR #6 is merged/released.
+# Ally lockup fix); revert to SkorionOS once upstream PR #7 is merged/released.
 XBOX360_DRV_URL="https://github.com/jlobue10/UsbXbox360Dxe/releases/latest/download/UsbXbox360Dxe.efi"
 XBOX360_DRV_TMP="$(mktemp)"
 echo "Downloading UsbXbox360Dxe.efi controller driver..."
