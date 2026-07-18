@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(SteamDeck_rEFInd VERSION 2.3.5 LANGUAGES CXX)
+project(SteamDeck_rEFInd VERSION 2.3.7 LANGUAGES CXX)
 
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTOMOC ON)
