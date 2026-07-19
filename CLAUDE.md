@@ -28,7 +28,22 @@ There is no app backend or test suite — this is an installer/config-generator 
 
 ## Building the GUI
 
-Linux (SteamOS/Arch):
+**The Linux build toolchain is pinned, and this matters more than it looks.** SteamOS 3.8.x ships qt6-base 6.9.1 and glibc 2.41 and is frozen there; Arch is rolling and is well past both. Qt symbol version nodes are *not* backward compatible, so a binary linked against newer Qt aborts in the dynamic linker on every Deck, before `main()`, with no GUI and no output when launched from a desktop entry:
+
+```
+libQt6Core.so.6: version `Qt_6.11' not found (required by .../SteamDeck_rEFInd)
+```
+
+This is exactly how 2.3.7 shipped broken: `.github/workflows/arch-release.yml` built in a plain `archlinux:base-devel` container and `pacman -Syu`'d into whatever Qt was current. Both the workflow and `scripts/build_GUI_pinned.sh` now pin an **Arch Linux Archive snapshot** (`2025/07/30`, bootstrapped from the `2025.07.01` tarball) whose qt6-base/glibc/gcc match SteamOS 3.8.16 exactly. Both also assert the built binary requires no Qt symbol newer than `Qt_6.9` and fail the build otherwise. **Only bump the snapshot when SteamOS itself moves to a newer Qt — keep the values in the workflow and the script in sync.**
+
+Note that a full downgrade *into* the snapshot from a current image fails on package splits (`gcc-libs` → `libasan`/`libatomic`/…), which is why both paths start from an era-matched bootstrap tarball rather than downgrading. The tarball must be extracted under `podman unshare`/`sudo`; it carries root-owned files an unprivileged `tar` cannot write.
+
+Reproducible local build (SteamOS has no compiler at all — `cmake`, `gcc`, `make`, `ninja` are all absent from the immutable rootfs, only `qmake6` exists):
+```
+scripts/build_GUI_pinned.sh          # podman; writes ./build-pinned/SteamDeck_rEFInd
+```
+
+Unpinned build (only correct if your Qt matches the target's):
 ```
 cd GUI/src
 mkdir -p build && cd build
@@ -58,6 +73,8 @@ As of 2.0.0 the GUI was refactored to match the sibling `rEFInd_GUI` repo (membe
 ## Conventions to follow when editing scripts
 
 - Every privileged install/uninstall script wraps its `pacman`/file-copy work in `sudo steamos-readonly disable` ... `sudo steamos-readonly enable` — preserve that bracketing in any new script that writes outside `$HOME`.
+- **What survives a SteamOS update:** `/home` is its own partition (so everything under `$HOME/.local/SteamDeck_rEFInd/` persists), and `/etc` is an overlay with its upperdir on `/var`. `/usr` is the immutable A/B rootfs and is *replaced wholesale* by an update — which takes `/usr/bin/SteamDeck_rEFInd` and the pacman package registration with it. That is why `install-GUI.sh` copies the binary out of `/usr/bin` into `$HOME/.local/...` and points the desktop entry at the copy; the GUI keeps working after an update even though the package is gone. Don't "simplify" the desktop entry to exec `/usr/bin/SteamDeck_rEFInd`. Re-running the installer is what restores the package and the `/etc` units.
+- **Desktop entries:** install to `$HOME/.local/share/applications/` (an authorized XDG location) and make `~/Desktop/` a *symlink* to that. KDE only treats a `.desktop` file as a launcher when it resolves into an authorized applications dir; an executable copy dropped straight into `~/Desktop` gets run through the shell instead, which fails on `line 1: [Desktop: command not found`. Setting `metadata::trusted` does not help here — that is GNOME's mechanism, and `gio` refuses it on SteamOS anyway.
 - EFI boot-entry manipulation always goes through `efibootmgr`, extracting boot numbers with `sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +<label>.../\1/p'` — never `$`-anchor a bare label, because efibootmgr ≥ 18 appends a tab + device path after the label even without `-v` (anchored matches silently never match). The install scripts delete refind-install's exact-label "rEFInd Boot Manager" entry up front, then **create the new `rEFInd` entry before deleting old ones** (identified as the head of BootOrder, which `efibootmgr -c` sets) so a failed create can't leave the Deck with no rEFInd entry, and end with a verification summary read back from live NVRAM (plus zenity dialogs in the GUI-invoked pair). This mirrors rEFInd_GUI's install scripts — keep the pattern in sync across `scripts/pacman_install.sh`, `scripts/sourceforge_install.sh`, `SteamDeck_rEFInd_install.sh`, `refind_install_no_pacman.sh`, and `scripts/restore_EFI_entries.sh`.
 - Scripts resolve the ESP's disk and partition number from the `/esp` mount (findmnt + sysfs fallback for empty `lsblk PKNAME`), falling back to the historical `/dev/nvme0n1` partition 1 hardcode only when resolution fails — 64GB Decks boot from eMMC (`/dev/mmcblk0`), where the hardcode created broken entries.
 - All five rEFInd install scripts (the four above plus `Windows/GUI/install_rEFInd.ps1`) download the Xbox 360 controller UEFI driver (`UsbXbox360Dxe.efi`) into the ESP's `EFI/refind/drivers_x64/` so docked/wired Xbox-style gamepads work in the boot menu; the URL temporarily points at the jlobue10 fork of the SkorionOS driver (Legion Go 2 PIDs + Ally poll-timeout fix + v1.7.3's right-stick-in-Mouse-mode fix) — revert it to SkorionOS once upstream PR #7 — which supersedes the old PIDs-only PR #6 and carries the full fork state — is merged and released upstream, and keep the step (and the eventual URL revert) in sync across all five. The scripts fetch the standard release `UsbXbox360Dxe.efi` — the correct default; `UsbXbox360Dxe-debug.efi` is troubleshooting-only.

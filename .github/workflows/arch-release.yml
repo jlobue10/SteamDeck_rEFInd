@@ -1,8 +1,19 @@
 name: Arch Package Release
 
-# Builds the Arch/SteamOS package (.pkg.tar.zst) with makepkg inside an Arch
-# container and attaches it to the GitHub Release for the tag — replaces the
-# manual build previously done in a ChimeraOS VM.
+# Builds the Arch/SteamOS package (.pkg.tar.zst) and attaches it to the GitHub
+# Release for the tag — replaces the manual build previously done in a
+# ChimeraOS VM.
+#
+# The build root is PINNED to an Arch Linux Archive snapshot, not rolling Arch.
+# SteamOS 3.8.x ships qt6-base 6.9.1 and glibc 2.41, while current Arch is far
+# ahead; a binary linked against newer Qt aborts at load with
+#   libQt6Core.so.6: version `Qt_6.11' not found
+# on every Steam Deck, because Qt symbol version nodes are not backward
+# compatible. The 2025-07-30 snapshot matches SteamOS 3.8.16 exactly
+# (qt6-base 6.9.1-5, glibc 2.41, gcc 15.1.1).
+#
+# When SteamOS itself moves to a newer Qt, bump ARCH_SNAPSHOT/BOOTSTRAP_DATE to
+# a snapshot matching the new SteamOS runtime — and not before.
 #
 # Runs automatically on version tags; workflow_dispatch takes an existing tag
 # so a package can be (re)built for a release after the fact.
@@ -18,18 +29,22 @@ on:
 permissions:
   contents: write
 
+env:
+  # Snapshot pinning, see header. BOOTSTRAP_DATE gives a self-consistent root
+  # from the same era: downgrading a current Arch image into a year-old
+  # snapshot instead fails on package splits (e.g. gcc-libs -> libasan/...).
+  ARCH_SNAPSHOT: '2025/07/30'
+  BOOTSTRAP_DATE: '2025.07.01'
+  # Highest Qt symbol version SteamOS 3.8.x can load. The guard below fails the
+  # release if the built binary requires anything newer.
+  MAX_QT_ABI: '6.9'
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: archlinux:base-devel
     env:
       TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
     steps:
-      # Exact makedepends from the PKGBUILD (plus git for the source clone);
-      # makepkg then runs without -s, so a drifting PKGBUILD fails loudly here.
-      - name: Install build dependencies
-        run: pacman -Syu --noconfirm git cmake gcc glibc make qt6-base qt6-tools
-
       # Default checkout: the tag itself on tag pushes, the dispatched branch
       # on manual runs. Either way the packaging recipe (PKGBUILD + .install)
       # comes from that ref, while the packaged source is the tag the PKGBUILD
@@ -45,11 +60,45 @@ jobs:
             exit 1
           fi
 
+      - name: Build pinned Arch root
+        run: |
+          curl -fsSL -o bootstrap.tar.zst \
+            "https://archive.archlinux.org/iso/${BOOTSTRAP_DATE}/archlinux-bootstrap-${BOOTSTRAP_DATE}-x86_64.tar.zst"
+          sudo mkdir -p /tmp/rootfs
+          sudo tar --use-compress-program=unzstd -xf bootstrap.tar.zst -C /tmp/rootfs
+          sudo tar -C /tmp/rootfs/root.x86_64 -cf - . | docker import - arch-pinned:build
+
+      # Signature checking is off because the archive is served over HTTPS and
+      # keys valid at snapshot time are marked disabled in today's keyring.
       - name: Build package (makepkg)
         run: |
-          useradd -m builder
-          chown -R builder: .
-          su builder -c 'makepkg --noconfirm'
+          docker run --rm -v "$PWD:/work" -w /work arch-pinned:build bash -euo pipefail -c '
+            A="https://archive.archlinux.org/repos/'"$ARCH_SNAPSHOT"'"
+            printf "[options]\nArchitecture = auto\nSigLevel = Never\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n" "$A" "$A" > /etc/pacman.conf
+            pacman -Syu --noconfirm
+            # Exact makedepends from the PKGBUILD (plus git for the source
+            # clone); makepkg then runs without -s, so a drifting PKGBUILD
+            # fails loudly here.
+            pacman -S --noconfirm --needed git cmake gcc glibc make qt6-base qt6-tools
+            pacman -Q glibc qt6-base gcc
+            useradd -m builder
+            chown -R builder: /work
+            su builder -c "makepkg --noconfirm"
+          '
+
+      # The regression this workflow exists to prevent: a package that cannot
+      # start on a Steam Deck. Cheap to check, and catches any future drift in
+      # the pin before it reaches users.
+      - name: Verify binary ABI is loadable on SteamOS
+        run: |
+          pkg=$(ls *.pkg.tar.zst | grep -v -- '-debug-' | head -1)
+          mkdir -p verify && tar -C verify --use-compress-program=unzstd -xf "$pkg" usr/bin/SteamDeck_rEFInd
+          need=$(strings verify/usr/bin/SteamDeck_rEFInd | grep -oE '^Qt_6\.[0-9]+$' | sort -uV | tail -1)
+          echo "binary requires ${need:-none}; SteamOS supports up to Qt_${MAX_QT_ABI}"
+          if [ -n "$need" ] && [ "$(printf '%s\nQt_%s\n' "$need" "$MAX_QT_ABI" | sort -V | tail -1)" != "Qt_${MAX_QT_ABI}" ]; then
+            echo "::error::Built binary requires ${need}, newer than SteamOS's Qt_${MAX_QT_ABI}; it would fail to start on every Deck. Check ARCH_SNAPSHOT."
+            exit 1
+          fi
 
       - name: Attach package to release
         uses: softprops/action-gh-release@v2

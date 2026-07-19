@@ -95,11 +95,31 @@ rm -f "$INSTALL_PKG"
 
 sudo steamos-readonly enable
 
+# /usr is the immutable A/B rootfs: a SteamOS update replaces it wholesale and
+# takes the pacman-installed binary with it. The copy under $HOME/.local is on
+# the home partition, survives updates, and is what the desktop entry points at.
 cp -f /usr/bin/SteamDeck_rEFInd "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd"
+chmod +x "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd"
 cp -f /usr/share/applications/SteamDeck_rEFInd.desktop "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop"
 # Desktop file ships with /home/deck hardcoded; rewrite it for the actual user's home
 sed -i "s|/home/deck|$HOME|g" "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop"
-cp -f "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop" "$HOME/Desktop/SteamDeck_rEFInd.desktop"
-chmod +x "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop"
-chmod +x "$HOME/Desktop/SteamDeck_rEFInd.desktop"
+
+# Install as a real XDG launcher so it shows up in the application menu. This
+# location needs no trust marking, so it works regardless of Plasma version.
+mkdir -p "$HOME/.local/share/applications"
+install -Dm644 "$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd.desktop" \
+    "$HOME/.local/share/applications/SteamDeck_rEFInd.desktop"
+update-desktop-database "$HOME/.local/share/applications" 2>/dev/null
+
+# Desktop shortcut, as a symlink into the authorized location above. KDE only
+# treats a .desktop file as a launcher when it lives in an authorized XDG
+# applications dir; a plain executable copy sitting in ~/Desktop is instead run
+# through the shell, which fails on "[Desktop Entry]":
+#   ~/Desktop/./SteamDeck_rEFInd.desktop: line 1: [Desktop: command not found
+# Symlinking means KIO resolves the target and launches it properly.
+mkdir -p "$HOME/Desktop"
+rm -f "$HOME/Desktop/SteamDeck_rEFInd.desktop"
+ln -sfn "$HOME/.local/share/applications/SteamDeck_rEFInd.desktop" \
+    "$HOME/Desktop/SteamDeck_rEFInd.desktop"
+
 echo -e "Installation complete...\n"
