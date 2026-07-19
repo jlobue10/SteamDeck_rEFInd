@@ -15,10 +15,11 @@ $ErrorActionPreference = 'Stop'
 
 # Visual feedback: numbered, colored step banners plus an overall progress bar
 # so the elevated console shows at a glance how far the install has gotten.
-# The OLED Deck (product Galileo) gets one extra step: downloading the I2C
-# touchscreen driver (see the TouchI2cDxe block below).
+# Both Deck models (product Galileo = OLED, Jupiter = LCD) get one extra
+# step: downloading the I2C touchscreen driver (see the TouchI2cDxe block
+# below).
 $product = (Get-CimInstance Win32_ComputerSystemProduct -ErrorAction SilentlyContinue).Name
-$IsTouchDevice = ($product -eq 'Galileo')
+$IsTouchDevice = ($product -eq 'Galileo' -or $product -eq 'Jupiter')
 $TotalSteps = if ($IsTouchDevice) { 7 } else { 6 }
 $script:StepNum = 0
 function Write-Step([string]$Message) {
@@ -234,12 +235,12 @@ try {
         Write-Warning "Failed to download UsbXbox360Dxe.efi; skipping controller driver. $_"
     }
 
-    # TouchI2cDxe touchscreen UEFI driver: the OLED Deck's (Galileo) FocalTech
-    # touch panel is HID-over-I2C, which a USB driver structurally cannot see;
-    # this driver produces AbsolutePointer so the rEFInd menu is touch-usable,
-    # including rotating the portrait touch matrix onto rEFInd's landscape
-    # mode. LCD Decks (Jupiter) have no supported profile and skip the
-    # download (detected above, where $TotalSteps is set).
+    # TouchI2cDxe touchscreen UEFI driver: both Decks' FocalTech touch panels
+    # (OLED "Galileo" and, since driver v1.2.0, LCD "Jupiter") are
+    # HID-over-I2C, which a USB driver structurally cannot see; this driver
+    # produces AbsolutePointer so the rEFInd menu is touch-usable, including
+    # rotating the portrait touch matrix onto rEFInd's landscape mode
+    # (detected above, where $TotalSteps is set).
     if ($IsTouchDevice) {
         Write-Step 'Downloading TouchI2cDxe.efi touchscreen driver...'
         $touchDest = Join-Path $dest 'drivers_x64\TouchI2cDxe.efi'
