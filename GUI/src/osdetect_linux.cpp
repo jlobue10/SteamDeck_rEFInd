@@ -118,9 +118,10 @@ QList<BootEntry> OSDetector::firmwareEntriesForEsp(const Partition &p)
     //
     // Windows appends an optional-data blob straight after the loader path
     // ("...bootmgfw.efi57494e444f5753..."), so stop at the first ".efi" rather
-    // than running to end of line.
+    // than running to end of line. efibootmgr < 18 renders the path as
+    // /File(\EFI\...\loader.efi) instead of a bare /\EFI\... — accept both.
     static const QRegularExpression entryRe(
-        QStringLiteral("HD\\(\\d+,GPT,([0-9a-f-]{36}),[^)]*\\)/(\\\\[^\\s]*?\\.efi)"),
+        QStringLiteral("HD\\(\\d+,GPT,([0-9a-f-]{36}),[^)]*\\)/(?:File\\()?(\\\\[^\\s)]*?\\.efi)"),
         QRegularExpression::CaseInsensitiveOption);
 
     const QStringList lines = out.split('\n');

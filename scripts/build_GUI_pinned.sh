@@ -68,6 +68,10 @@ podman run --rm -v "$REPO_ROOT:/src:ro" -v "$OUT:/out" "$IMAGE" \
 # requirements rather than scraping strings, and fail closed — a Qt Widgets
 # binary always carries a Qt_6.x version node, so finding none means the check
 # did not work rather than that the binary is clean.
+if ! command -v readelf > /dev/null; then
+    echo "Error: readelf (binutils) is required for the ABI check. Aborting." >&2
+    exit 1
+fi
 NEED="$(readelf -V "$OUT/SteamDeck_rEFInd" | grep -oE 'Qt_6\.[0-9]+' | sort -uV | tail -1 || true)"
 if [ -z "$NEED" ]; then
     echo "Error: no Qt version node found in $OUT/SteamDeck_rEFInd; ABI check did not run." >&2

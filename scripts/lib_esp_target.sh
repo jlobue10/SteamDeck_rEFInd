@@ -20,29 +20,35 @@
 
 ESP_TYPE_GUID=c12a7328-f81f-11d2-ba4b-00a0c93ec93b
 
-ESP_TMPMNTS=()
+# Temp mounts are recorded in a file, not a shell array: resolve_refind_dir()
+# is invoked via command substitution, so anything it mounts is registered from
+# a subshell — an array assignment there would be lost to the parent and the
+# EXIT trap would unmount nothing, leaving removable ESPs mounted read-write.
+ESP_TMPMNT_LIST="$(mktemp)"
 
 esp_cleanup() {
     local m
-    for m in "${ESP_TMPMNTS[@]:-}"; do
-        [ -n "$m" ] || continue
-        umount "$m" 2> /dev/null
-        rmdir "$m" 2> /dev/null
-    done
-    ESP_TMPMNTS=()
+    if [ -n "${ESP_TMPMNT_LIST:-}" ] && [ -f "$ESP_TMPMNT_LIST" ]; then
+        while read -r m; do
+            [ -n "$m" ] || continue
+            umount "$m" 2> /dev/null
+            rmdir "$m" 2> /dev/null
+        done < "$ESP_TMPMNT_LIST"
+        rm -f "$ESP_TMPMNT_LIST"
+    fi
 }
 
 # Echo a mount point for device $1, mounting it if it isn't mounted already.
 esp_ensure_mounted() {
     local dev="$1" mp
-    mp="$(findmnt -rno TARGET -S "$dev" 2> /dev/null | head -1)"
+    mp="$(findmnt -no TARGET -S "$dev" 2> /dev/null | head -1)"
     if [ -n "$mp" ]; then
         printf '%s\n' "$mp"
         return 0
     fi
     mp="$(mktemp -d)"
     if mount "$dev" "$mp" 2> /dev/null; then
-        ESP_TMPMNTS+=("$mp")
+        printf '%s\n' "$mp" >> "$ESP_TMPMNT_LIST"
         printf '%s\n' "$mp"
         return 0
     fi

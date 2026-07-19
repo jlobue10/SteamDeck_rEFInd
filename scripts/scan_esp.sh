@@ -19,20 +19,23 @@ ESP_GUID="c12a7328-f81f-11d2-ba4b-00a0c93ec93b"
 CACHE="$HOME/.local/SteamDeck_rEFInd/GUI/esp_scan.conf"
 
 # Enumerate mounted ESPs unprivileged - findmnt/lsblk read metadata, not the
-# filesystem contents, so they work fine without root.
-SCAN_CMD=""
+# filesystem contents, so they work fine without root. Devices come from lsblk
+# (device paths never contain spaces) and each mount point from a plain
+# findmnt -no (no -r: that escapes spaces as \x20, which find would then take
+# literally). The pairs are passed to root as positional parameters — never
+# splice filesystem-derived strings into a shell command line.
+SCAN_ARGS=()
 FOUND=0
-while read -r target source; do
-    [ -n "$source" ] || continue
-    [ "$(lsblk -no PARTTYPE "$source" 2>/dev/null)" = "$ESP_GUID" ] || continue
-    partuuid="$(lsblk -no PARTUUID "$source" 2>/dev/null)"
+while read -r dev; do
+    [ -n "$dev" ] || continue
+    target="$(findmnt -no TARGET -S "$dev" 2>/dev/null | head -1)"
+    [ -n "$target" ] || continue
+    partuuid="$(lsblk -no PARTUUID "$dev" 2>/dev/null)"
     [ -n "$partuuid" ] || continue
     FOUND=$((FOUND + 1))
-    # -maxdepth 4 covers /EFI/<vendor>/<subdir>/<loader>.efi (Microsoft nests
-    # bootmgfw.efi one level deeper than everyone else).
-    SCAN_CMD+="printf '[%s]\n' '$partuuid'; "
-    SCAN_CMD+="find '$target/EFI' -maxdepth 4 -iname '*.efi' -printf '/EFI/%P\n' 2>/dev/null | sort; "
-done < <(findmnt -rno TARGET,SOURCE -t vfat)
+    SCAN_ARGS+=("$partuuid" "$target")
+done < <(lsblk -rno PATH,PARTTYPE 2>/dev/null \
+    | awk -v t="$ESP_GUID" '$2==t {print $1}')
 
 if [ "$FOUND" -eq 0 ]; then
     zenity --error --title="No ESP found" \
@@ -50,11 +53,21 @@ trap 'rm -f "$TMP"' EXIT
     echo "# back to the firmware's boot entries without it."
 } > "$TMP"
 
-# Single sudo invocation so the user is prompted once for all ESPs.
+# Single sudo invocation so the user is prompted once for all ESPs. The
+# payload sees only positional (partuuid, mountpoint) pairs.
+# -maxdepth 4 covers /EFI/<vendor>/<subdir>/<loader>.efi (Microsoft nests
+# bootmgfw.efi one level deeper than everyone else).
+read -r -d '' SCAN_PAYLOAD <<'EOS'
+while [ "$#" -ge 2 ]; do
+    printf '[%s]\n' "$1"
+    find "$2/EFI" -maxdepth 4 -iname '*.efi' -printf '/EFI/%P\n' 2>/dev/null | sort
+    shift 2
+done
+EOS
 if ! zenity --password --title="Enter sudo password" 2>/dev/null \
-        | sudo -S bash -c "$SCAN_CMD" >> "$TMP" 2>/dev/null; then
+        | sudo -S bash -c "$SCAN_PAYLOAD" bash "${SCAN_ARGS[@]}" >> "$TMP" 2>/dev/null; then
     zenity --error --title="Scan failed" \
-        --text="$(printf "Could not read the EFI System Partition.\nCheck that the sudo password was correct.")" \
+        --text="$(printf "Could not read the EFI System Partition.\nIncorrect sudo password, or the prompt was cancelled.")" \
         --width=450 2>/dev/null
     exit 1
 fi
