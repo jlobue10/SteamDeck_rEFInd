@@ -91,7 +91,7 @@
 	# has been observed returning empty (util-linux 2.42), so fall back to
 	# sysfs, where a partition's parent directory is its disk.
 	# Diagnostics go to stderr: stdout is zenity's progress protocol.
-	ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | head -1)"
+	ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")"
 	ESP_PART="$(basename "$ESP_DEV")"
 	ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)"
 	ESP_PARENT="$(lsblk -no PKNAME "$ESP_DEV" 2>/dev/null | head -1)"

@@ -7,6 +7,8 @@
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h> // CREATE_NO_WINDOW
+#else
+#include <sys/stat.h> // ::stat, to trigger systemd ESP automounts
 #endif
 
 namespace Platform {
@@ -186,6 +188,14 @@ bool espDeepScanUseful()
     // in OSDetector::espRootUnreadable() without pulling detection in here.
     const QStringList mounts = {QStringLiteral("/esp"), QStringLiteral("/boot/efi"),
                                 QStringLiteral("/efi"), QStringLiteral("/boot")};
+    // Establish any systemd ESP automounts first (SteamOS mounts /esp and
+    // /efi that way): stat of "<m>/." resolves through the automount point
+    // and triggers the mount, where a plain stat of m does not
+    // (AT_NO_AUTOMOUNT). Without this, right after boot the ESP isn't
+    // mounted yet and reads as absent, wrongly disabling the button.
+    struct stat sb;
+    for (const QString &m : mounts)
+        (void)::stat(QString(m + QStringLiteral("/.")).toLocal8Bit().constData(), &sb);
     for (const QString &m : mounts) {
         const QFileInfo info(m);
         if (info.exists() && !info.isReadable())

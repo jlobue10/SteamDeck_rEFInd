@@ -6,7 +6,8 @@
 # path created broken entries. `lsblk -no PKNAME` has been observed returning
 # empty (util-linux 2.42), so fall back to sysfs, where a partition's parent
 # directory is its disk.
-ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | head -1)"
+stat /esp/. >/dev/null 2>&1  # establish the systemd automount (SteamOS 3.9)
+ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")"
 ESP_PART="$(basename "$ESP_DEV")"
 ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)"
 ESP_PARENT="$(lsblk -no PKNAME "$ESP_DEV" 2>/dev/null | head -1)"
