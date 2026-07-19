@@ -19,7 +19,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "2.3.9";
+static const char APP_VERSION[] = "2.4.0";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 static const QString NONE_OPTION = QStringLiteral("None");
 
@@ -65,7 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
         // Every ESP is readable already (or this is the elevated Windows
         // build), so a privileged scan would find nothing extra.
         ui->Deep_Scan_pushButton->setEnabled(false);
-        ui->Deep_Scan_pushButton->setToolTip(tr("Not needed: the EFI System Partition is already readable"));
+        ui->Deep_Scan_pushButton->setToolTip(tr("Not needed: no unreadable EFI System Partition was found"));
     }
     ui->Install_Source_comboBox->clear();
     ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
@@ -400,14 +400,41 @@ void MainWindow::on_Create_Config_clicked()
     copyPng(ui->Boot_Option_04_Icon_lineEdit, guiConfigDir + "/os_icon4.png");
 }
 
+// Dialog-sized excerpt of a script's captured output: PowerShell failures can
+// dump long error records, and the useful line is at the end.
+static QString outputTail(const QString &output)
+{
+    const QStringList lines = output.trimmed().split('\n');
+    if (lines.size() <= 20)
+        return lines.join('\n');
+    return QStringLiteral("[...]\n") + QStringList(lines.mid(lines.size() - 20)).join('\n');
+}
+
 void MainWindow::on_Install_Config_clicked()
 {
-    // On Linux the script shows its own zenity password + result dialogs, so a
-    // nonzero return only means the launch itself failed.
-    const int rc = Platform::installConfig();
-    if (rc != 0)
+    QString output;
+    const int rc = Platform::installConfig(&output);
+    if (Platform::installConfigShowsOwnDialogs()) {
+        // The Linux script shows its own zenity password + result dialogs, so
+        // a nonzero return only means the launch itself failed.
+        if (rc != 0)
+            QMessageBox::critical(this, tr("Install Config"),
+                                  tr("Installing the config failed (code %1).").arg(rc));
+        return;
+    }
+    const QString details = outputTail(output);
+    if (rc == 0) {
+        QMessageBox::information(this, tr("Install Config"),
+                                 details.isEmpty()
+                                     ? tr("The config was installed successfully.")
+                                     : tr("The config was installed successfully.\n\n%1").arg(details));
+    } else {
         QMessageBox::critical(this, tr("Install Config"),
-                              tr("Installing the config failed (code %1).").arg(rc));
+                              details.isEmpty()
+                                  ? tr("Installing the config failed (code %1).").arg(rc)
+                                  : tr("Installing the config failed (code %1).\n\n%2")
+                                        .arg(rc).arg(details));
+    }
 }
 
 bool MainWindow::copyPng(QLineEdit *edit, const QString &destPath)

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-  <assemblyIdentity version="2.3.9.0" processorArchitecture="*" name="SteamDeck_rEFInd" type="win32"/>
+  <assemblyIdentity version="2.4.0.0" processorArchitecture="*" name="SteamDeck_rEFInd" type="win32"/>
   <description>SteamDeck rEFInd Customization GUI</description>
   <!-- Everything the app does (mountvol, ESP writes, bcdedit) needs admin. -->
   <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">

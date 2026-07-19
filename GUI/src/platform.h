@@ -17,9 +17,17 @@ QString dataDir();
 // Launches the rEFInd installer for the chosen source in a new terminal window.
 bool runInstallerScript(const QString &installSource);
 
-// Installs the generated config + PNGs onto the ESP. Returns 0 on success
-// (Linux: launches the interactive zenity script; Windows: blocking install).
-int installConfig();
+// Installs the generated config + PNGs onto the ESP. Returns 0 on success.
+// Linux: launches the interactive zenity script detached; *output stays empty
+// and a nonzero return only means the launch itself failed. Windows: runs the
+// PowerShell installer synchronously with no console window and captures its
+// combined output into *output for the caller to present.
+int installConfig(QString *output = nullptr);
+
+// True when installConfig() reports its result to the user itself (the Linux
+// script's zenity dialogs); false when the caller must present the captured
+// output (Windows).
+bool installConfigShowsOwnDialogs();
 
 // Enables/disables the boot-background randomizer (systemd unit / scheduled task).
 bool setBackgroundRandomizer(bool enable);

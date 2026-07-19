@@ -193,14 +193,26 @@ try {
     $src = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd\GUI'
     $dest = Join-Path $mount.Root 'EFI\refind'
     New-Item -ItemType Directory -Force $dest | Out-Null
+    $copied = 0
     foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
         $p = Join-Path $src $f
         if (Test-Path $p) {
             Copy-Item -Force $p (Join-Path $dest $f)
             Write-Host "Installed $f"
+            $copied++
         }
     }
-    Write-Host "Config installed to $dest"
+    if ($copied -eq 0) {
+        throw "No config files were found in $src. Use Create Config in the GUI first."
+    }
+    # A temp access-path mount's directory name means nothing to the user, so
+    # describe that ESP by disk/partition instead.
+    $where = if ($mount.Kind -eq 'accesspath') {
+        "EFI\refind on disk $($mount.DiskNumber), partition $($mount.PartitionNumber)"
+    } else {
+        $dest
+    }
+    Write-Host "Config installed to $where"
 } finally {
     Dismount-Esp $mount
 }

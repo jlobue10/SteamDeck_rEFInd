@@ -5,6 +5,10 @@
 #include <QProcess>
 #include <QProcessEnvironment>
 
+#ifdef Q_OS_WIN
+#include <qt_windows.h> // CREATE_NO_WINDOW
+#endif
+
 namespace Platform {
 
 #ifdef Q_OS_WIN
@@ -32,12 +36,34 @@ bool runInstallerScript(const QString &installSource)
     return runScriptInWindow(dataDir() + "/windows/install_rEFInd.ps1");
 }
 
-int installConfig()
+int installConfig(QString *output)
 {
-    return QProcess::execute(QStringLiteral("powershell.exe"),
-                             {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
-                              QStringLiteral("Bypass"), QStringLiteral("-File"),
-                              QDir::toNativeSeparators(dataDir() + "/windows/install_config_from_GUI.ps1")});
+    // Synchronous, window-less run with the output captured: the script's
+    // console used to flash open and vanish, leaving no trace of whether the
+    // install worked. The caller shows the result dialog from *output.
+    QProcess proc;
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args) {
+        args->flags |= CREATE_NO_WINDOW;
+    });
+    proc.start(QStringLiteral("powershell.exe"),
+               {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
+                QStringLiteral("Bypass"), QStringLiteral("-File"),
+                QDir::toNativeSeparators(dataDir() + "/windows/install_config_from_GUI.ps1")});
+    if (!proc.waitForStarted()) {
+        if (output)
+            *output = QStringLiteral("powershell.exe could not be started.");
+        return -1;
+    }
+    proc.waitForFinished(-1);
+    if (output)
+        *output = QString::fromLocal8Bit(proc.readAll());
+    return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
+}
+
+bool installConfigShowsOwnDialogs()
+{
+    return false;
 }
 
 bool setBackgroundRandomizer(bool enable)
@@ -97,13 +123,20 @@ bool runInstallerScript(const QString &installSource)
     return QProcess::startDetached(QStringLiteral("xterm"), {QStringLiteral("-e"), script});
 }
 
-int installConfig()
+int installConfig(QString *output)
 {
     // The script handles its own privilege (zenity password prompt) and shows
     // its own success/error dialogs, so launch it detached.
+    if (output)
+        output->clear();
     const bool ok = QProcess::startDetached(QStringLiteral("bash"),
                                             {dataDir() + "/scripts/install_config_from_GUI.sh"});
     return ok ? 0 : -1;
+}
+
+bool installConfigShowsOwnDialogs()
+{
+    return true;
 }
 
 static bool systemctlInXterm(const QString &command)
