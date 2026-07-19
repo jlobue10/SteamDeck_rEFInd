@@ -59,6 +59,23 @@ private:
     QList<BootEntry> scanEspRoot(const QString &rootPath, const QString &runningDistroName);
     QList<BootEntry> assembleEntries(const QList<Partition> &partitions, QList<BootEntry> mounted);
     static bool isEsp(const Partition &p);
+    // True when an ESP is mounted but its contents cannot be read by this
+    // (unprivileged) process, so a scan returning nothing means "couldn't
+    // look" rather than "nothing there". systemd-gpt-auto-generator mounts
+    // ESPs dmask=0077 root:root, which is what the Steam Deck's /esp gets.
+    static bool espRootUnreadable(const QString &rootPath);
+    // Maps an ESP-relative loader path (/EFI/steamos/steamcl.efi) onto a named
+    // entry the way scanEspRoot() would, so every fallback path below names
+    // things identically. False for paths that aren't a bootable OS (rEFInd
+    // itself, the /EFI/BOOT removable fallback loader).
+    static bool classifyLoaderPath(const QString &loaderPath, BootEntry &entry);
+    // Entries recovered from the firmware's boot variables, for ESPs whose
+    // EFI/ tree is unreadable. Empty on Windows (see osdetect_win.cpp).
+    QList<BootEntry> firmwareEntriesForEsp(const Partition &p);
+    // Entries from the cache written by scripts/scan_esp.sh, an opt-in
+    // elevated scan that sees loaders with no firmware boot entry. Empty on
+    // Windows and when the user has never run it.
+    QList<BootEntry> deepScanEntriesForEsp(const Partition &p);
     // Volume token for cross-ESP entries: partition GUID (preferred) or label.
     static QString espVolumeId(const Partition &p);
     // True for the ESP that belongs to the running OS (its EFI/ mount).

@@ -19,7 +19,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "2.3.8";
+static const char APP_VERSION[] = "2.3.9";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 static const QString NONE_OPTION = QStringLiteral("None");
 
@@ -60,6 +60,12 @@ MainWindow::MainWindow(QWidget *parent)
         ui->Disable_sysd_pushButton->setEnabled(false);
         ui->Enable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
         ui->Disable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
+    }
+    if (!Platform::espDeepScanUseful()) {
+        // Every ESP is readable already (or this is the elevated Windows
+        // build), so a privileged scan would find nothing extra.
+        ui->Deep_Scan_pushButton->setEnabled(false);
+        ui->Deep_Scan_pushButton->setToolTip(tr("Not needed: the EFI System Partition is already readable"));
     }
     ui->Install_Source_comboBox->clear();
     ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
@@ -220,6 +226,16 @@ void MainWindow::on_Rescan_pushButton_clicked()
     detected = detector.detect();
     populateBootCombos();
     applyAutoSelection();
+}
+
+void MainWindow::on_Deep_Scan_pushButton_clicked()
+{
+    // Blocks while the script prompts for a password; it shows its own
+    // success/error dialogs, so only re-detect here. Detection prefers the
+    // cache the script just wrote over the firmware boot entries.
+    if (Platform::runEspDeepScan() != 0)
+        return;
+    on_Rescan_pushButton_clicked();
 }
 
 void MainWindow::browsePng(QLineEdit *edit, const QString &title)

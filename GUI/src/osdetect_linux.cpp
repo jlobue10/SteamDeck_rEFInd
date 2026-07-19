@@ -1,5 +1,7 @@
 #include "osdetect.h"
 
+#include "platform.h"
+
 #include <QDir>
 #include <QFile>
 #include <QJsonArray>
@@ -97,6 +99,104 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
 void OSDetector::releaseEspRoot(const QString &root)
 {
     Q_UNUSED(root); // nothing is mounted by espScanRoot() on Linux
+}
+
+QList<BootEntry> OSDetector::firmwareEntriesForEsp(const Partition &p)
+{
+    QList<BootEntry> entries;
+    // Entries are matched to this ESP by partition GUID, so without one there
+    // is nothing to anchor them to.
+    if (p.partUuid.isEmpty())
+        return entries;
+
+    bool ok = false;
+    const QString out = runCommand(QStringLiteral("efibootmgr"), {QStringLiteral("-v")}, &ok);
+    if (!ok)
+        return entries;
+
+    // Boot0000* SteamOS\tHD(1,GPT,<guid>,0x800,0x100000)/\EFI\steamos\steamcl.efi
+    //
+    // Windows appends an optional-data blob straight after the loader path
+    // ("...bootmgfw.efi57494e444f5753..."), so stop at the first ".efi" rather
+    // than running to end of line.
+    static const QRegularExpression entryRe(
+        QStringLiteral("HD\\(\\d+,GPT,([0-9a-f-]{36}),[^)]*\\)/(\\\\[^\\s]*?\\.efi)"),
+        QRegularExpression::CaseInsensitiveOption);
+
+    const QStringList lines = out.split('\n');
+    for (const QString &line : lines) {
+        const QRegularExpressionMatch m = entryRe.match(line);
+        if (!m.hasMatch() || m.captured(1).toLower() != p.partUuid)
+            continue;
+
+        QString loader = m.captured(2);
+        loader.replace('\\', '/'); // \EFI\steamos\steamcl.efi -> /EFI/steamos/steamcl.efi
+
+        // Name entries the way a filesystem scan would, rather than from the
+        // NVRAM label -- those are user-editable and often renamed.
+        BootEntry e;
+        if (classifyLoaderPath(loader, e))
+            entries.append(e);
+    }
+    return entries;
+}
+
+QList<BootEntry> OSDetector::deepScanEntriesForEsp(const Partition &p)
+{
+    QList<BootEntry> entries;
+    if (p.partUuid.isEmpty())
+        return entries;
+
+    // Written by scripts/scan_esp.sh, which the user runs on demand from the
+    // GUI. Sections are keyed by partition GUID:
+    //   [b9beb192-116a-4bd2-8f09-5c703af03a5f]
+    //   /EFI/steamos/steamcl.efi
+    QFile f(Platform::dataDir() + QStringLiteral("/GUI/esp_scan.conf"));
+    if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
+        return entries;
+
+    // Mirror scanEspRoot()'s per-vendor choice: one entry per OS, preferring
+    // shim (secure boot), then GRUB, then systemd-boot. The scan lists every
+    // .efi it finds, so without this a distro shipping both shimx64.efi and
+    // grubx64.efi would surface twice and detect()'s name-clash rule would
+    // rename the second copy to "Fedora (esp)".
+    static const QStringList loaderPreference = {
+        QStringLiteral("shimx64.efi"), QStringLiteral("grubx64.efi"),
+        QStringLiteral("systemd-bootx64.efi"),
+    };
+    auto rank = [](const QString &loaderPath) {
+        const int i = loaderPreference.indexOf(loaderPath.section('/', -1).toLower());
+        return i < 0 ? loaderPreference.size() : i;
+    };
+
+    bool inSection = false;
+    const QStringList lines = QString::fromUtf8(f.readAll()).split('\n');
+    for (const QString &raw : lines) {
+        const QString line = raw.trimmed();
+        if (line.isEmpty() || line.startsWith('#'))
+            continue;
+        if (line.startsWith('[') && line.endsWith(']')) {
+            inSection = line.mid(1, line.size() - 2).toLower() == p.partUuid;
+            continue;
+        }
+        if (!inSection || !line.startsWith('/'))
+            continue;
+        BootEntry e;
+        if (!classifyLoaderPath(line, e))
+            continue;
+        int existing = -1;
+        for (int i = 0; i < entries.size(); ++i) {
+            if (entries[i].displayName == e.displayName) {
+                existing = i;
+                break;
+            }
+        }
+        if (existing < 0)
+            entries.append(e);
+        else if (rank(e.loaderPath) < rank(entries[existing].loaderPath))
+            entries[existing] = e;
+    }
+    return entries;
 }
 
 static QString readDmiId(const char *name)

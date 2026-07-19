@@ -2,6 +2,7 @@
 
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QMap>
 #include <QProcess>
 
@@ -270,6 +271,53 @@ QString OSDetector::espVolumeId(const Partition &p)
     return !p.partUuid.isEmpty() ? p.partUuid : p.label;
 }
 
+bool OSDetector::classifyLoaderPath(const QString &loaderPath, BootEntry &entry)
+{
+    const QString lower = loaderPath.toLower();
+    // rEFInd itself is not an OS, and /EFI/BOOT is the removable-media fallback
+    // loader rather than a distinct install. scanEspRoot() skips both as well.
+    if (lower.startsWith(QLatin1String("/efi/refind/"))
+        || lower.startsWith(QLatin1String("/efi/boot/")))
+        return false;
+
+    if (lower == QLatin1String("/efi/microsoft/boot/bootmgfw.efi")) {
+        entry.displayName = QStringLiteral("Windows");
+        entry.menuName = QStringLiteral("Windows");
+        entry.loaderPath = QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi");
+        return true;
+    }
+    if (lower == QLatin1String("/efi/steamos/steamcl.efi")) {
+        entry.displayName = QStringLiteral("SteamOS");
+        entry.menuName = QStringLiteral("SteamOS");
+        entry.loaderPath = QStringLiteral("/EFI/steamos/steamcl.efi");
+        entry.supportsFirmwareBootnum = true;
+        return true;
+    }
+
+    // /EFI/<vendor>/<loader>.efi
+    const QString vendor = loaderPath.section('/', 2, 2);
+    if (vendor.isEmpty())
+        return false;
+    entry.displayName = displayNameForVendorDir(vendor);
+    entry.menuName = entry.displayName;
+    entry.loaderPath = loaderPath;
+    return true;
+}
+
+bool OSDetector::espRootUnreadable(const QString &rootPath)
+{
+    if (rootPath.isEmpty())
+        return false;
+    const QFileInfo efiDir(rootPath + QStringLiteral("/EFI"));
+    if (efiDir.exists())
+        return !efiDir.isReadable();
+    // EFI/ may be invisible only because the mount point itself cannot be
+    // traversed, which from here is indistinguishable from an ESP that
+    // genuinely has no EFI/ directory -- so check the mount point too.
+    const QFileInfo root(rootPath);
+    return root.exists() && !root.isReadable();
+}
+
 bool OSDetector::isRunningSystemEsp(const Partition &p)
 {
     // The running OS's ESP is the one mounted at its EFI location. The Steam
@@ -302,7 +350,24 @@ QList<BootEntry> OSDetector::detect()
             continue;
         const QString runningName = isRunningSystemEsp(p) ? runningOsName() : QString();
         const QString volume = espVolumeId(p);
-        const QList<BootEntry> here = scanEspRoot(root, runningName);
+        QList<BootEntry> here = scanEspRoot(root, runningName);
+        // Detection runs unprivileged, so a root-only ESP mount reads as empty
+        // rather than as an error -- on the Steam Deck that silently hid both
+        // SteamOS and Windows, leaving only label-matched media like Ventoy.
+        // The firmware's boot variables are world-readable, so recover the
+        // entries from there instead of showing nothing.
+        // Prefer a cached elevated scan when the user has run one: it sees the
+        // whole EFI/ tree, including loaders with no firmware boot entry.
+        // Otherwise fall back to the boot variables, which cost no password.
+        if (here.isEmpty() && espRootUnreadable(root)) {
+            here = deepScanEntriesForEsp(p);
+            if (here.isEmpty())
+                here = firmwareEntriesForEsp(p);
+            if (here.isEmpty())
+                qWarning("ESP at %s is unreadable and no entries could be recovered from "
+                         "the firmware; run the GUI's Deep Scan for a privileged scan",
+                         qUtf8Printable(root));
+        }
         for (BootEntry e : here) {
             if (e.volume.isEmpty())
                 e.volume = volume;

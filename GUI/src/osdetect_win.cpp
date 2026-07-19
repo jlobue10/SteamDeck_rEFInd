@@ -212,3 +212,19 @@ QString OSDetector::runningOsName()
 {
     return {};
 }
+
+// Neither fallback is needed on Windows: the backend mounts the ESPs it wants
+// to scan (including letterless ones) and the process runs elevated via its
+// requireAdministrator manifest, so an ESP is never reachable-but-unreadable
+// the way a root-only Linux mount is.
+QList<BootEntry> OSDetector::firmwareEntriesForEsp(const Partition &p)
+{
+    Q_UNUSED(p);
+    return {};
+}
+
+QList<BootEntry> OSDetector::deepScanEntriesForEsp(const Partition &p)
+{
+    Q_UNUSED(p);
+    return {};
+}
