@@ -37,6 +37,7 @@ private slots:
     void on_Boot_Option_03_Icon_lineEdit_editingFinished();
     void on_Boot_Option_04_Icon_lineEdit_editingFinished();
     void on_Rescan_pushButton_clicked();
+    void on_Deep_Scan_pushButton_clicked();
     void on_updateButton_Clicked();
     void on_Enable_sysd_pushButton_clicked();
     void on_Disable_sysd_pushButton_clicked();

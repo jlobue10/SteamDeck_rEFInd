@@ -1,6 +1,7 @@
 #include "platform.h"
 
 #include <QDir>
+#include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
 
@@ -51,6 +52,16 @@ bool setBootnextService(bool)
 }
 
 bool systemdFeaturesAvailable()
+{
+    return false;
+}
+
+int runEspDeepScan()
+{
+    return -1; // the elevated Windows build scans ESPs directly
+}
+
+bool espDeepScanUseful()
 {
     return false;
 }
@@ -125,6 +136,29 @@ bool setBootnextService(bool enable)
 bool systemdFeaturesAvailable()
 {
     return true;
+}
+
+int runEspDeepScan()
+{
+    // Blocking, unlike the other script launchers: the caller re-runs detection
+    // as soon as this returns, so it has to wait for the cache to be written.
+    // The script owns the password prompt and the result dialogs.
+    return QProcess::execute(QStringLiteral("bash"),
+                             {dataDir() + QStringLiteral("/scripts/scan_esp.sh")});
+}
+
+bool espDeepScanUseful()
+{
+    // Only worth offering when an ESP really is unreadable. Mirrors the check
+    // in OSDetector::espRootUnreadable() without pulling detection in here.
+    const QStringList mounts = {QStringLiteral("/esp"), QStringLiteral("/boot/efi"),
+                                QStringLiteral("/efi"), QStringLiteral("/boot")};
+    for (const QString &m : mounts) {
+        const QFileInfo info(m);
+        if (info.exists() && !info.isReadable())
+            return true;
+    }
+    return false;
 }
 
 bool firmwareBootnumSupported()
