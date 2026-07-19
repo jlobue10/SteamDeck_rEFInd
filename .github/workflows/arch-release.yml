@@ -93,11 +93,23 @@ jobs:
       # the pin before it reaches users.
       - name: Verify binary ABI is loadable on SteamOS
         run: |
+          set -euo pipefail
           pkg=$(ls *.pkg.tar.zst | grep -v -- '-debug-' | head -1)
-          mkdir -p verify && tar -C verify --use-compress-program=unzstd -xf "$pkg" usr/bin/SteamDeck_rEFInd
-          need=$(strings verify/usr/bin/SteamDeck_rEFInd | grep -oE '^Qt_6\.[0-9]+$' | sort -uV | tail -1)
-          echo "binary requires ${need:-none}; SteamOS supports up to Qt_${MAX_QT_ABI}"
-          if [ -n "$need" ] && [ "$(printf '%s\nQt_%s\n' "$need" "$MAX_QT_ABI" | sort -V | tail -1)" != "Qt_${MAX_QT_ABI}" ]; then
+          # makepkg chowns the workspace to the container's build user, so the
+          # runner cannot create directories here. Extract somewhere writable.
+          v="$RUNNER_TEMP/verify"; rm -rf "$v"; mkdir -p "$v"
+          tar -C "$v" --use-compress-program=unzstd -xf "$pkg" usr/bin/SteamDeck_rEFInd
+          bin="$v/usr/bin/SteamDeck_rEFInd"
+          [ -s "$bin" ] || { echo "::error::extracted binary is missing or empty; ABI check could not run."; exit 1; }
+          # Read the actual .gnu.version_r requirements rather than scraping
+          # strings, which silently yields nothing if the file is unreadable.
+          need=$(readelf -V "$bin" | grep -oE 'Qt_6\.[0-9]+' | sort -uV | tail -1 || true)
+          # Fail closed. A Qt Widgets binary always carries a Qt_6.x version
+          # node, so finding none means the check itself did not work — which
+          # is exactly how a broken build slipped through before.
+          [ -n "$need" ] || { echo "::error::no Qt version node found in the binary; ABI check did not run."; exit 1; }
+          echo "binary requires ${need}; SteamOS supports up to Qt_${MAX_QT_ABI}"
+          if [ "$(printf '%s\nQt_%s\n' "$need" "$MAX_QT_ABI" | sort -V | tail -1)" != "Qt_${MAX_QT_ABI}" ]; then
             echo "::error::Built binary requires ${need}, newer than SteamOS's Qt_${MAX_QT_ABI}; it would fail to start on every Deck. Check ARCH_SNAPSHOT."
             exit 1
           fi

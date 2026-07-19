@@ -64,10 +64,17 @@ podman run --rm -v "$REPO_ROOT:/src:ro" -v "$OUT:/out" "$IMAGE" \
     "
 
 # The regression this script exists to prevent: a binary that cannot start on
-# a Deck. SteamOS 3.8.x tops out at Qt_6.9.
-NEED="$(strings "$OUT/SteamDeck_rEFInd" | grep -oE '^Qt_6\.[0-9]+$' | sort -uV | tail -1)"
-echo -e "\nBuilt $OUT/SteamDeck_rEFInd (requires ${NEED:-no versioned Qt symbols})"
-if [ -n "$NEED" ] && [ "$(printf '%s\nQt_6.9\n' "$NEED" | sort -V | tail -1)" != "Qt_6.9" ]; then
+# a Deck. SteamOS 3.8.x tops out at Qt_6.9. Read the real .gnu.version_r
+# requirements rather than scraping strings, and fail closed — a Qt Widgets
+# binary always carries a Qt_6.x version node, so finding none means the check
+# did not work rather than that the binary is clean.
+NEED="$(readelf -V "$OUT/SteamDeck_rEFInd" | grep -oE 'Qt_6\.[0-9]+' | sort -uV | tail -1 || true)"
+if [ -z "$NEED" ]; then
+    echo "Error: no Qt version node found in $OUT/SteamDeck_rEFInd; ABI check did not run." >&2
+    exit 1
+fi
+echo -e "\nBuilt $OUT/SteamDeck_rEFInd (requires $NEED)"
+if [ "$(printf '%s\nQt_6.9\n' "$NEED" | sort -V | tail -1)" != "Qt_6.9" ]; then
     echo "Error: binary requires $NEED, newer than SteamOS's Qt_6.9; it would not start." >&2
     exit 1
 fi
