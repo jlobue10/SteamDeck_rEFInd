@@ -11,8 +11,31 @@
 
 #include <functional>
 
+#include <sys/stat.h>
+
+// systemd mounts ESPs through automount units on current systems (SteamOS
+// 3.9's esp.automount/efi.automount for /esp and /efi, systemd-gpt-auto's
+// automount for /boot/efi elsewhere): until a path resolves THROUGH the mount
+// point, the vfat mount doesn't exist, lsblk reports the partition as
+// unmounted, and detection treated the running system's ESP as unreachable
+// right after boot -- only cross-volume label matches (e.g. Ventoy) survived.
+// A plain stat() of the mount point itself does not establish the mount
+// (stat carries AT_NO_AUTOMOUNT semantics since Linux 4.14); stat'ing
+// "<point>/." does, because the automount transit happens while walking the
+// path -- before, and regardless of, the permission check on the root-only
+// mounted filesystem.
+static void triggerEspAutomounts()
+{
+    static const char *points[] = {"/esp/.", "/efi/.", "/boot/efi/.", "/boot/."};
+    struct stat sb;
+    for (const char *point : points)
+        (void)::stat(point, &sb);
+}
+
 QList<OSDetector::Partition> OSDetector::listPartitions()
 {
+    triggerEspAutomounts();
+
     bool ok = false;
     // NAME must be in the column list: without it lsblk can't render its device
     // tree and emits partitions as a flat top-level list instead of nesting

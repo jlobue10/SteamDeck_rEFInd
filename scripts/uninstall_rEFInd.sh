@@ -50,13 +50,17 @@ for unit in bootnext-refind.service rEFInd_bg_randomizer.service; do
 done
 
 # 2. Resolve the Deck's ESP (mounted at /esp on SteamOS).
+# /esp may sit behind a systemd automount (SteamOS 3.9): resolving /esp/.
+# establishes the vfat mount; the autofs row findmnt then lists first is
+# skipped by taking the last (most recent) FSTYPE row.
+stat /esp/. >/dev/null 2>&1
 ESP_MP="$(findmnt -no TARGET --target /esp 2>/dev/null | head -1)"
-case "$(findmnt -no FSTYPE --target /esp 2>/dev/null | head -1)" in
+case "$(findmnt -no FSTYPE --target /esp 2>/dev/null | tail -1)" in
 	vfat|msdos|fat) ;; *) ESP_MP="" ;;
 esac
 ESP_PARTUUID=""
 if [ -n "$ESP_MP" ]; then
-	ESP_DEV="$(findmnt -no SOURCE "$ESP_MP" 2>/dev/null | head -1)"
+	ESP_DEV="$(findmnt -no SOURCE "$ESP_MP" 2>/dev/null | grep -m1 "^/dev/")"
 	[ -n "$ESP_DEV" ] && ESP_PARTUUID="$(lsblk -rno PARTUUID "$ESP_DEV" 2>/dev/null | head -1 | tr 'A-F' 'a-f')"
 fi
 if [ -z "$ESP_MP" ] || [ -z "$ESP_PARTUUID" ]; then

@@ -357,27 +357,42 @@ QList<BootEntry> OSDetector::detect()
             continue;
         bool release = false;
         const QString root = espScanRoot(p, release);
-        if (root.isEmpty())
-            continue;
-        const QString runningName = isRunningSystemEsp(p) ? runningOsName() : QString();
         const QString volume = espVolumeId(p);
-        QList<BootEntry> here = scanEspRoot(root, runningName);
-        // Detection runs unprivileged, so a root-only ESP mount reads as empty
-        // rather than as an error -- on the Steam Deck that silently hid both
-        // SteamOS and Windows, leaving only label-matched media like Ventoy.
-        // The firmware's boot variables are world-readable, so recover the
-        // entries from there instead of showing nothing.
-        // Prefer a cached elevated scan when the user has run one: it sees the
-        // whole EFI/ tree, including loaders with no firmware boot entry.
-        // Otherwise fall back to the boot variables, which cost no password.
-        if (here.isEmpty() && espRootUnreadable(root)) {
+        QList<BootEntry> here;
+        if (root.isEmpty()) {
+            // Unmounted ESP with no scan root (e.g. a systemd automount that
+            // wasn't established yet -- SteamOS mounts /esp that way -- or an
+            // ESP the running system simply never mounts). Skipping it hid
+            // every OS on it; recover its entries from the deep-scan cache or
+            // the firmware's boot variables instead, keyed by partition GUID.
+            // The label/removable rules in assembleEntries() still cover
+            // whatever this can't see (their haveOnVolume() guard prevents
+            // duplicates).
             here = deepScanEntriesForEsp(p);
             if (here.isEmpty())
                 here = firmwareEntriesForEsp(p);
-            if (here.isEmpty())
-                qWarning("ESP at %s is unreadable and no entries could be recovered from "
-                         "the firmware; run the GUI's Deep Scan for a privileged scan",
-                         qUtf8Printable(root));
+        } else {
+            const QString runningName = isRunningSystemEsp(p) ? runningOsName() : QString();
+            here = scanEspRoot(root, runningName);
+            // Detection runs unprivileged, so a root-only ESP mount reads as
+            // empty rather than as an error -- on the Steam Deck that silently
+            // hid both SteamOS and Windows, leaving only label-matched media
+            // like Ventoy. The firmware's boot variables are world-readable,
+            // so recover the entries from there instead of showing nothing.
+            // Prefer a cached elevated scan when the user has run one: it sees
+            // the whole EFI/ tree, including loaders with no firmware boot
+            // entry. Otherwise fall back to the boot variables, which cost no
+            // password.
+            if (here.isEmpty() && espRootUnreadable(root)) {
+                here = deepScanEntriesForEsp(p);
+                if (here.isEmpty())
+                    here = firmwareEntriesForEsp(p);
+                if (here.isEmpty())
+                    qWarning("ESP at %s is unreadable and no entries could be recovered "
+                             "from the firmware; run the GUI's Deep Scan for a "
+                             "privileged scan",
+                             qUtf8Printable(root));
+            }
         }
         for (BootEntry e : here) {
             if (e.volume.isEmpty())

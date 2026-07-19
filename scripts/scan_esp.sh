@@ -18,22 +18,34 @@
 ESP_GUID="c12a7328-f81f-11d2-ba4b-00a0c93ec93b"
 CACHE="$HOME/.local/SteamDeck_rEFInd/GUI/esp_scan.conf"
 
-# Enumerate mounted ESPs unprivileged - findmnt/lsblk read metadata, not the
+# systemd mounts ESPs through automount units on current systems (SteamOS
+# 3.9's /esp and /efi): until a path resolves through the mount point, the
+# vfat mount doesn't exist and the partition shows no mount target. stat of
+# "<dir>/." walks through the automount trigger and establishes the mount
+# (a plain stat of the dir itself does not - AT_NO_AUTOMOUNT); the EACCES
+# on the root-only directory afterwards is irrelevant.
+for d in /esp /efi /boot/efi /boot; do
+    stat "$d/." >/dev/null 2>&1
+done
+
+# Enumerate ESPs unprivileged - findmnt/lsblk read metadata, not the
 # filesystem contents, so they work fine without root. Devices come from lsblk
 # (device paths never contain spaces) and each mount point from a plain
 # findmnt -no (no -r: that escapes spaces as \x20, which find would then take
 # literally). The pairs are passed to root as positional parameters — never
-# splice filesystem-derived strings into a shell command line.
+# splice filesystem-derived strings into a shell command line. An ESP with no
+# mount target is passed as its device path instead: the root payload mounts
+# it read-only for the scan, so unmounted ESPs (a second disk's, or an
+# automount that would not trigger) are still covered.
 SCAN_ARGS=()
 FOUND=0
 while read -r dev; do
     [ -n "$dev" ] || continue
-    target="$(findmnt -no TARGET -S "$dev" 2>/dev/null | head -1)"
-    [ -n "$target" ] || continue
     partuuid="$(lsblk -no PARTUUID "$dev" 2>/dev/null)"
     [ -n "$partuuid" ] || continue
+    target="$(findmnt -no TARGET -S "$dev" 2>/dev/null | head -1)"
     FOUND=$((FOUND + 1))
-    SCAN_ARGS+=("$partuuid" "$target")
+    SCAN_ARGS+=("$partuuid" "${target:-$dev}")
 done < <(lsblk -rno PATH,PARTTYPE 2>/dev/null \
     | awk -v t="$ESP_GUID" '$2==t {print $1}')
 
@@ -60,7 +72,26 @@ trap 'rm -f "$TMP"' EXIT
 read -r -d '' SCAN_PAYLOAD <<'EOS'
 while [ "$#" -ge 2 ]; do
     printf '[%s]\n' "$1"
-    find "$2/EFI" -maxdepth 4 -iname '*.efi' -printf '/EFI/%P\n' 2>/dev/null | sort
+    root="$2"
+    mnt=""
+    case "$root" in
+    /dev/*)
+        # Unmounted ESP: mount it read-only on a private mount point for
+        # the duration of the scan.
+        mnt="$(mktemp -d)"
+        if ! mount -o ro "$root" "$mnt" 2>/dev/null; then
+            rmdir "$mnt" 2>/dev/null
+            shift 2
+            continue
+        fi
+        root="$mnt"
+        ;;
+    esac
+    find "$root/EFI" -maxdepth 4 -iname '*.efi' -printf '/EFI/%P\n' 2>/dev/null | sort
+    if [ -n "$mnt" ]; then
+        umount "$mnt" 2>/dev/null
+        rmdir "$mnt" 2>/dev/null
+    fi
     shift 2
 done
 EOS
