@@ -48,6 +48,25 @@
 		echo "# Warning: failed to download UsbXbox360Dxe.efi; skipping controller driver."
 	fi
 	rm -f "$XBOX360_DRV_TMP"
+	# TouchI2cDxe touchscreen UEFI driver (jlobue10/TouchI2cDxe): the OLED
+	# Deck's (Galileo) FocalTech touch panel is HID-over-I2C, which a USB
+	# driver structurally cannot see; this driver produces AbsolutePointer so
+	# the rEFInd menu is touch-usable, including rotating the portrait touch
+	# matrix onto rEFInd's landscape mode. LCD Decks (Jupiter) have no
+	# supported profile and skip the download. Like the controller driver,
+	# download failure is non-fatal.
+	if [ "$(cat /sys/class/dmi/id/product_name 2>/dev/null)" = "Galileo" ]; then
+		echo "# Installing touchscreen driver..."
+		TOUCH_DRV_URL="https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi"
+		TOUCH_DRV_TMP="$(mktemp)"
+		if curl -fsSL "$TOUCH_DRV_URL" -o "$TOUCH_DRV_TMP" 2>/dev/null \
+			|| wget -q -O "$TOUCH_DRV_TMP" "$TOUCH_DRV_URL"; then
+			sudo cp -f "$TOUCH_DRV_TMP" /esp/efi/refind/drivers_x64/TouchI2cDxe.efi
+		else
+			echo "# Warning: failed to download TouchI2cDxe.efi; skipping touchscreen driver."
+		fi
+		rm -f "$TOUCH_DRV_TMP"
+	fi
 	echo 75
 	echo "# Updating EFI boot entries..."
 	# Resolve the ESP's disk and partition number from /esp instead of
