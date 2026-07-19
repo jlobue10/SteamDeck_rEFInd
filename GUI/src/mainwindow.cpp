@@ -19,7 +19,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "2.4.1";
+static const char APP_VERSION[] = "2.5.0";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 static const QString NONE_OPTION = QStringLiteral("None");
 
