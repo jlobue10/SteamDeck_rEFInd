@@ -329,6 +329,27 @@
        </property>
       </widget>
      </item>
+     <item row="6" column="4" alignment="Qt::AlignRight">
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item alignment="Qt::AlignRight">
+        <widget class="QLabel" name="Enable_Mouse_label">
+         <property name="text">
+          <string>Enable Mouse</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="Enable_Mouse_checkBox">
+         <property name="text">
+          <string/>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="6" column="5">
       <widget class="QPushButton" name="Enable_sysd_pushButton">
        <property name="minimumSize">
@@ -572,27 +593,6 @@
      <item row="10" column="4" colspan="2">
       <layout class="QGridLayout" name="gridLayout">
        <item row="0" column="0">
-        <layout class="QHBoxLayout" name="horizontalLayout">
-         <item alignment="Qt::AlignRight">
-          <widget class="QLabel" name="Enable_Mouse_label">
-           <property name="text">
-            <string>Enable Mouse</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QCheckBox" name="Enable_Mouse_checkBox">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item row="0" column="1">
         <widget class="QPushButton" name="Rescan_pushButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -620,7 +620,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
+       <item row="0" column="1">
         <widget class="QPushButton" name="Deep_Scan_pushButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
