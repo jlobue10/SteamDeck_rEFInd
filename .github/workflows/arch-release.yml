@@ -78,8 +78,10 @@ jobs:
             pacman -Syu --noconfirm
             # Exact makedepends from the PKGBUILD (plus git for the source
             # clone); makepkg then runs without -s, so a drifting PKGBUILD
-            # fails loudly here.
-            pacman -S --noconfirm --needed git cmake gcc glibc make qt6-base qt6-tools
+            # fails loudly here. base-devel is on top of that: makepkg needs
+            # fakeroot and debugedit, which the minimal bootstrap root does not
+            # ship and which PKGBUILDs conventionally assume rather than list.
+            pacman -S --noconfirm --needed base-devel git cmake gcc glibc make qt6-base qt6-tools
             pacman -Q glibc qt6-base gcc
             useradd -m builder
             chown -R builder: /work
