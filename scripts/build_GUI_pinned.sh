@@ -53,8 +53,10 @@ podman run --rm -v "$REPO_ROOT:/src:ro" -v "$OUT:/out" "$IMAGE" \
     bash -euo pipefail -c "
         A='https://archive.archlinux.org/repos/${ARCH_SNAPSHOT}'
         printf '[options]\nArchitecture = auto\nSigLevel = Never\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n' \"\$A\" \"\$A\" > /etc/pacman.conf
-        pacman -Syu --noconfirm > /dev/null
-        pacman -S --noconfirm --needed cmake gcc make qt6-base qt6-tools > /dev/null
+        # --disable-download-timeout: archive.archlinux.org intermittently
+        # throttles transfers below pacman's low-speed abort threshold.
+        pacman -Syu --noconfirm --disable-download-timeout > /dev/null
+        pacman -S --noconfirm --needed --disable-download-timeout cmake gcc make qt6-base qt6-tools > /dev/null
         pacman -Q glibc qt6-base gcc
         cp -r /src/GUI /build-gui
         cd /build-gui/src && mkdir -p build && cd build

@@ -62,7 +62,7 @@ jobs:
 
       - name: Build pinned Arch root
         run: |
-          curl -fsSL -o bootstrap.tar.zst \
+          curl -fsSL --retry 3 --retry-delay 15 -o bootstrap.tar.zst \
             "https://archive.archlinux.org/iso/${BOOTSTRAP_DATE}/archlinux-bootstrap-${BOOTSTRAP_DATE}-x86_64.tar.zst"
           sudo mkdir -p /tmp/rootfs
           sudo tar --use-compress-program=unzstd -xf bootstrap.tar.zst -C /tmp/rootfs
@@ -70,18 +70,29 @@ jobs:
 
       # Signature checking is off because the archive is served over HTTPS and
       # keys valid at snapshot time are marked disabled in today's keyring.
+      # Both pacman calls run with --disable-download-timeout and retries:
+      # archive.archlinux.org intermittently throttles transfers to a crawl,
+      # which trips pacman's low-speed abort ("Operation too slow") and has
+      # failed real release builds on an otherwise-fine tag.
       - name: Build package (makepkg)
         run: |
           docker run --rm -v "$PWD:/work" -w /work arch-pinned:build bash -euo pipefail -c '
+            retry() {
+              for i in 1 2 3; do
+                if "$@"; then return 0; fi
+                if [ "$i" = 3 ]; then return 1; fi
+                sleep 20
+              done
+            }
             A="https://archive.archlinux.org/repos/'"$ARCH_SNAPSHOT"'"
             printf "[options]\nArchitecture = auto\nSigLevel = Never\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n" "$A" "$A" > /etc/pacman.conf
-            pacman -Syu --noconfirm
+            retry pacman -Syu --noconfirm --disable-download-timeout
             # Exact makedepends from the PKGBUILD (plus git for the source
             # clone); makepkg then runs without -s, so a drifting PKGBUILD
             # fails loudly here. base-devel is on top of that: makepkg needs
             # fakeroot and debugedit, which the minimal bootstrap root does not
             # ship and which PKGBUILDs conventionally assume rather than list.
-            pacman -S --noconfirm --needed base-devel git cmake gcc glibc make qt6-base qt6-tools
+            retry pacman -S --noconfirm --needed --disable-download-timeout base-devel git cmake gcc glibc make qt6-base qt6-tools
             pacman -Q glibc qt6-base gcc
             useradd -m builder
             chown -R builder: /work
