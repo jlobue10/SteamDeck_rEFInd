@@ -13,7 +13,8 @@
 #     /boot/refind_linux.conf (pass --keep-esp-files to keep the files and
 #     only undo the services/boot entries)
 #   - with --remove-app, also removes the SteamDeck_rEFInd package (pacman,
-#     inside the steamos-readonly bracket) and ~/.local/SteamDeck_rEFInd
+#     inside the steamos-readonly bracket), ~/.local/SteamDeck_rEFInd,
+#     /etc/SteamDeck_rEFInd, and the passwordless-config sudoers rule
 #
 # Run as the deck user: ./uninstall_rEFInd.sh [--keep-esp-files] [--remove-app]
 # (privileged steps use sudo per command, like the install scripts).
@@ -148,7 +149,11 @@ if [ "$REMOVE_APP" -eq 1 ]; then
 	fi
 	rm -rf "$HOME/.local/SteamDeck_rEFInd"
 	rm -f "$HOME/Desktop/SteamDeck_rEFInd.desktop" "$HOME/Desktop/refind_GUI.desktop"
-	echo "Removed the app data and desktop shortcuts."
+	# The passwordless-config pieces install-GUI.sh put on the /etc overlay
+	# (remove the sudoers rule before the root-owned script it whitelists).
+	sudo rm -f /etc/sudoers.d/zz_SteamDeck_rEFInd_install_config
+	sudo rm -rf /etc/SteamDeck_rEFInd
+	echo "Removed the app data, /etc/SteamDeck_rEFInd, the sudoers rule, and desktop shortcuts."
 fi
 
 # Summary, read back from live NVRAM.
