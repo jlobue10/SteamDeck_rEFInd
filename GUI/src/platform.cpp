@@ -1,6 +1,8 @@
 #include "platform.h"
 
+#include <QCryptographicHash>
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
@@ -66,6 +68,15 @@ int installConfig(QString *output)
 bool installConfigShowsOwnDialogs()
 {
     return false;
+}
+
+bool installConfigScriptTrusted(QString *detail)
+{
+    // The .ps1 scripts are Authenticode-signed at release time, and signing
+    // rewrites the file, so a hash embedded at build time could never match.
+    if (detail)
+        detail->clear();
+    return true;
 }
 
 bool setBackgroundRandomizer(bool enable)
@@ -138,6 +149,40 @@ int installConfig(QString *output)
 
 bool installConfigShowsOwnDialogs()
 {
+    return true;
+}
+
+static bool matchesShippedScript(const QString &diskPath, const QString &resourcePath)
+{
+    QFile ref(resourcePath);
+    QFile onDisk(diskPath);
+    if (!ref.open(QIODevice::ReadOnly) || !onDisk.open(QIODevice::ReadOnly))
+        return false;
+    return QCryptographicHash::hash(onDisk.readAll(), QCryptographicHash::Sha256)
+        == QCryptographicHash::hash(ref.readAll(), QCryptographicHash::Sha256);
+}
+
+bool installConfigScriptTrusted(QString *detail)
+{
+    // install_config_from_GUI.sh pipes the user's sudo password into a root
+    // shell and sources lib_esp_target.sh into it, so refuse to launch unless
+    // both hash identically to the copies this build shipped (embedded as Qt
+    // resources at build time). Neither file has install-time placeholders,
+    // so the comparison is a straight byte-for-byte hash.
+    const QString scripts[] = {
+        QStringLiteral("install_config_from_GUI.sh"),
+        QStringLiteral("lib_esp_target.sh"),
+    };
+    for (const QString &name : scripts) {
+        const QString diskPath = dataDir() + "/scripts/" + name;
+        if (!matchesShippedScript(diskPath, QStringLiteral(":/") + name)) {
+            if (detail)
+                *detail = diskPath;
+            return false;
+        }
+    }
+    if (detail)
+        detail->clear();
     return true;
 }
 
