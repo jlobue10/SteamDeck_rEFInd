@@ -705,6 +705,11 @@
            <string>Extra Large</string>
           </property>
          </item>
+         <item>
+          <property name="text">
+           <string>XXL</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item>

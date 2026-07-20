@@ -356,6 +356,7 @@ void MainWindow::on_Create_Config_clicked()
     case 0: out << "big_icon_size 96\n" << "small_icon_size 36\n"; break;   // Small
     case 2: out << "big_icon_size 192\n" << "small_icon_size 72\n"; break;  // Large
     case 3: out << "big_icon_size 256\n" << "small_icon_size 96\n"; break;  // Extra Large
+    case 4: out << "big_icon_size 512\n" << "small_icon_size 128\n"; break; // XXL
     default: break;                                                         // Default: rEFInd built-in
     }
     out << "resolution 3\n";
