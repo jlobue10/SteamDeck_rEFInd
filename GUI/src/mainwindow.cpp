@@ -539,7 +539,6 @@ void MainWindow::readSettings()
     ui->Firmware_bootnum_CheckBox->setChecked(
         settings.value(QStringLiteral("FW_bootNum_CheckBox"), Platform::firmwareBootnumSupported()).toBool());
     ui->Enable_Mouse_checkBox->setChecked(settings.value(QStringLiteral("Enable_Mouse_CheckBox"), true).toBool());
-    ui->Icon_Size_comboBox->setCurrentIndex(settings.value(QStringLiteral("IconSizeComboBox"), 1).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("ComboBoxes"));
@@ -549,6 +548,7 @@ void MainWindow::readSettings()
     const QString boot4 = settings.value(QStringLiteral("BootOption04Text")).toString();
     const QString defaultBoot = settings.value(QStringLiteral("DefaultBootText")).toString();
     const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
+    ui->Icon_Size_comboBox->setCurrentIndex(settings.value(QStringLiteral("IconSizeComboBox"), 1).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Timeout"));
@@ -587,13 +587,13 @@ void MainWindow::writeSettings()
     settings.setValue(QStringLiteral("BootOption04Text"), ui->Boot_Option_04_comboBox->currentText());
     settings.setValue(QStringLiteral("DefaultBootText"), ui->Default_Boot_comboBox->currentText());
     settings.setValue(QStringLiteral("InstallSourceComboBox"), ui->Install_Source_comboBox->currentIndex());
+    settings.setValue(QStringLiteral("IconSizeComboBox"), ui->Icon_Size_comboBox->currentIndex());
     settings.remove(QStringLiteral("LinuxComboBox"));
     settings.endGroup();
     settings.beginGroup(QStringLiteral("CheckBoxes"));
     settings.setValue(QStringLiteral("LastOSCheckBox"), ui->Last_OS_CheckBox->isChecked());
     settings.setValue(QStringLiteral("FW_bootNum_CheckBox"), ui->Firmware_bootnum_CheckBox->isChecked());
     settings.setValue(QStringLiteral("Enable_Mouse_CheckBox"), ui->Enable_Mouse_checkBox->isChecked());
-    settings.setValue(QStringLiteral("IconSizeComboBox"), ui->Icon_Size_comboBox->currentIndex());
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Timeout"));
     settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());
