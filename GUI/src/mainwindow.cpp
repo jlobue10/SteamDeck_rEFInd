@@ -348,6 +348,16 @@ void MainWindow::on_Create_Config_clicked()
     out << "hideui singleuser,hints,arrows,label,badges\n";
     out << "banner background.png\n";
     out << "banner_scale fillscreen\n";
+    // Icon size: "Default" (index 1) emits nothing, so rEFInd keeps its built-in
+    // 128/48 icon sizing (and automatic HiDPI scaling); the other presets set
+    // explicit big_icon_size/small_icon_size, which rEFInd scales the shipped
+    // 128x128 icons to.
+    switch (ui->Icon_Size_comboBox->currentIndex()) {
+    case 0: out << "big_icon_size 96\n" << "small_icon_size 36\n"; break;   // Small
+    case 2: out << "big_icon_size 192\n" << "small_icon_size 72\n"; break;  // Large
+    case 3: out << "big_icon_size 256\n" << "small_icon_size 96\n"; break;  // Extra Large
+    default: break;                                                         // Default: rEFInd built-in
+    }
     out << "resolution 3\n";
     out << "enable_touch\n";
     out << (ui->Enable_Mouse_checkBox->isChecked() ? "" : "#") << "enable_mouse\n";
@@ -528,6 +538,7 @@ void MainWindow::readSettings()
     ui->Firmware_bootnum_CheckBox->setChecked(
         settings.value(QStringLiteral("FW_bootNum_CheckBox"), Platform::firmwareBootnumSupported()).toBool());
     ui->Enable_Mouse_checkBox->setChecked(settings.value(QStringLiteral("Enable_Mouse_CheckBox"), true).toBool());
+    ui->Icon_Size_comboBox->setCurrentIndex(settings.value(QStringLiteral("IconSizeComboBox"), 1).toInt());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("ComboBoxes"));
@@ -581,6 +592,7 @@ void MainWindow::writeSettings()
     settings.setValue(QStringLiteral("LastOSCheckBox"), ui->Last_OS_CheckBox->isChecked());
     settings.setValue(QStringLiteral("FW_bootNum_CheckBox"), ui->Firmware_bootnum_CheckBox->isChecked());
     settings.setValue(QStringLiteral("Enable_Mouse_CheckBox"), ui->Enable_Mouse_checkBox->isChecked());
+    settings.setValue(QStringLiteral("IconSizeComboBox"), ui->Icon_Size_comboBox->currentIndex());
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Timeout"));
     settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());

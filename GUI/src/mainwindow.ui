@@ -651,6 +651,78 @@
       </layout>
      </item>
      <item row="11" column="0" colspan="6">
+      <layout class="QHBoxLayout" name="Icon_Size_layout">
+       <item>
+        <widget class="QLabel" name="Icon_Size_label">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Icon Size</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="Icon_Size_comboBox">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Size of the OS icons on the rEFInd boot menu. "Default" keeps rEFInd's built-in sizing.</string>
+         </property>
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
+         <item>
+          <property name="text">
+           <string>Small</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Default</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Large</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Extra Large</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item>
+        <spacer name="Icon_Size_spacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item row="12" column="0" colspan="6">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QComboBox" name="Install_Source_comboBox">
