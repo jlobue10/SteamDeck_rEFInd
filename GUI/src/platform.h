@@ -29,6 +29,15 @@ int installConfig(QString *output = nullptr);
 // output (Windows).
 bool installConfigShowsOwnDialogs();
 
+// True when the config-install script and the ESP-resolution helper it
+// sources are byte-identical (SHA-256) to the copies this build shipped, so
+// they are safe to feed to a root shell. On mismatch (tampered, missing, or
+// from another version) returns false and puts the offending file's path in
+// *detail — the caller must refuse to run them and suggest reinstalling.
+// Always true on Windows: the .ps1 scripts are Authenticode-signed instead,
+// and signing rewrites the file so a build-time hash could never match.
+bool installConfigScriptTrusted(QString *detail = nullptr);
+
 // Enables/disables the boot-background randomizer (systemd unit / scheduled task).
 bool setBackgroundRandomizer(bool enable);
 

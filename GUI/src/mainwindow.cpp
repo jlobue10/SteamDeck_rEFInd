@@ -412,6 +412,19 @@ static QString outputTail(const QString &output)
 
 void MainWindow::on_Install_Config_clicked()
 {
+    QString badScript;
+    if (!Platform::installConfigScriptTrusted(&badScript)) {
+        QMessageBox::warning(this, tr("Install Config"),
+                             tr("The config-install script was NOT run:\n\n%1\n\n"
+                                "It does not match the copy shipped with this version of the "
+                                "app. Because it runs with root privileges, it is only ever "
+                                "run when it is byte-for-byte the shipped version — a mismatch "
+                                "means it was modified (possibly tampered with) or belongs to "
+                                "a different version.\n\n"
+                                "Reinstall the GUI to restore the original script, then try "
+                                "again.").arg(badScript));
+        return;
+    }
     QString output;
     const int rc = Platform::installConfig(&output);
     if (Platform::installConfigShowsOwnDialogs()) {

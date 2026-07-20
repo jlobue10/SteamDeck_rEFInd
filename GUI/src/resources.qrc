@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/">
         <file>SteamDeck_rEFInd.png</file>
+        <!-- Reference copies for the tamper hash check in
+             Platform::installConfigScriptTrusted (Linux). -->
+        <file alias="install_config_from_GUI.sh">../../scripts/install_config_from_GUI.sh</file>
+        <file alias="lib_esp_target.sh">../../scripts/lib_esp_target.sh</file>
     </qresource>
 </RCC>
