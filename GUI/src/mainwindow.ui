@@ -680,7 +680,7 @@
           </size>
          </property>
          <property name="toolTip">
-          <string>Size of the OS icons on the rEFInd boot menu. "Default" keeps rEFInd's built-in sizing.</string>
+          <string>Size of the OS icons on the rEFInd boot menu. "Default" keeps rEFInd's built-in sizing. Larger presets look sharpest with higher-resolution custom icon PNGs.</string>
          </property>
          <property name="currentIndex">
           <number>1</number>
