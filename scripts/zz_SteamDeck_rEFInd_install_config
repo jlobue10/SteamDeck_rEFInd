@@ -1,0 +1,14 @@
+# Lets the GUI's Install Config button run the root-owned config-install
+# script without a password prompt. Installed by install-GUI.sh to
+# /etc/sudoers.d/zz_SteamDeck_rEFInd_install_config (root:root 0440, after a
+# visudo -cf check); USER is replaced with the installing user at that point.
+#
+# The zz_ prefix is load-bearing: sudo parses /etc/sudoers.d in lexical order
+# and applies the LAST matching entry, and SteamOS 3.9 ships
+# /etc/sudoers.d/wheel with a passworded "(ALL) ALL" rule for the deck user.
+# This file must sort after "wheel" or that rule overrides this one and the
+# password prompt comes back (Valve's own wheel-prepare-oobe-test NOPASSWD
+# drop-in relies on the same ordering).
+#
+# The trailing "" forbids passing any arguments to the whitelisted script.
+USER ALL = NOPASSWD: /etc/SteamDeck_rEFInd/install_config_from_GUI.sh ""

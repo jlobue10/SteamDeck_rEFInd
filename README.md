@@ -22,7 +22,7 @@ The installer stages everything into `~/.local/SteamDeck_rEFInd/`, installs the 
 1. **Install rEFInd** — needed the first time only. Leave Sourceforge selected in the dropdown (the preferred source); `pacman` is available as a fallback if the Sourceforge download has issues. If you already have a working rEFInd install, you can skip this step.
 2. **Pick your boot options.** The GUI scans the EFI System Partition at startup (and via the **Rescan OSes** button) and auto-populates the boot options with what's actually installed — SteamOS, Windows, and any Linux distro. The four boot options are the icon order on the boot screen, left to right.
 3. **Create Config** — generates `~/.local/SteamDeck_rEFInd/GUI/refind.conf`, which you can inspect or hand-edit. If you change the background or icon images, click **Create Config** again so the new files get staged.
-4. **Install Config** — copies the config, background, and icons to the `/esp` partition (asks for your `sudo` password).
+4. **Install Config** — copies the config, background, and icons to the ESP that actually boots rEFInd. No password prompt: the installer sets up a root-owned helper script plus a sudoers rule restricted to exactly that script (it falls back to asking for your `sudo` password if the rule is missing).
 
 Additional buttons and options:
 

@@ -83,15 +83,31 @@ if ! sudo pacman -U --noconfirm "$INSTALL_PKG"; then
 fi
 rm -f "$INSTALL_PKG"
 
-# Leaving passwordless sudo stuff to try to fix another day...
-#Create file for passwordless sudo for config file, background and icon installation
-#cat > $HOME/.local/SteamDeck_rEFInd/install_config_from_GUI <<EOF
-#$USER ALL = NOPASSWD: /usr/bin/install_config_from_GUI.sh
-#EOF
+# Passwordless Install Config: a root-owned, self-contained copy of the
+# config-install script plus a sudoers rule whitelisting exactly that path, so
+# the GUI can run it with `sudo -n` instead of a zenity password prompt. /etc
+# is a persistent overlay on SteamOS (upperdir on /var), so both pieces
+# survive OS updates just like the systemd units above. The script must be
+# installed root-owned BEFORE the rule that whitelists it, and the rule is
+# only installed if visudo validates it -- a broken file in /etc/sudoers.d
+# can lock sudo up entirely.
+sudo install -d -m 0755 /etc/SteamDeck_rEFInd
+sudo install -o root -g root -m 0755 \
+    "$CURRENT_WD/scripts/install_config_from_GUI_root.sh" \
+    /etc/SteamDeck_rEFInd/install_config_from_GUI.sh
 
-#chmod 0666 $HOME/.local/SteamDeck_rEFInd/install_config_from_GUI
-
-#sudo cp $HOME/.local/SteamDeck_rEFInd/install_config_from_GUI /etc/sudoers.d 2>/dev/null
+INSTALL_USER="$(id -un)"
+sed "s/^USER /$INSTALL_USER /" "$CURRENT_WD/scripts/zz_SteamDeck_rEFInd_install_config" \
+    > "$CURRENT_WD/sudoers_rule.tmp"
+if sudo visudo -cf "$CURRENT_WD/sudoers_rule.tmp" > /dev/null 2>&1; then
+    sudo install -o root -g root -m 0440 "$CURRENT_WD/sudoers_rule.tmp" \
+        /etc/sudoers.d/zz_SteamDeck_rEFInd_install_config
+    echo "Enabled passwordless config install for $INSTALL_USER."
+else
+    echo "Warning: the generated sudoers rule failed visudo validation and was NOT installed." >&2
+    echo "Install Config will fall back to asking for your sudo password." >&2
+fi
+rm -f "$CURRENT_WD/sudoers_rule.tmp"
 
 sudo steamos-readonly enable
 

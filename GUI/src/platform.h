@@ -18,24 +18,31 @@ QString dataDir();
 bool runInstallerScript(const QString &installSource);
 
 // Installs the generated config + PNGs onto the ESP. Returns 0 on success.
-// Linux: launches the interactive zenity script detached; *output stays empty
-// and a nonzero return only means the launch itself failed. Windows: runs the
-// PowerShell installer synchronously with no console window and captures its
-// combined output into *output for the caller to present.
+// Linux, passwordless path (root-owned /etc/SteamDeck_rEFInd script +
+// NOPASSWD sudoers rule installed by install-GUI.sh): runs `sudo -n` on the
+// script synchronously and captures its combined output into *output for the
+// caller to present. Linux, fallback when the rule is missing: launches the
+// interactive zenity script detached; *output stays empty and a nonzero
+// return only means the launch itself failed. Windows: runs the PowerShell
+// installer synchronously with no console window and captures its combined
+// output into *output.
 int installConfig(QString *output = nullptr);
 
 // True when installConfig() reports its result to the user itself (the Linux
-// script's zenity dialogs); false when the caller must present the captured
-// output (Windows).
+// zenity fallback's dialogs); false when the caller must present the captured
+// output (the Linux passwordless path and Windows).
 bool installConfigShowsOwnDialogs();
 
-// True when the config-install script and the ESP-resolution helper it
-// sources are byte-identical (SHA-256) to the copies this build shipped, so
-// they are safe to feed to a root shell. On mismatch (tampered, missing, or
-// from another version) returns false and puts the offending file's path in
-// *detail — the caller must refuse to run them and suggest reinstalling.
-// Always true on Windows: the .ps1 scripts are Authenticode-signed instead,
-// and signing rewrites the file so a build-time hash could never match.
+// True when the config-install script(s) about to be used are byte-identical
+// (SHA-256) to the copies this build shipped, so they are safe to run with
+// root privileges. Passwordless path: checks the root-owned /etc copy
+// (catches a stale copy from another GUI version). Fallback path: checks the
+// staged zenity script and the ESP-resolution helper it sources into its
+// root payload. On mismatch (tampered, missing, or from another version)
+// returns false and puts the offending file's path in *detail — the caller
+// must refuse to run them and suggest reinstalling. Always true on Windows:
+// the .ps1 scripts are Authenticode-signed instead, and signing rewrites the
+// file so a build-time hash could never match.
 bool installConfigScriptTrusted(QString *detail = nullptr);
 
 // Enables/disables the boot-background randomizer (systemd unit / scheduled task).

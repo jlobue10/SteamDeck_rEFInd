@@ -136,10 +136,50 @@ bool runInstallerScript(const QString &installSource)
     return QProcess::startDetached(QStringLiteral("xterm"), {QStringLiteral("-e"), script});
 }
 
+static const char kRootConfigScript[] = "/etc/SteamDeck_rEFInd/install_config_from_GUI.sh";
+
+// True when install-GUI.sh has set up the passwordless path: the root-owned
+// script exists and the sudoers rule in /etc/sudoers.d lets this user run it
+// without a password (`sudo -n -l <cmd>` exits 0 exactly then, without ever
+// prompting).
+static bool passwordlessConfigInstallReady()
+{
+    if (!QFile::exists(QLatin1String(kRootConfigScript)))
+        return false;
+    QProcess proc;
+    proc.start(QStringLiteral("sudo"),
+               {QStringLiteral("-n"), QStringLiteral("-l"), QLatin1String(kRootConfigScript)});
+    if (!proc.waitForStarted())
+        return false;
+    proc.waitForFinished(-1);
+    return proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0;
+}
+
 int installConfig(QString *output)
 {
-    // The script handles its own privilege (zenity password prompt) and shows
-    // its own success/error dialogs, so launch it detached.
+    if (passwordlessConfigInstallReady()) {
+        // Allowed without a password by the sudoers rule; -n keeps the GUI
+        // from hanging on a prompt if the rule vanished since the check. Run
+        // synchronously with the output captured — the caller presents the
+        // result dialog from *output, exactly like the Windows build.
+        QProcess proc;
+        proc.setProcessChannelMode(QProcess::MergedChannels);
+        proc.start(QStringLiteral("sudo"),
+                   {QStringLiteral("-n"), QLatin1String(kRootConfigScript)});
+        if (!proc.waitForStarted()) {
+            if (output)
+                *output = QStringLiteral("sudo could not be started.");
+            return -1;
+        }
+        proc.waitForFinished(-1);
+        if (output)
+            *output = QString::fromLocal8Bit(proc.readAll());
+        return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
+    }
+    // Fallback when the rule isn't installed (the GUI installer was never
+    // re-run on this system): the staged script handles its own privilege
+    // (zenity password prompt) and shows its own success/error dialogs, so
+    // launch it detached.
     if (output)
         output->clear();
     const bool ok = QProcess::startDetached(QStringLiteral("bash"),
@@ -149,7 +189,9 @@ int installConfig(QString *output)
 
 bool installConfigShowsOwnDialogs()
 {
-    return true;
+    // Only the zenity fallback owns its dialogs; on the passwordless path the
+    // GUI shows the captured output itself.
+    return !passwordlessConfigInstallReady();
 }
 
 static bool matchesShippedScript(const QString &diskPath, const QString &resourcePath)
@@ -164,11 +206,29 @@ static bool matchesShippedScript(const QString &diskPath, const QString &resourc
 
 bool installConfigScriptTrusted(QString *detail)
 {
-    // install_config_from_GUI.sh pipes the user's sudo password into a root
-    // shell and sources lib_esp_target.sh into it, so refuse to launch unless
-    // both hash identically to the copies this build shipped (embedded as Qt
-    // resources at build time). Neither file has install-time placeholders,
-    // so the comparison is a straight byte-for-byte hash.
+    if (passwordlessConfigInstallReady()) {
+        // The /etc copy is root-owned, so nobody unprivileged can have edited
+        // it — this catches a stale copy from another GUI version before it
+        // runs with root privileges. It carries no install-time placeholders
+        // (the invoking user is resolved from SUDO_USER at runtime), so the
+        // comparison is a straight byte-for-byte hash against the embedded
+        // reference.
+        if (!matchesShippedScript(QLatin1String(kRootConfigScript),
+                                  QStringLiteral(":/install_config_from_GUI_root.sh"))) {
+            if (detail)
+                *detail = QLatin1String(kRootConfigScript);
+            return false;
+        }
+        if (detail)
+            detail->clear();
+        return true;
+    }
+    // Zenity fallback path: install_config_from_GUI.sh pipes the user's sudo
+    // password into a root shell and sources lib_esp_target.sh into it, so
+    // refuse to launch unless both hash identically to the copies this build
+    // shipped (embedded as Qt resources at build time). Neither file has
+    // install-time placeholders, so the comparison is a straight
+    // byte-for-byte hash.
     const QString scripts[] = {
         QStringLiteral("install_config_from_GUI.sh"),
         QStringLiteral("lib_esp_target.sh"),

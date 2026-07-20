@@ -58,8 +58,12 @@ podman run --rm -v "$REPO_ROOT:/src:ro" -v "$OUT:/out" "$IMAGE" \
         pacman -Syu --noconfirm --disable-download-timeout > /dev/null
         pacman -S --noconfirm --needed --disable-download-timeout cmake gcc make qt6-base qt6-tools > /dev/null
         pacman -Q glibc qt6-base gcc
-        cp -r /src/GUI /build-gui
-        cd /build-gui/src && mkdir -p build && cd build
+        # Stage GUI/ and scripts/ preserving the repo layout: resources.qrc
+        # embeds the config-install scripts via ../../scripts/ paths.
+        mkdir -p /build
+        cp -r /src/GUI /build/GUI
+        cp -r /src/scripts /build/scripts
+        cd /build/GUI/src && mkdir -p build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release > /dev/null
         make -j\$(nproc)
         install -Dm755 SteamDeck_rEFInd /out/SteamDeck_rEFInd
