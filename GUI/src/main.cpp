@@ -39,6 +39,12 @@ int main(int argc, char *argv[])
                                + QStringLiteral("/translations")))
         a.installTranslator(&translator);
 
+    // Qt queries this key from the installed translators to decide whether to
+    // mirror the whole widget layout; the RTL language files (ar, fa)
+    // translate it to "RTL". The call itself is only an lupdate anchor so the
+    // key survives .ts regeneration.
+    (void)QCoreApplication::translate("QGuiApplication", "QT_LAYOUT_DIRECTION");
+
     MainWindow w;
     w.show();
     return a.exec();

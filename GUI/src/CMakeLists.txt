@@ -17,11 +17,14 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 # update_translations target (Qt 6) or lupdate directly — see I18N_AUDIT.md.
 set(TS_FILES
     SteamDeck_rEFInd_en_US.ts
+    SteamDeck_rEFInd_ar.ts
     SteamDeck_rEFInd_de.ts
     SteamDeck_rEFInd_es.ts
+    SteamDeck_rEFInd_fa.ts
     SteamDeck_rEFInd_fr.ts
     SteamDeck_rEFInd_ja.ts
     SteamDeck_rEFInd_ko.ts
+    SteamDeck_rEFInd_uk.ts
     SteamDeck_rEFInd_zh_CN.ts
 )
 

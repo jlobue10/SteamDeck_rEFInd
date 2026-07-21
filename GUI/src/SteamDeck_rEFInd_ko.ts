@@ -494,4 +494,12 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
         <translation>sudo를 시작할 수 없습니다.</translation>
     </message>
 </context>
+<context>
+    <name>QGuiApplication</name>
+    <message>
+        <location filename="main.cpp" line="46" />
+        <source>QT_LAYOUT_DIRECTION</source>
+        <translation>LTR</translation>
+    </message>
+</context>
 </TS>
