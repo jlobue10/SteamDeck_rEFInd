@@ -127,8 +127,8 @@ On the Windows side, uninstalling "SteamDeck rEFInd GUI" from Settings > Apps as
 
 ## Translations
 
-The GUI follows the system language and currently ships German, Spanish, and
-French translations alongside English (untranslated strings fall back to
+The GUI follows the system language and currently ships German, Spanish,
+French, Japanese, Korean, and Simplified Chinese translations alongside English (untranslated strings fall back to
 English). Translation contributions are welcome — see the contributor guide in
 [I18N_AUDIT.md](I18N_AUDIT.md): add a `SteamDeck_rEFInd_<lang>.ts` file under
 `GUI/src/`, list it in `CMakeLists.txt`, and translate it with Qt Linguist.

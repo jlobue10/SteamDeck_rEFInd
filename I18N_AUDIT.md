@@ -11,8 +11,8 @@ sources mirror it).
 |---|---|---|
 | Qt GUI translation pipeline | Dead: no translator in `main.cpp` at all; `SteamDeck_rEFInd_en_US.ts` an empty stub; no `.qm` built | Working: translator installed, `.qm` compiled at build time and embedded under `:/i18n` |
 | GUI `tr()` coverage | Good, with a few gaps | Complete (About box, "None" combo entry, `Platform` error strings) |
-| Shipped languages | English only | English + German (`de`), Spanish (`es`), French (`fr`) |
-| Desktop entry | English `Comment=` only | Localized `Comment[de/es/fr]=` |
+| Shipped languages | English only | English + German (`de`), Spanish (`es`), French (`fr`), Japanese (`ja`), Korean (`ko`), Simplified Chinese (`zh_CN`) |
+| Desktop entry | English `Comment=` only | Localized `Comment[de/es/fr/ja/ko/zh_CN]=` |
 | Bash scripts (Deck-side) | English only | Unchanged — audited, recommendations below |
 | PowerShell scripts (`Windows/`, `Windows/GUI/`) | English only | Unchanged — audited, recommendations below |
 | Inno Setup installer | English only | Unchanged — recommendation below |
@@ -70,7 +70,7 @@ sources mirror it).
 
 ## Shipped translations
 
-`GUI/src/SteamDeck_rEFInd_{de,es,fr}.ts` cover all 89 messages.
+`GUI/src/SteamDeck_rEFInd_{de,es,fr,ja,ko,zh_CN}.ts` cover all 89 messages.
 `SteamDeck_rEFInd_en_US.ts` is the source-language reference and
 intentionally has empty translations (source text is used as-is). The
 language is picked from the system locale automatically — on a Deck this
@@ -142,7 +142,7 @@ Recommended approach when it is tackled:
 
 ## Other surfaces
 
-- `SteamDeck_rEFInd.desktop`: localized `Comment[de/es/fr]` added (done).
+- `SteamDeck_rEFInd.desktop`: localized `Comment[de/es/fr/ja/ko/zh_CN]` added (done).
   `install-GUI.sh` rewrites `Exec=`/`Icon=` paths only, so the localized
   lines survive installation untouched.
 - `README.md`: English-only; per-language READMEs are only worth it with a

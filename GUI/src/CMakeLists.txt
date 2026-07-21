@@ -20,6 +20,9 @@ set(TS_FILES
     SteamDeck_rEFInd_de.ts
     SteamDeck_rEFInd_es.ts
     SteamDeck_rEFInd_fr.ts
+    SteamDeck_rEFInd_ja.ts
+    SteamDeck_rEFInd_ko.ts
+    SteamDeck_rEFInd_zh_CN.ts
 )
 
 set(PROJECT_SOURCES
