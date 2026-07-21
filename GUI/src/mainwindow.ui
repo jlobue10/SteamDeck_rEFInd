@@ -705,6 +705,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="Extras_checkBox">
+         <property name="toolTip">
+          <string>Also write boot stanzas for detected bootloaders that are not in one of the four slots</string>
+         </property>
+         <property name="text">
+          <string>Include all OSes</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="bottomRowSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Horizontal</enum>

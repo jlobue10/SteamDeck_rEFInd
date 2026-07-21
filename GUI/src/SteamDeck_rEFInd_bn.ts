@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="444" />
-        <location filename="mainwindow.cpp" line="981" />
+        <location filename="mainwindow.cpp" line="1031" />
         <source>Open Folder</source>
         <translation>ফোল্ডার খুলুন</translation>
     </message>
@@ -200,88 +200,98 @@
         <translation>ইন্টারফেসের ভাষা</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="735" />
+        <location filename="mainwindow.ui" line="710" />
+        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots</source>
+        <translation>চারটি স্লটের কোনোটিতে নেই এমন শনাক্ত বুটলোডারের জন্যও বুট এন্ট্রি লেখে</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="713" />
+        <source>Include all OSes</source>
+        <translation>সব OS অন্তর্ভুক্ত করুন</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="745" />
         <source>Preview the rEFInd boot screen and the generated refind.conf</source>
         <translation>rEFInd বুট স্ক্রিন ও তৈরি হওয়া refind.conf-এর প্রিভিউ দেখুন</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="738" />
+        <location filename="mainwindow.ui" line="748" />
         <source>Preview</source>
         <translation>প্রিভিউ</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="761" />
+        <location filename="mainwindow.ui" line="771" />
         <source>Installation source and method</source>
         <translation>ইনস্টলেশনের উৎস ও পদ্ধতি</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="790" />
+        <location filename="mainwindow.ui" line="800" />
         <source>Install rEFInd using selected method</source>
         <translation>নির্বাচিত পদ্ধতিতে rEFInd ইনস্টল করুন</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="793" />
+        <location filename="mainwindow.ui" line="803" />
         <location filename="mainwindow.cpp" line="477" />
         <source>Install rEFInd</source>
         <translation>rEFInd ইনস্টল করুন</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="812" />
+        <location filename="mainwindow.ui" line="822" />
         <source>Create config and copy PNG files (ready for install step)</source>
         <translation>কনফিগারেশন তৈরি করুন ও PNG ফাইল কপি করুন (ইনস্টল ধাপের জন্য প্রস্তুত)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="815" />
-        <location filename="mainwindow.cpp" line="591" />
+        <location filename="mainwindow.ui" line="825" />
+        <location filename="mainwindow.cpp" line="632" />
         <source>Create Config</source>
         <translation>কনফিগ তৈরি</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="834" />
+        <location filename="mainwindow.ui" line="844" />
         <source>Install config, icons and background</source>
         <translation>কনফিগারেশন, আইকন ও পটভূমি ইনস্টল করুন</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="837" />
-        <location filename="mainwindow.cpp" line="682" />
-        <location filename="mainwindow.cpp" line="700" />
-        <location filename="mainwindow.cpp" line="706" />
-        <location filename="mainwindow.cpp" line="711" />
+        <location filename="mainwindow.ui" line="847" />
+        <location filename="mainwindow.cpp" line="730" />
+        <location filename="mainwindow.cpp" line="748" />
+        <location filename="mainwindow.cpp" line="754" />
+        <location filename="mainwindow.cpp" line="759" />
         <source>Install Config</source>
         <translation>কনফিগ ইনস্টল</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="852" />
+        <location filename="mainwindow.ui" line="862" />
         <source>rEFInd Background selection</source>
         <translation>rEFInd পটভূমি নির্বাচন</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="868" />
+        <location filename="mainwindow.ui" line="878" />
         <source>Icon 1 PNG (leftmost icon)</source>
         <translation>আইকন 1 PNG (সবচেয়ে বাঁয়ের আইকন)</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="923" />
+        <location filename="mainwindow.ui" line="933" />
         <source>Boot Option #4</source>
         <translation>বুট বিকল্প #4</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="936" />
+        <location filename="mainwindow.ui" line="946" />
         <source>Boot Option #3</source>
         <translation>বুট বিকল্প #3</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="949" />
+        <location filename="mainwindow.ui" line="959" />
         <source>Boot Option #2</source>
         <translation>বুট বিকল্প #2</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="962" />
+        <location filename="mainwindow.ui" line="972" />
         <source>Boot Option #1</source>
         <translation>বুট বিকল্প #1</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="975" />
+        <location filename="mainwindow.ui" line="985" />
         <source>Background</source>
         <translation>পটভূমি</translation>
     </message>
@@ -382,12 +392,12 @@
         <translation>ইনস্টলেশন স্ক্রিপ্ট চালু করা যায়নি।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="592" />
+        <location filename="mainwindow.cpp" line="633" />
         <source>Could not write %1</source>
         <translation>%1 লেখা যায়নি</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="683" />
+        <location filename="mainwindow.cpp" line="731" />
         <source>The config-install script was NOT run:
 
 %1
@@ -404,18 +414,18 @@ Reinstall the GUI to restore the original script, then try again.</source>
 মূল স্ক্রিপ্ট ফিরিয়ে আনতে GUI আবার ইনস্টল করুন, তারপর আবার চেষ্টা করুন।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="701" />
-        <location filename="mainwindow.cpp" line="713" />
+        <location filename="mainwindow.cpp" line="749" />
+        <location filename="mainwindow.cpp" line="761" />
         <source>Installing the config failed (code %1).</source>
         <translation>কনফিগারেশন ইনস্টল ব্যর্থ হয়েছে (কোড %1)।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="708" />
+        <location filename="mainwindow.cpp" line="756" />
         <source>The config was installed successfully.</source>
         <translation>কনফিগারেশন সফলভাবে ইনস্টল হয়েছে।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="709" />
+        <location filename="mainwindow.cpp" line="757" />
         <source>The config was installed successfully.
 
 %1</source>
@@ -424,7 +434,7 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="714" />
+        <location filename="mainwindow.cpp" line="762" />
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -433,22 +443,22 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="728" />
+        <location filename="mainwindow.cpp" line="776" />
         <source>Copy PNG</source>
         <translation>PNG কপি করুন</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="729" />
+        <location filename="mainwindow.cpp" line="777" />
         <source>Could not copy %1 to %2</source>
         <translation>%1-কে %2-এ কপি করা যায়নি</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="754" />
+        <location filename="mainwindow.cpp" line="802" />
         <source>Invalid PNG</source>
         <translation>অবৈধ PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="755" />
+        <location filename="mainwindow.cpp" line="803" />
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -457,56 +467,56 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 পটভূমি ও OS আইকন অবশ্যই আসল PNG ছবি হতে হবে (শুধু .png এক্সটেনশনের ফাইল নয়)।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="884" />
+        <location filename="mainwindow.cpp" line="934" />
         <source>Check For Update</source>
         <translation>আপডেট পরীক্ষা করুন</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="887" />
+        <location filename="mainwindow.cpp" line="937" />
         <source>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;মূল GUI নির্মাতা: &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;পরীক্ষা ও মান নিশ্চিতকরণের জন্য Deck Wizard-কে বিশেষ ধন্যবাদ&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Deck Wizard ডুয়াল বুট টিউটোরিয়াল&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="936" />
+        <location filename="mainwindow.cpp" line="986" />
         <source>&lt;p align='center'&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;আপডেট পরীক্ষা ব্যর্থ হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="939" />
+        <location filename="mainwindow.cpp" line="989" />
         <source>&lt;p align='center'&gt;An update is available &lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;একটি আপডেট &lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;এখানে&lt;/a&gt; পাওয়া যাচ্ছে&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="943" />
+        <location filename="mainwindow.cpp" line="993" />
         <source>&lt;p align='center'&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;কোনো আপডেট পাওয়া যায়নি। আপনি সর্বশেষ সংস্করণ ব্যবহার করছেন।&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="953" />
-        <location filename="mainwindow.cpp" line="960" />
+        <location filename="mainwindow.cpp" line="1003" />
+        <location filename="mainwindow.cpp" line="1010" />
         <source>systemd service</source>
         <translation>systemd পরিষেবা</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="954" />
-        <location filename="mainwindow.cpp" line="961" />
+        <location filename="mainwindow.cpp" line="1004" />
+        <location filename="mainwindow.cpp" line="1011" />
         <source>Failed to launch the service toggle.</source>
         <translation>পরিষেবা টগল চালু করা যায়নি।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="967" />
-        <location filename="mainwindow.cpp" line="974" />
+        <location filename="mainwindow.cpp" line="1017" />
+        <location filename="mainwindow.cpp" line="1024" />
         <source>Background Randomizer</source>
         <translation>এলোমেলো পটভূমি</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="968" />
-        <location filename="mainwindow.cpp" line="975" />
+        <location filename="mainwindow.cpp" line="1018" />
+        <location filename="mainwindow.cpp" line="1025" />
         <source>Failed to launch the randomizer setup.</source>
         <translation>এলোমেলো পটভূমি সেটআপ চালু করা যায়নি।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="982" />
+        <location filename="mainwindow.cpp" line="1032" />
         <source>Failed to open %1 in the file manager.</source>
         <translation>ফাইল ব্যবস্থাপকে %1 খোলা যায়নি।</translation>
     </message>

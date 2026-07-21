@@ -491,12 +491,12 @@ QString MainWindow::steamFirmwareBootNum()
     return match.hasMatch() ? match.captured(1) : QString();
 }
 
-QString MainWindow::createBootStanza(const BootEntry &entry, int slot)
+QString MainWindow::createBootStanza(const BootEntry &entry, const QString &iconPath)
 {
     QString stanza;
     QTextStream out(&stanza);
     out << "\nmenuentry \"" << entry.menuName << "\" {\n";
-    out << "\ticon /EFI/refind/os_icon" << slot << ".png\n";
+    out << "\ticon " << iconPath << "\n";
     if (entry.supportsFirmwareBootnum && ui->Firmware_bootnum_CheckBox->isChecked()) {
         const QString bootNum = steamFirmwareBootNum();
         if (!bootNum.isEmpty()) {
@@ -579,8 +579,49 @@ QString MainWindow::generateConfigText(const QList<Selection> &selections)
     out << "default_selection \"" << defaultSelection << "\"\n";
 
     for (const Selection &sel : selections)
-        out << createBootStanza(sel.entry, sel.slot);
+        out << createBootStanza(sel.entry,
+                                QStringLiteral("/EFI/refind/os_icon%1.png").arg(sel.slot));
+    if (ui->Extras_checkBox->isChecked()) {
+        // Outlier machines can hold more valid bootloaders than the four
+        // slots. Opt-in: append a stanza for every detected entry that is
+        // not already slotted, after the slotted ones (so the curated icons
+        // stay leftmost), with a stock rEFInd icon since these entries have
+        // no user-chosen slot icon.
+        for (const BootEntry &extra : extraEntries(selections))
+            out << createBootStanza(extra, stockIconFor(extra));
+    }
     return text;
+}
+
+// Detected entries not covered by a slot, deduplicated by identity key —
+// the sources for the optional extra stanzas. Only genuinely detected
+// entries qualify (never the static removable-media fallbacks), which is
+// what makes an extra stanza "valid and in use" on this machine.
+QList<BootEntry> MainWindow::extraEntries(const QList<Selection> &selections) const
+{
+    QStringList used;
+    for (const Selection &sel : selections)
+        used << entryKey(sel.entry);
+    QList<BootEntry> extras;
+    for (const BootEntry &e : detected) {
+        const QString key = entryKey(e);
+        if (used.contains(key))
+            continue;
+        used << key;
+        extras << e;
+    }
+    return extras;
+}
+
+// Stock rEFInd icon for stanzas without a user-chosen slot icon. Coarse on
+// purpose: Windows vs everything else (the rest of the detected set is
+// Linux-family); a missing icon file just makes rEFInd fall back to its
+// default, so this can never break a stanza.
+QString MainWindow::stockIconFor(const BootEntry &entry)
+{
+    if (entry.loaderPath.contains(QLatin1String("Microsoft"), Qt::CaseInsensitive))
+        return QStringLiteral("/EFI/refind/icons/os_win8.png");
+    return QStringLiteral("/EFI/refind/icons/os_linux.png");
 }
 
 void MainWindow::on_Create_Config_clicked()
@@ -619,6 +660,13 @@ void MainWindow::on_Preview_pushButton_clicked()
         if (e.iconPath.isEmpty()) // fall back to a previously staged copy
             e.iconPath = guiConfigDir + QStringLiteral("/os_icon%1.png").arg(sel.slot);
         entries << e;
+    }
+    if (ui->Extras_checkBox->isChecked()) {
+        for (const BootEntry &extra : extraEntries(selections)) {
+            PreviewEntry e;
+            e.name = extra.displayName; // no icon path -> placeholder tile
+            entries << e;
+        }
     }
 
     const QString defaultName = ui->Default_Boot_comboBox->currentText();
@@ -794,6 +842,7 @@ void MainWindow::readSettings()
     ui->Firmware_bootnum_CheckBox->setChecked(
         settings.value(QStringLiteral("FW_bootNum_CheckBox"), Platform::firmwareBootnumSupported()).toBool());
     ui->Enable_Mouse_checkBox->setChecked(settings.value(QStringLiteral("Enable_Mouse_CheckBox"), true).toBool());
+    ui->Extras_checkBox->setChecked(settings.value(QStringLiteral("IncludeExtraEntries")).toBool());
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("ComboBoxes"));
@@ -869,6 +918,7 @@ void MainWindow::writeSettings()
     settings.setValue(QStringLiteral("LastOSCheckBox"), ui->Last_OS_CheckBox->isChecked());
     settings.setValue(QStringLiteral("FW_bootNum_CheckBox"), ui->Firmware_bootnum_CheckBox->isChecked());
     settings.setValue(QStringLiteral("Enable_Mouse_CheckBox"), ui->Enable_Mouse_checkBox->isChecked());
+    settings.setValue(QStringLiteral("IncludeExtraEntries"), ui->Extras_checkBox->isChecked());
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Timeout"));
     settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());
