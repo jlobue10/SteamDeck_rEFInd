@@ -11,7 +11,7 @@ sources mirror it).
 |---|---|---|
 | Qt GUI translation pipeline | Dead: no translator in `main.cpp` at all; `SteamDeck_rEFInd_en_US.ts` an empty stub; no `.qm` built | Working: translator installed, `.qm` compiled at build time and embedded under `:/i18n` |
 | GUI `tr()` coverage | Good, with a few gaps | Complete (About box, "None" combo entry, `Platform` error strings) |
-| Shipped languages | English only | English + German (`de`), Spanish (`es`), French (`fr`), Japanese (`ja`), Korean (`ko`), Simplified Chinese (`zh_CN`), Ukrainian (`uk`), Arabic (`ar`), Persian/Farsi (`fa`) |
+| Shipped languages | English only | English + German (`de`), Spanish (`es`), French (`fr`), Japanese (`ja`), Korean (`ko`), Simplified Chinese (`zh_CN`), Ukrainian (`uk`), Arabic (`ar`), Persian/Farsi (`fa`), Hindi (`hi`), Portuguese (`pt`), Bengali (`bn`), Russian (`ru`), Turkish (`tr`), Vietnamese (`vi`), Urdu (`ur`), Indonesian (`id`), Italian (`it`) |
 | Desktop entry | English `Comment=` only | Localized `Comment[<lang>]=` |
 | Bash scripts (Deck-side) | English only | Unchanged — audited, recommendations below |
 | PowerShell scripts (`Windows/`, `Windows/GUI/`) | English only | Unchanged — audited, recommendations below |
@@ -70,7 +70,7 @@ sources mirror it).
 
 ## Shipped translations
 
-`GUI/src/SteamDeck_rEFInd_{ar,de,es,fa,fr,ja,ko,uk,zh_CN}.ts` cover all 89 messages.
+`GUI/src/SteamDeck_rEFInd_{ar,bn,de,es,fa,fr,hi,id,it,ja,ko,pt,ru,tr,uk,ur,vi,zh_CN}.ts` cover all 89 messages.
 `SteamDeck_rEFInd_en_US.ts` is the source-language reference and
 intentionally has empty translations (source text is used as-is). The
 language is picked from the system locale automatically — on a Deck this
@@ -79,7 +79,7 @@ language switcher (a possible future improvement — a combo writing a
 `Language` key to the INI and installing the translator before `MainWindow`
 construction).
 
-Arabic and Persian are right-to-left languages: their catalogs translate Qt's `QT_LAYOUT_DIRECTION` key to `RTL` (anchored in `main.cpp` so `lupdate` keeps the key), which makes Qt mirror the entire widget layout automatically. The rEFInd boot screen itself stays left-to-right, so strings that reference on-screen icon order ("leftmost icon") still mean the physical left.
+Arabic, Persian, and Urdu are right-to-left languages: their catalogs translate Qt's `QT_LAYOUT_DIRECTION` key to `RTL` (anchored in `main.cpp` so `lupdate` keeps the key), which makes Qt mirror the entire widget layout automatically. The rEFInd boot screen itself stays left-to-right, so strings that reference on-screen icon order ("leftmost icon") still mean the physical left.
 
 ### Adding a language (contributor guide)
 
