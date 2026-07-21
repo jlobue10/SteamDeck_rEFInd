@@ -12,7 +12,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
 
-set(TS_FILES SteamDeck_rEFInd_en_US.ts)
+# SteamDeck_rEFInd_en_US.ts is the source-language reference; the others carry
+# the actual translations. Refresh all of them from the sources with the
+# update_translations target (Qt 6) or lupdate directly — see I18N_AUDIT.md.
+set(TS_FILES
+    SteamDeck_rEFInd_en_US.ts
+    SteamDeck_rEFInd_de.ts
+    SteamDeck_rEFInd_es.ts
+    SteamDeck_rEFInd_fr.ts
+)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -44,7 +52,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 #                 ${CMAKE_CURRENT_SOURCE_DIR}/android)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 
-    qt_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+    # Compile the .ts files at build time and embed the .qm output under the
+    # ":/i18n" resource prefix (the default) that main.cpp loads from. The old
+    # qt_create_translation() call left QM_FILES dangling with no dependent
+    # target, so no .qm was ever built and the app always ran untranslated.
+    qt_add_translations(SteamDeck_rEFInd TS_FILES ${TS_FILES})
 else()
     if(ANDROID)
         add_library(SteamDeck_rEFInd SHARED
@@ -58,7 +70,14 @@ else()
         )
     endif()
 
-    qt5_create_translation(QM_FILES ${CMAKE_SOURCE_DIR} ${TS_FILES})
+    # Qt 5 has no qt_add_translations: compile the .qm files (lrelease only —
+    # qt5_create_translation would also rewrite the .ts files in the source
+    # tree on every build) into translations/ next to the binary, where
+    # main.cpp's filesystem fallback picks them up.
+    set_source_files_properties(${TS_FILES} PROPERTIES
+        OUTPUT_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/translations)
+    qt5_add_translation(QM_FILES ${TS_FILES})
+    add_custom_target(SteamDeck_rEFInd_translations ALL DEPENDS ${QM_FILES})
 endif()
 
 target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)

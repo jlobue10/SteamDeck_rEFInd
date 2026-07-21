@@ -21,7 +21,15 @@
 
 static const char APP_VERSION[] = "2.7.0";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
-static const QString NONE_OPTION = QStringLiteral("None");
+// The user-visible "empty slot" combo entry. A function, not a file-static
+// QString: statics are initialized before main() installs the translator, so
+// a static could never be translated. Settings store this by text like every
+// other combo entry; a saved value from another UI language simply fails the
+// findText lookup and the slot falls back to None/defaults.
+static QString noneOption()
+{
+    return MainWindow::tr("None");
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -138,7 +146,7 @@ void MainWindow::populateBootCombos()
         combo->clear();
         for (const BootEntry &e : options)
             combo->addItem(e.displayName, QVariant::fromValue(e));
-        combo->addItem(NONE_OPTION);
+        combo->addItem(noneOption());
         const int idx = combo->findText(previous);
         combo->setCurrentIndex(idx >= 0 ? idx : combo->count() - 1);
     }
@@ -192,7 +200,7 @@ void MainWindow::applyAutoSelection()
 
     const QList<QComboBox *> combos = bootCombos();
     for (int i = 0; i < combos.size(); ++i)
-        setComboText(combos.at(i), i < picks.size() ? picks.at(i) : NONE_OPTION);
+        setComboText(combos.at(i), i < picks.size() ? picks.at(i) : noneOption());
 
     if (!picks.isEmpty())
         setComboText(ui->Default_Boot_comboBox, picks.first());
@@ -207,11 +215,11 @@ void MainWindow::compactBootSelections()
     QStringList chosen;
     for (QComboBox *combo : combos) {
         const QString text = combo->currentText();
-        if (text != NONE_OPTION && !text.isEmpty())
+        if (text != noneOption() && !text.isEmpty())
             chosen << text;
     }
     for (int i = 0; i < combos.size(); ++i)
-        setComboText(combos.at(i), i < chosen.size() ? chosen.at(i) : NONE_OPTION);
+        setComboText(combos.at(i), i < chosen.size() ? chosen.at(i) : noneOption());
 }
 
 void MainWindow::refreshDefaultBootCombo()
@@ -223,7 +231,7 @@ void MainWindow::refreshDefaultBootCombo()
     const QList<QComboBox *> combos = bootCombos();
     for (QComboBox *combo : combos) {
         const QString text = combo->currentText();
-        if (text != NONE_OPTION && !text.isEmpty()
+        if (text != noneOption() && !text.isEmpty()
             && ui->Default_Boot_comboBox->findText(text) < 0)
             ui->Default_Boot_comboBox->addItem(text);
     }
@@ -380,7 +388,7 @@ void MainWindow::on_Create_Config_clicked()
     const QList<QComboBox *> combos = bootCombos();
     for (int i = 0; i < combos.size(); ++i) {
         QComboBox *combo = combos.at(i);
-        if (combo->currentText() == NONE_OPTION || combo->currentText().isEmpty())
+        if (combo->currentText() == noneOption() || combo->currentText().isEmpty())
             continue;
         const QVariant data = combo->currentData();
         if (!data.canConvert<BootEntry>())
@@ -620,14 +628,14 @@ void MainWindow::on_About_pushButton_clicked()
     QPushButton *updateButton = new QPushButton(tr("Check For Update"), &aboutBox);
     connect(updateButton, &QPushButton::clicked, this, &MainWindow::on_updateButton_Clicked);
     aboutBox.setTextFormat(Qt::RichText);
-    aboutBox.setText(QStringLiteral("<p align='center'>"
-                                    "<a href='https://github.com/jlobue10/SteamDeck_rEFInd'>"
-                                    "rEFInd Customization GUI v%1</a><br><br>"
-                                    "Original GUI Creator: "
-                                    "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
-                                    "Special Thanks to Deck Wizard for testing and QA"
-                                    "<br><br><a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'>"
-                                    "Deck Wizard Dual Boot Tutorial</a><br></p>")
+    aboutBox.setText(tr("<p align='center'>"
+                        "<a href='https://github.com/jlobue10/SteamDeck_rEFInd'>"
+                        "rEFInd Customization GUI v%1</a><br><br>"
+                        "Original GUI Creator: "
+                        "<a href='https://github.com/jlobue10'>jlobue10</a><br><br>"
+                        "Special Thanks to Deck Wizard for testing and QA"
+                        "<br><br><a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'>"
+                        "Deck Wizard Dual Boot Tutorial</a><br></p>")
                          .arg(QLatin1String(APP_VERSION)));
     aboutBox.setStandardButtons(QMessageBox::Ok);
     aboutBox.addButton(updateButton, QMessageBox::ActionRole);

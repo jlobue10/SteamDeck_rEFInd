@@ -64,6 +64,10 @@ As of 2.0.0 the GUI was refactored to match the sibling `rEFInd_GUI` repo (membe
 - The `Firmware_bootnum` option (SteamOS) still needs an existing SteamOS EFI entry at config-generation time (queried via `efibootmgr`); it keeps the SteamOS icon visible during the rEFInd→SteamOS handoff. Linux only.
 - Keep the split: GUI builds config + orchestrates; the bash/PowerShell scripts do anything needing elevation.
 
+## Internationalization (GUI)
+
+The GUI is translated via Qt Linguist files: `GUI/src/SteamDeck_rEFInd_{en_US,de,es,fr}.ts`, listed in `TS_FILES` in `CMakeLists.txt`. On Qt 6, `qt_add_translations()` compiles them at build time and embeds the `.qm` under `:/i18n`, where `main.cpp` loads them with the locale-fallback `QTranslator::load(QLocale(), ...)` overload (plus a `qtbase` translator for Qt's own dialog strings); on Qt 5 the `.qm` are only generated into `translations/` next to the binary. Rules: wrap every new user-facing GUI string in `tr()` (in `Platform`, use `QCoreApplication::translate("Platform", ...)`); after changing strings, refresh **all** `.ts` files with `lupdate` (or the `update_translations` target) so translators see the new entries — unfinished entries just fall back to English. Do NOT translate `BootEntry` display/menu names ("Windows", "SteamOS", "Ventoy", ...): they are matching identifiers persisted by text and produced by the parity-locked `osdetect_*` files. `.ui` strings that are overwritten at runtime are marked `notr="true"` — keep doing that for new ones. The en_US file is the source-language reference and stays untranslated. The bash/PowerShell scripts are deliberately English-only for now (tamper-hash + cross-repo parity constraints) — see `I18N_AUDIT.md` before localizing them.
+
 ## Working with `refind.conf`
 
 - Boot stanza order in the file is the left-to-right icon order on screen — this is deliberate (see repo layout note above); don't "clean up" the file into auto-detect mode.

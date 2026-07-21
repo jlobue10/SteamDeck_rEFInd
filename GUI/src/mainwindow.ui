@@ -602,7 +602,7 @@
         <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
        <property name="placeholderText">
-        <string>5</string>
+        <string notr="true">5</string>
        </property>
       </widget>
      </item>
@@ -703,12 +703,12 @@
          </property>
          <item>
           <property name="text">
-           <string>Pacman</string>
+           <string notr="true">Pacman</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Sourceforge</string>
+           <string notr="true">Sourceforge</string>
           </property>
          </item>
         </widget>
@@ -793,7 +793,7 @@
         <string>rEFInd Background selection</string>
        </property>
        <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/background.png</string>
+        <string notr="true">~/.local/SteamDeck_rEFInd/GUI/background.png</string>
        </property>
       </widget>
      </item>
@@ -809,7 +809,7 @@
         <string>Icon 1 PNG (leftmost icon)</string>
        </property>
        <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon1.png</string>
+        <string notr="true">~/.local/SteamDeck_rEFInd/GUI/os_icon1.png</string>
        </property>
       </widget>
      </item>
@@ -822,7 +822,7 @@
         </size>
        </property>
        <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon2.png</string>
+        <string notr="true">~/.local/SteamDeck_rEFInd/GUI/os_icon2.png</string>
        </property>
       </widget>
      </item>
@@ -835,7 +835,7 @@
         </size>
        </property>
        <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon3.png</string>
+        <string notr="true">~/.local/SteamDeck_rEFInd/GUI/os_icon3.png</string>
        </property>
       </widget>
      </item>
@@ -848,7 +848,7 @@
         </size>
        </property>
        <property name="placeholderText">
-        <string>~/.local/SteamDeck_rEFInd/GUI/os_icon4.png</string>
+        <string notr="true">~/.local/SteamDeck_rEFInd/GUI/os_icon4.png</string>
        </property>
       </widget>
      </item>

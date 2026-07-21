@@ -1,6 +1,9 @@
 [Desktop Entry]
 Categories=System;
 Comment=SteamDeck rEFInd Customization GUI
+Comment[de]=GUI zur rEFInd-Anpassung für das Steam Deck
+Comment[es]=GUI de personalización de rEFInd para Steam Deck
+Comment[fr]=GUI de personnalisation de rEFInd pour Steam Deck
 Exec=/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd
 GenericName=SteamDeck_rEFInd
 Name=SteamDeck_rEFInd
