@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Icon_Size_comboBox->addItem(tr("Medium (160)"), 160);
     ui->Icon_Size_comboBox->addItem(tr("Large (192)"), 192);
     ui->Icon_Size_comboBox->addItem(tr("Extra Large (256)"), 256);
+    ui->Icon_Size_comboBox->addItem(tr("XXL (512)"), 512);
     ui->Icon_Size_comboBox->setCurrentIndex(ui->Icon_Size_comboBox->findData(128));
 
     homePath = QDir::homePath();
