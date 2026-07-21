@@ -19,6 +19,7 @@ Comment[id]=GUI kustomisasi rEFInd untuk Steam Deck
 Comment[hi]=Steam Deck के लिए rEFInd अनुकूलन GUI
 Comment[bn]=Steam Deck-এর জন্য rEFInd কাস্টমাইজেশন GUI
 Comment[ur]=Steam Deck کے لیے rEFInd تخصیص GUI
+Comment[scn]=GUI di pirsunalizzazzioni di rEFInd pi Steam Deck
 Exec=/home/deck/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd
 GenericName=SteamDeck_rEFInd
 Name=SteamDeck_rEFInd

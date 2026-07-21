@@ -30,6 +30,7 @@ set(TS_FILES
     SteamDeck_rEFInd_ko.ts
     SteamDeck_rEFInd_pt.ts
     SteamDeck_rEFInd_ru.ts
+    SteamDeck_rEFInd_scn.ts
     SteamDeck_rEFInd_tr.ts
     SteamDeck_rEFInd_uk.ts
     SteamDeck_rEFInd_ur.ts
