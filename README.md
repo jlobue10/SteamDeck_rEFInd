@@ -31,7 +31,7 @@ Additional buttons and options:
 - **Use Firmware_bootnum** — SteamOS-only option that keeps the SteamOS icon visible during the rEFInd → SteamOS handoff (otherwise the screen is blank for a moment). It requires the SteamOS EFI entry to exist when the config is created.
 - **Ventoy** boot option — boots whichever micro SD card or USB drive it finds first with the `VTOYEFI` partition label (not both concurrently).
 
-Custom images: backgrounds should be 1,280x800 PNG files and icons 128x128 PNGs. PNG is required because other formats are hit and miss with rEFInd.
+Custom images: backgrounds should be 1,280x800 PNG files and icons square PNGs — ideally matching the **Boot Icon Size** you pick in the GUI (128x128 for the default; 256 and 512 versions of the Steam and Windows icons are included for the larger sizes). Other sizes still work, just scaled. PNG is required because other formats are hit and miss with rEFInd.
 
 ### Windows from micro SD card
 
@@ -51,7 +51,7 @@ The GUI also builds and runs on Windows (Qt6), so you can configure and install 
 
 The script method assumes valid EFI boot files exist at `/esp/efi/steamos/steamcl.efi` (SteamOS) and `/esp/efi/Microsoft/Boot/bootmgfw.efi` (Windows) — which is the case after a typical dual boot setup. You can verify by holding Volume Up + Power, choosing "Boot from file", and selecting each manually; if either doesn't boot correctly, don't proceed unless you know how to point the `refind.conf` boot stanzas at your correct EFI files.
 
-If you want custom icons (128x128) or a custom background (1,280x800 PNG), swap the files and update `refind.conf` to match **before running the installation script**.
+If you want custom icons (square PNGs, 128x128 at the default icon size) or a custom background (1,280x800 PNG), swap the files and update `refind.conf` to match **before running the installation script**.
 
 From a SteamOS command line in desktop mode:
 
