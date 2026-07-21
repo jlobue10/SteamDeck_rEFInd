@@ -227,6 +227,12 @@ try {
     $driverUrl = 'https://github.com/jlobue10/UsbXbox360Dxe/releases/latest/download/UsbXbox360Dxe.efi'
     try {
         Invoke-WebRequest -Uri $driverUrl -OutFile $driverDest -MaximumRedirection 10
+        $sig = [System.IO.File]::ReadAllBytes($driverDest)
+        if ($sig.Length -lt 2 -or $sig[0] -ne 0x4D -or $sig[1] -ne 0x5A) {
+            # A truncated or HTML error-page download must not reach the ESP.
+            Remove-Item -Force $driverDest -ErrorAction SilentlyContinue
+            throw 'downloaded file is not a PE/EFI binary'
+        }
     } catch {
         # Non-fatal, but remember why: the summary must not report plain
         # success when the driver never made it to the ESP (issue #23 -- the
@@ -247,6 +253,12 @@ try {
         $touchUrl = 'https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi'
         try {
             Invoke-WebRequest -Uri $touchUrl -OutFile $touchDest -MaximumRedirection 10
+        $sig = [System.IO.File]::ReadAllBytes($touchDest)
+        if ($sig.Length -lt 2 -or $sig[0] -ne 0x4D -or $sig[1] -ne 0x5A) {
+            # A truncated or HTML error-page download must not reach the ESP.
+            Remove-Item -Force $touchDest -ErrorAction SilentlyContinue
+            throw 'downloaded file is not a PE/EFI binary'
+        }
         } catch {
             $touchError = "$($_.Exception.Message)"
             Write-Warning "Failed to download TouchI2cDxe.efi; skipping touchscreen driver. $_"

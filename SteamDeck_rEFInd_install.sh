@@ -40,8 +40,11 @@ XBOX360_DRV_URL="https://github.com/jlobue10/UsbXbox360Dxe/releases/latest/downl
 XBOX360_DRV_TMP="$(mktemp)"
 echo "Downloading UsbXbox360Dxe.efi controller driver..."
 sudo mkdir -p /esp/efi/refind/drivers_x64
-if curl -fsSL "$XBOX360_DRV_URL" -o "$XBOX360_DRV_TMP" 2>/dev/null \
-	|| wget -q -O "$XBOX360_DRV_TMP" "$XBOX360_DRV_URL"; then
+# A truncated or HTML error-page download must not reach the ESP:
+# require a non-empty file with the PE "MZ" signature before copying.
+if { curl -fsSL "$XBOX360_DRV_URL" -o "$XBOX360_DRV_TMP" 2>/dev/null \
+	|| wget -q -O "$XBOX360_DRV_TMP" "$XBOX360_DRV_URL"; } \
+	&& [ -s "$XBOX360_DRV_TMP" ] && [ "$(head -c2 "$XBOX360_DRV_TMP")" = "MZ" ]; then
 	sudo cp -f "$XBOX360_DRV_TMP" /esp/efi/refind/drivers_x64/UsbXbox360Dxe.efi
 else
 	echo "Warning: failed to download UsbXbox360Dxe.efi; skipping controller driver." >&2
@@ -59,8 +62,11 @@ if [ "$DECK_PRODUCT" = "Galileo" ] || [ "$DECK_PRODUCT" = "Jupiter" ]; then
 	TOUCH_DRV_URL="https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi"
 	TOUCH_DRV_TMP="$(mktemp)"
 	echo "Downloading TouchI2cDxe.efi touchscreen driver..."
-	if curl -fsSL "$TOUCH_DRV_URL" -o "$TOUCH_DRV_TMP" 2>/dev/null \
-		|| wget -q -O "$TOUCH_DRV_TMP" "$TOUCH_DRV_URL"; then
+	# A truncated or HTML error-page download must not reach the ESP:
+	# require a non-empty file with the PE "MZ" signature before copying.
+	if { curl -fsSL "$TOUCH_DRV_URL" -o "$TOUCH_DRV_TMP" 2>/dev/null \
+		|| wget -q -O "$TOUCH_DRV_TMP" "$TOUCH_DRV_URL"; } \
+		&& [ -s "$TOUCH_DRV_TMP" ] && [ "$(head -c2 "$TOUCH_DRV_TMP")" = "MZ" ]; then
 		sudo cp -f "$TOUCH_DRV_TMP" /esp/efi/refind/drivers_x64/TouchI2cDxe.efi
 	else
 		echo "Warning: failed to download TouchI2cDxe.efi; skipping touchscreen driver." >&2
@@ -69,6 +75,14 @@ if [ "$DECK_PRODUCT" = "Galileo" ] || [ "$DECK_PRODUCT" = "Jupiter" ]; then
 fi
 
 echo "Updating EFI boot entries..."
+# Snapshot the current NVRAM boot entries before changing them: a copy on
+# disk makes manual recovery trivial if anything goes sideways.
+NVRAM_BK_DIR="$HOME/.local/SteamDeck_rEFInd/nvram-backups"
+if mkdir -p "$NVRAM_BK_DIR" 2>/dev/null; then
+	efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null
+	# Keep the ten most recent snapshots.
+	ls -1t "$NVRAM_BK_DIR"/efibootmgr-*.txt 2>/dev/null | tail -n +11 | xargs -r rm -f
+fi
 # Resolve the ESP's disk and partition number from /esp instead of hardcoding
 # /dev/nvme0n1: 64GB Decks boot from eMMC (/dev/mmcblk0), where the hardcoded
 # path created broken entries. `lsblk -no PKNAME` has been observed returning

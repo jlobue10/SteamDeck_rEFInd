@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="444" />
-        <location filename="mainwindow.cpp" line="703" />
+        <location filename="mainwindow.cpp" line="981" />
         <source>Open Folder</source>
         <translation>打开文件夹</translation>
     </message>
@@ -190,174 +190,204 @@
         <translation>深度扫描</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="702" />
+        <location filename="mainwindow.ui" line="690" />
+        <source>Language</source>
+        <translation>语言</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="703" />
+        <source>User interface language</source>
+        <translation>界面语言</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="735" />
+        <source>Preview the rEFInd boot screen and the generated refind.conf</source>
+        <translation>预览 rEFInd 启动界面和生成的 refind.conf</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="738" />
+        <source>Preview</source>
+        <translation>预览</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="761" />
         <source>Installation source and method</source>
         <translation>安装来源与方式</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="731" />
+        <location filename="mainwindow.ui" line="790" />
         <source>Install rEFInd using selected method</source>
         <translation>使用所选方式安装 rEFInd</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="734" />
-        <location filename="mainwindow.cpp" line="310" />
+        <location filename="mainwindow.ui" line="793" />
+        <location filename="mainwindow.cpp" line="477" />
         <source>Install rEFInd</source>
         <translation>安装 rEFInd</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="753" />
+        <location filename="mainwindow.ui" line="812" />
         <source>Create config and copy PNG files (ready for install step)</source>
         <translation>创建配置并复制 PNG 文件（为安装步骤做准备）</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="756" />
-        <location filename="mainwindow.cpp" line="354" />
+        <location filename="mainwindow.ui" line="815" />
+        <location filename="mainwindow.cpp" line="591" />
         <source>Create Config</source>
         <translation>创建配置</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="775" />
+        <location filename="mainwindow.ui" line="834" />
         <source>Install config, icons and background</source>
         <translation>安装配置、图标和背景</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="778" />
-        <location filename="mainwindow.cpp" line="442" />
-        <location filename="mainwindow.cpp" line="459" />
-        <location filename="mainwindow.cpp" line="465" />
-        <location filename="mainwindow.cpp" line="470" />
+        <location filename="mainwindow.ui" line="837" />
+        <location filename="mainwindow.cpp" line="682" />
+        <location filename="mainwindow.cpp" line="700" />
+        <location filename="mainwindow.cpp" line="706" />
+        <location filename="mainwindow.cpp" line="711" />
         <source>Install Config</source>
         <translation>安装配置</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="793" />
+        <location filename="mainwindow.ui" line="852" />
         <source>rEFInd Background selection</source>
         <translation>rEFInd 背景选择</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="809" />
+        <location filename="mainwindow.ui" line="868" />
         <source>Icon 1 PNG (leftmost icon)</source>
         <translation>图标 1 PNG（最左侧图标）</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="864" />
+        <location filename="mainwindow.ui" line="923" />
         <source>Boot Option #4</source>
         <translation>启动选项 #4</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="877" />
+        <location filename="mainwindow.ui" line="936" />
         <source>Boot Option #3</source>
         <translation>启动选项 #3</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="890" />
+        <location filename="mainwindow.ui" line="949" />
         <source>Boot Option #2</source>
         <translation>启动选项 #2</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="903" />
+        <location filename="mainwindow.ui" line="962" />
         <source>Boot Option #1</source>
         <translation>启动选项 #1</translation>
     </message>
     <message>
-        <location filename="mainwindow.ui" line="916" />
+        <location filename="mainwindow.ui" line="975" />
         <source>Background</source>
         <translation>背景</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="31" />
+        <location filename="mainwindow.cpp" line="41" />
         <source>None</source>
         <translation>无</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="44" />
+        <location filename="mainwindow.cpp" line="111" />
         <source>Small (96)</source>
         <translation>小 (96)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="45" />
+        <location filename="mainwindow.cpp" line="112" />
         <source>Default (128)</source>
         <translation>默认 (128)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="46" />
+        <location filename="mainwindow.cpp" line="113" />
         <source>Medium (160)</source>
         <translation>中 (160)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="47" />
+        <location filename="mainwindow.cpp" line="114" />
         <source>Large (192)</source>
         <translation>大 (192)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="48" />
+        <location filename="mainwindow.cpp" line="115" />
         <source>Extra Large (256)</source>
         <translation>特大 (256)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="49" />
+        <location filename="mainwindow.cpp" line="116" />
         <source>XXL (512)</source>
         <translation>XXL (512)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="74" />
+        <location filename="mainwindow.cpp" line="118" />
         <source>Requires efibootmgr (Linux only)</source>
         <translation>需要 efibootmgr（仅限 Linux）</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="80" />
-        <location filename="mainwindow.cpp" line="81" />
+        <location filename="mainwindow.cpp" line="120" />
+        <location filename="mainwindow.cpp" line="121" />
         <source>systemd service (Linux only)</source>
         <translation>systemd 服务（仅限 Linux）</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="87" />
+        <location filename="mainwindow.cpp" line="126" />
         <source>Not needed: no unreadable EFI System Partition was found</source>
         <translation>无需使用：未发现不可读取的 EFI 系统分区</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="268" />
+        <location filename="mainwindow.cpp" line="135" />
+        <source>System default</source>
+        <translation>系统默认</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="234" />
+        <source>Scanning…</source>
+        <translation>正在扫描…</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="435" />
         <source>Image (*.png)</source>
         <translation>图像 (*.png)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="284" />
+        <location filename="mainwindow.cpp" line="451" />
         <source>Select Background PNG</source>
         <translation>选择背景 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="289" />
+        <location filename="mainwindow.cpp" line="456" />
         <source>Select OS Icon 1 PNG</source>
         <translation>选择系统图标 1 的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="294" />
+        <location filename="mainwindow.cpp" line="461" />
         <source>Select OS Icon 2 PNG</source>
         <translation>选择系统图标 2 的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="299" />
+        <location filename="mainwindow.cpp" line="466" />
         <source>Select OS Icon 3 PNG</source>
         <translation>选择系统图标 3 的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="304" />
+        <location filename="mainwindow.cpp" line="471" />
         <source>Select OS Icon 4 PNG</source>
         <translation>选择系统图标 4 的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="311" />
+        <location filename="mainwindow.cpp" line="478" />
         <source>Failed to launch the installation script.</source>
         <translation>无法启动安装脚本。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="355" />
+        <location filename="mainwindow.cpp" line="592" />
         <source>Could not write %1</source>
         <translation>无法写入 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="443" />
+        <location filename="mainwindow.cpp" line="683" />
         <source>The config-install script was NOT run:
 
 %1
@@ -374,18 +404,18 @@ Reinstall the GUI to restore the original script, then try again.</source>
 请重新安装 GUI 以恢复原始脚本，然后重试。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="460" />
-        <location filename="mainwindow.cpp" line="472" />
+        <location filename="mainwindow.cpp" line="701" />
+        <location filename="mainwindow.cpp" line="713" />
         <source>Installing the config failed (code %1).</source>
         <translation>配置安装失败（代码 %1）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="467" />
+        <location filename="mainwindow.cpp" line="708" />
         <source>The config was installed successfully.</source>
         <translation>配置安装成功。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="468" />
+        <location filename="mainwindow.cpp" line="709" />
         <source>The config was installed successfully.
 
 %1</source>
@@ -394,7 +424,7 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="473" />
+        <location filename="mainwindow.cpp" line="714" />
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -403,22 +433,22 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="487" />
+        <location filename="mainwindow.cpp" line="728" />
         <source>Copy PNG</source>
         <translation>复制 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="488" />
+        <location filename="mainwindow.cpp" line="729" />
         <source>Could not copy %1 to %2</source>
         <translation>无法将 %1 复制到 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="513" />
+        <location filename="mainwindow.cpp" line="754" />
         <source>Invalid PNG</source>
         <translation>无效的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="514" />
+        <location filename="mainwindow.cpp" line="755" />
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -427,56 +457,56 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 背景和系统图标必须是真正的 PNG 图像（而不仅仅是扩展名为 .png 的文件）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="628" />
+        <location filename="mainwindow.cpp" line="884" />
         <source>Check For Update</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="631" />
+        <location filename="mainwindow.cpp" line="887" />
         <source>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;GUI 原作者： &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;特别感谢 Deck Wizard 的测试与质量保证&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Deck Wizard 双系统教程&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="658" />
+        <location filename="mainwindow.cpp" line="936" />
         <source>&lt;p align='center'&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;检查更新失败。请检查网络连接后重试。&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="661" />
+        <location filename="mainwindow.cpp" line="939" />
         <source>&lt;p align='center'&gt;An update is available &lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;有可用更新，请&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;点击此处&lt;/a&gt;获取&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="665" />
+        <location filename="mainwindow.cpp" line="943" />
         <source>&lt;p align='center'&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align='center'&gt;未发现更新。您使用的已是最新版本。&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="675" />
-        <location filename="mainwindow.cpp" line="682" />
+        <location filename="mainwindow.cpp" line="953" />
+        <location filename="mainwindow.cpp" line="960" />
         <source>systemd service</source>
         <translation>systemd 服务</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="676" />
-        <location filename="mainwindow.cpp" line="683" />
+        <location filename="mainwindow.cpp" line="954" />
+        <location filename="mainwindow.cpp" line="961" />
         <source>Failed to launch the service toggle.</source>
         <translation>无法启动服务切换。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="689" />
-        <location filename="mainwindow.cpp" line="696" />
+        <location filename="mainwindow.cpp" line="967" />
+        <location filename="mainwindow.cpp" line="974" />
         <source>Background Randomizer</source>
         <translation>背景随机更换</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="690" />
-        <location filename="mainwindow.cpp" line="697" />
+        <location filename="mainwindow.cpp" line="968" />
+        <location filename="mainwindow.cpp" line="975" />
         <source>Failed to launch the randomizer setup.</source>
         <translation>无法启动背景随机更换设置。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="704" />
+        <location filename="mainwindow.cpp" line="982" />
         <source>Failed to open %1 in the file manager.</source>
         <translation>无法在文件管理器中打开 %1。</translation>
     </message>
@@ -495,9 +525,32 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
     </message>
 </context>
 <context>
+    <name>PreviewDialog</name>
+    <message>
+        <location filename="previewdialog.cpp" line="34" />
+        <source>No boot options selected.</source>
+        <translation>未选择任何启动选项。</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="89" />
+        <source>Preview</source>
+        <translation>预览</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="101" />
+        <source>Approximate preview — rEFInd's real rendering also depends on the firmware resolution and theme.</source>
+        <translation>近似预览 — rEFInd 的实际显示还取决于固件分辨率和主题。</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="107" />
+        <source>Boot screen</source>
+        <translation>启动界面</translation>
+    </message>
+</context>
+<context>
     <name>QGuiApplication</name>
     <message>
-        <location filename="main.cpp" line="46" />
+        <location filename="main.cpp" line="22" />
         <source>QT_LAYOUT_DIRECTION</source>
         <translation>LTR</translation>
     </message>

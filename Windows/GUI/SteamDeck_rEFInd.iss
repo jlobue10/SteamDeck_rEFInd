@@ -30,6 +30,21 @@ ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#AppExe}
 
+[Languages]
+; Only languages whose .isl ships with the Inno Setup compiler are listed;
+; the app itself covers more (see I18N_AUDIT.md).
+Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "german"; MessagesFile: "compiler:Languages\German.isl"
+Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "french"; MessagesFile: "compiler:Languages\French.isl"
+Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
+Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
+Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
+Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
+Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
+
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"
 

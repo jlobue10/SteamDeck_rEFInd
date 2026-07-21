@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets LinguistTools)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets LinguistTools)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network LinguistTools)
 
 # SteamDeck_rEFInd_en_US.ts is the source-language reference; the others carry
 # the actual translations. Refresh all of them from the sources with the
@@ -47,6 +47,10 @@ set(PROJECT_SOURCES
         osdetect_common.cpp
         platform.cpp
         platform.h
+        previewdialog.cpp
+        previewdialog.h
+        uitranslation.cpp
+        uitranslation.h
         resources.qrc
         ${TS_FILES}
 )
@@ -73,6 +77,26 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     # qt_create_translation() call left QM_FILES dangling with no dependent
     # target, so no .qm was ever built and the app always ran untranslated.
     qt_add_translations(SteamDeck_rEFInd TS_FILES ${TS_FILES})
+
+    # Embed Qt's own qtbase catalogs for the shipped languages so standard
+    # dialog buttons are translated even where no qt6-translations package
+    # exists (SteamOS); UiTranslation loads ":/i18n_qtbase" as the last
+    # fallback after the Qt install and windeployqt's translations/ dir.
+    set(_qtbase_dir "${QT6_INSTALL_PREFIX}/${QT6_INSTALL_TRANSLATIONS}")
+    set(_qtbase_entries "")
+    foreach(_lang ar bn de es fa fr hi id it ja ko pt ru tr uk ur vi zh_CN)
+        if(EXISTS "${_qtbase_dir}/qtbase_${_lang}.qm")
+            string(APPEND _qtbase_entries "  <file alias=\"qtbase_${_lang}.qm\">${_qtbase_dir}/qtbase_${_lang}.qm</file>\n")
+        endif()
+    endforeach()
+    if(_qtbase_entries)
+        set(_qtbase_qrc "${CMAKE_CURRENT_BINARY_DIR}/qtbase_translations.qrc")
+        file(WRITE "${_qtbase_qrc}"
+             "<RCC>\n <qresource prefix=\"/i18n_qtbase\">\n${_qtbase_entries} </qresource>\n</RCC>\n")
+        target_sources(SteamDeck_rEFInd PRIVATE "${_qtbase_qrc}")
+    else()
+        message(WARNING "No qtbase_*.qm found under ${_qtbase_dir} - standard dialog buttons will rely on system Qt translations")
+    endif()
 else()
     if(ANDROID)
         add_library(SteamDeck_rEFInd SHARED
@@ -96,7 +120,7 @@ else()
     add_custom_target(SteamDeck_rEFInd_translations ALL DEPENDS ${QM_FILES})
 endif()
 
-target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 if(MSVC)
     # MinGW gets the manifest via rEFInd_GUI.rc; MSVC generates its own.
@@ -116,6 +140,19 @@ install(TARGETS SteamDeck_rEFInd
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+
+# Optional developer unit tests (Linux only; OFF so packaging builds are
+# unaffected): cmake -DBUILD_GUI_TESTS=ON, then ctest --test-dir <builddir>.
+option(BUILD_GUI_TESTS "Build the developer unit tests" OFF)
+if(BUILD_GUI_TESTS AND NOT WIN32)
+    enable_testing()
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
+    add_executable(tst_osdetect tests/tst_osdetect.cpp osdetect_common.cpp osdetect_linux.cpp platform.cpp)
+    target_include_directories(tst_osdetect PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(tst_osdetect PRIVATE
+        Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets)
+    add_test(NAME osdetect COMMAND tst_osdetect)
+endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt_finalize_executable(SteamDeck_rEFInd)

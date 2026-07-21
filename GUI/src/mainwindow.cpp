@@ -2,19 +2,29 @@
 #include "ui_mainwindow.h"
 #include "osdetect.h"
 #include "platform.h"
+#include "previewdialog.h"
+#include "uitranslation.h"
 
+#include <QDateTime>
 #include <QDesktopServices>
 #include <QDir>
+#include <QEvent>
 #include <QFile>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QIntValidator>
+#include <QLocale>
 #include <QMessageBox>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
+#include <QPointer>
 #include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
 #include <QSettings>
 #include <QTextStream>
+#include <QThread>
 #include <QUrl>
 #include <QVariant>
 #include <QVersionNumber>
@@ -40,13 +50,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     // OS icon size on the boot screen (rEFInd's big_icon_size). 128 is both
     // rEFInd's default and the shipped PNGs' native size, so it emits no
-    // directive; larger sizes upscale the icons.
-    ui->Icon_Size_comboBox->addItem(tr("Small (96)"), 96);
-    ui->Icon_Size_comboBox->addItem(tr("Default (128)"), 128);
-    ui->Icon_Size_comboBox->addItem(tr("Medium (160)"), 160);
-    ui->Icon_Size_comboBox->addItem(tr("Large (192)"), 192);
-    ui->Icon_Size_comboBox->addItem(tr("Extra Large (256)"), 256);
-    ui->Icon_Size_comboBox->addItem(tr("XXL (512)"), 512);
+    // directive; larger sizes upscale the icons. Item texts are (re)applied
+    // in applyDynamicTexts() so a runtime language switch refreshes them.
+    ui->Icon_Size_comboBox->addItem(QString(), 96);
+    ui->Icon_Size_comboBox->addItem(QString(), 128);
+    ui->Icon_Size_comboBox->addItem(QString(), 160);
+    ui->Icon_Size_comboBox->addItem(QString(), 192);
+    ui->Icon_Size_comboBox->addItem(QString(), 256);
+    ui->Icon_Size_comboBox->addItem(QString(), 512);
     ui->Icon_Size_comboBox->setCurrentIndex(ui->Icon_Size_comboBox->findData(128));
 
     homePath = QDir::homePath();
@@ -69,25 +80,17 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Boot_Option_03_Icon_lineEdit->setPlaceholderText(pathHint(QStringLiteral("os_icon3.png")));
     ui->Boot_Option_04_Icon_lineEdit->setPlaceholderText(pathHint(QStringLiteral("os_icon4.png")));
 
-    if (!Platform::firmwareBootnumSupported()) {
+    if (!Platform::firmwareBootnumSupported())
         ui->Firmware_bootnum_CheckBox->setEnabled(false);
-        ui->Firmware_bootnum_CheckBox->setToolTip(tr("Requires efibootmgr (Linux only)"));
-    }
     if (!Platform::systemdFeaturesAvailable()) {
         // The bootnext-refind.service toggles are systemd-only.
         ui->Enable_sysd_pushButton->setEnabled(false);
         ui->Disable_sysd_pushButton->setEnabled(false);
-        ui->Enable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
-        ui->Disable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
-    }
-    if (!Platform::espDeepScanUseful()) {
-        // Every ESP is readable already (or this is the elevated Windows
-        // build), so a privileged scan would find nothing extra.
-        ui->Deep_Scan_pushButton->setEnabled(false);
-        ui->Deep_Scan_pushButton->setToolTip(tr("Not needed: no unreadable EFI System Partition was found"));
     }
     ui->Install_Source_comboBox->clear();
     ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
+    applyDynamicTexts();
+    populateLanguageCombo();
 
     const QList<QComboBox *> combos = bootCombos();
     for (QComboBox *combo : combos) {
@@ -95,14 +98,151 @@ MainWindow::MainWindow(QWidget *parent)
                 this, [this](int) { refreshDefaultBootCombo(); });
     }
 
-    detected = detector.detect();
-    readSettings();
+    // Detection shells out (lsblk / PowerShell) and can take seconds; run it
+    // off the GUI thread so the window appears immediately. Settings load
+    // once the combos have real contents to select from.
+    startDetection(false);
+}
+
+// Texts set from code rather than the .ui, re-applied after a runtime
+// language switch (retranslateUi only covers .ui strings).
+void MainWindow::applyDynamicTexts()
+{
+    ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(96), tr("Small (96)"));
+    ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(128), tr("Default (128)"));
+    ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(160), tr("Medium (160)"));
+    ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(192), tr("Large (192)"));
+    ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(256), tr("Extra Large (256)"));
+    ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(512), tr("XXL (512)"));
+    if (!Platform::firmwareBootnumSupported())
+        ui->Firmware_bootnum_CheckBox->setToolTip(tr("Requires efibootmgr (Linux only)"));
+    if (!Platform::systemdFeaturesAvailable()) {
+        ui->Enable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
+        ui->Disable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
+    }
+    if (!Platform::espDeepScanUseful()) {
+        // Every ESP is readable already (or this is the elevated Windows
+        // build), so a privileged scan would find nothing extra.
+        ui->Deep_Scan_pushButton->setToolTip(tr("Not needed: no unreadable EFI System Partition was found"));
+    }
+}
+
+void MainWindow::populateLanguageCombo()
+{
+    const bool wasPopulating = populating;
+    populating = true;
+    ui->Language_comboBox->clear();
+    ui->Language_comboBox->addItem(tr("System default"), QString());
+    const QStringList codes = UiTranslation::availableLanguages();
+    for (const QString &code : codes) {
+        QString name = code == QLatin1String("en_US")
+                           ? QStringLiteral("English")
+                           : QLocale(code).nativeLanguageName();
+        if (name.isEmpty())
+            name = code; // this Qt predates the code (e.g. Sicilian before 6.7)
+        else
+            name[0] = name.at(0).toUpper();
+        ui->Language_comboBox->addItem(name, code);
+    }
+    const int idx = ui->Language_comboBox->findData(UiTranslation::saved());
+    ui->Language_comboBox->setCurrentIndex(idx >= 0 ? idx : 0);
+    populating = wasPopulating;
+}
+
+void MainWindow::on_Language_comboBox_currentIndexChanged(int index)
+{
+    if (populating || index < 0)
+        return;
+    const QString code = ui->Language_comboBox->itemData(index).toString();
+    UiTranslation::save(code);
+    // Replacing the translators makes Qt broadcast LanguageChange, which
+    // changeEvent() below turns into a full retranslate (and, for RTL
+    // languages, a mirrored layout).
+    UiTranslation::apply(code);
+}
+
+void MainWindow::changeEvent(QEvent *event)
+{
+    if (event->type() == QEvent::LanguageChange) {
+        ui->retranslateUi(this);
+        applyDynamicTexts();
+        populateLanguageCombo();
+        // Refresh the translated "None" entries; selections are preserved by
+        // key/text where they still match, and fall back to None otherwise.
+        populateBootCombos();
+    }
+    QMainWindow::changeEvent(event);
 }
 
 MainWindow::~MainWindow()
 {
+    // A background detection uses this object's detector member; let it
+    // drain before teardown (its queued result callback is then discarded).
+    if (scanThread)
+        scanThread->wait();
     writeSettings();
     delete ui;
+}
+
+void MainWindow::startDetection(bool resetToDefaults)
+{
+    if (scanThread)
+        return; // a scan is already running
+    setScanningUi(true);
+    QThread *thread = QThread::create([this, resetToDefaults] {
+        const QList<BootEntry> result = detector.detect();
+        QMetaObject::invokeMethod(this, [this, result, resetToDefaults] {
+            detectionFinished(result, resetToDefaults);
+        }, Qt::QueuedConnection);
+    });
+    scanThread = thread;
+    connect(thread, &QThread::finished, this, [this, thread] {
+        if (scanThread == thread)
+            scanThread = nullptr;
+    });
+    connect(thread, &QThread::finished, thread, &QObject::deleteLater);
+    thread->start();
+}
+
+void MainWindow::detectionFinished(const QList<BootEntry> &result, bool resetToDefaults)
+{
+    detected = result;
+    setScanningUi(false);
+    if (resetToDefaults) {
+        // Rescan: discard any manual arrangement and re-apply the packed
+        // defaults with the preferred OS leading.
+        populateBootCombos();
+        applyAutoSelection();
+    } else {
+        // First run: settings restore the saved arrangement (or defaults).
+        readSettings();
+    }
+    QStringList names;
+    for (const BootEntry &e : detected)
+        names << e.displayName;
+    appendLog(QStringLiteral("detect: %1 entries [%2]")
+                  .arg(detected.size()).arg(names.join(QStringLiteral(", "))));
+}
+
+void MainWindow::setScanningUi(bool scanning)
+{
+    const QList<QComboBox *> combos = bootCombos();
+    if (scanning) {
+        populating = true;
+        for (QComboBox *combo : combos) {
+            combo->clear();
+            combo->addItem(tr("Scanning…"));
+        }
+        ui->Default_Boot_comboBox->clear();
+        populating = false;
+    }
+    for (QComboBox *combo : combos)
+        combo->setEnabled(!scanning);
+    ui->Default_Boot_comboBox->setEnabled(!scanning);
+    ui->Rescan_pushButton->setEnabled(!scanning);
+    ui->Deep_Scan_pushButton->setEnabled(!scanning && Platform::espDeepScanUseful());
+    ui->Create_Config->setEnabled(!scanning);
+    ui->Preview_pushButton->setEnabled(!scanning);
 }
 
 QList<QComboBox *> MainWindow::bootCombos() const
@@ -144,8 +284,15 @@ void MainWindow::populateBootCombos()
     for (QComboBox *combo : combos) {
         const QString previous = combo->currentText();
         combo->clear();
-        for (const BootEntry &e : options)
+        for (const BootEntry &e : options) {
             combo->addItem(e.displayName, QVariant::fromValue(e));
+            // Deliberately untranslated: these are refind.conf directive
+            // names, shown so multi-ESP setups can tell lookalikes apart.
+            QString tip = QStringLiteral("loader %1").arg(e.loaderPath);
+            if (!e.volume.isEmpty())
+                tip += QStringLiteral("\nvolume %1").arg(e.volume);
+            combo->setItemData(combo->count() - 1, tip, Qt::ToolTipRole);
+        }
         combo->addItem(noneOption());
         const int idx = combo->findText(previous);
         combo->setCurrentIndex(idx >= 0 ? idx : combo->count() - 1);
@@ -159,6 +306,28 @@ void MainWindow::setComboText(QComboBox *combo, const QString &text)
     const int idx = combo->findText(text);
     if (idx >= 0)
         combo->setCurrentIndex(idx);
+}
+
+// Language-independent identity of a detected entry for settings persistence:
+// display text survives neither renames nor (for "None") UI language changes,
+// so the key is preferred and text kept as the legacy fallback.
+QString MainWindow::entryKey(const BootEntry &entry)
+{
+    return entry.volume + QLatin1Char('|') + entry.loaderPath;
+}
+
+void MainWindow::setComboByKeyOrText(QComboBox *combo, const QString &key, const QString &text)
+{
+    if (!key.isEmpty()) {
+        for (int i = 0; i < combo->count(); ++i) {
+            const QVariant data = combo->itemData(i);
+            if (data.canConvert<BootEntry>() && entryKey(data.value<BootEntry>()) == key) {
+                combo->setCurrentIndex(i);
+                return;
+            }
+        }
+    }
+    setComboText(combo, text);
 }
 
 // First-run defaults: the platform's preferred OS leads (SteamOS on the Deck,
@@ -240,11 +409,7 @@ void MainWindow::refreshDefaultBootCombo()
 
 void MainWindow::on_Rescan_pushButton_clicked()
 {
-    // Re-detect and reset the slots to the detected defaults (packed into
-    // 1, 2, ... with the preferred OS leading), discarding any manual arrangement.
-    detected = detector.detect();
-    populateBootCombos();
-    applyAutoSelection();
+    startDetection(true);
 }
 
 void MainWindow::on_Deep_Scan_pushButton_clicked()
@@ -252,7 +417,9 @@ void MainWindow::on_Deep_Scan_pushButton_clicked()
     // Blocks while the script prompts for a password; it shows its own
     // success/error dialogs, so only re-detect here. Detection prefers the
     // cache the script just wrote over the firmware boot entries.
-    if (Platform::runEspDeepScan() != 0)
+    const int rc = Platform::runEspDeepScan();
+    appendLog(QStringLiteral("deep scan: rc %1").arg(rc));
+    if (rc != 0)
         return;
     on_Rescan_pushButton_clicked();
 }
@@ -346,21 +513,34 @@ QString MainWindow::createBootStanza(const BootEntry &entry, int slot)
     return stanza;
 }
 
-void MainWindow::on_Create_Config_clicked()
+// The four slots' current entries, packed with their 1-based slot numbers
+// (slot number = icon file number = on-screen order).
+QList<MainWindow::Selection> MainWindow::currentSelections()
 {
-    QDir().mkpath(guiConfigDir);
-    QFile conf(guiConfigDir + "/refind.conf");
-    if (!conf.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
-        QMessageBox::critical(this, tr("Create Config"),
-                              tr("Could not write %1").arg(conf.fileName()));
-        return;
+    QList<Selection> selections;
+    const QList<QComboBox *> combos = bootCombos();
+    for (int i = 0; i < combos.size(); ++i) {
+        QComboBox *combo = combos.at(i);
+        if (combo->currentText() == noneOption() || combo->currentText().isEmpty())
+            continue;
+        const QVariant data = combo->currentData();
+        if (!data.canConvert<BootEntry>())
+            continue;
+        selections.append({data.value<BootEntry>(), i + 1});
     }
+    return selections;
+}
 
+// Renders the full refind.conf as text — shared by Create Config (which
+// writes it) and the Preview dialog (which only displays it).
+QString MainWindow::generateConfigText(const QList<Selection> &selections)
+{
+    QString text;
     QString timeout = ui->TimeOut_lineEdit->text();
     if (timeout.isEmpty())
         timeout = QStringLiteral("5");
 
-    QTextStream out(&conf);
+    QTextStream out(&text);
     out << "# GUI generated refind.conf Config File\n";
     out << "timeout " << timeout << "\n";
     out << "use_nvram false\n";
@@ -379,22 +559,6 @@ void MainWindow::on_Create_Config_clicked()
     out << "log_level 0\n";
     out << "showtools\n";
     out << "scanfor manual\n";
-
-    struct Selection {
-        BootEntry entry;
-        int slot;
-    };
-    QList<Selection> selections;
-    const QList<QComboBox *> combos = bootCombos();
-    for (int i = 0; i < combos.size(); ++i) {
-        QComboBox *combo = combos.at(i);
-        if (combo->currentText() == noneOption() || combo->currentText().isEmpty())
-            continue;
-        const QVariant data = combo->currentData();
-        if (!data.canConvert<BootEntry>())
-            continue;
-        selections.append({data.value<BootEntry>(), i + 1});
-    }
 
     // default_selection: position of the chosen default among generated
     // stanzas (scanfor is manual-only, so row numbers match stanza order).
@@ -416,6 +580,19 @@ void MainWindow::on_Create_Config_clicked()
 
     for (const Selection &sel : selections)
         out << createBootStanza(sel.entry, sel.slot);
+    return text;
+}
+
+void MainWindow::on_Create_Config_clicked()
+{
+    QDir().mkpath(guiConfigDir);
+    QFile conf(guiConfigDir + "/refind.conf");
+    if (!conf.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+        QMessageBox::critical(this, tr("Create Config"),
+                              tr("Could not write %1").arg(conf.fileName()));
+        return;
+    }
+    conf.write(generateConfigText(currentSelections()).toUtf8());
     conf.close();
 
     copyPng(ui->Background_lineEdit, guiConfigDir + "/background.png");
@@ -423,6 +600,68 @@ void MainWindow::on_Create_Config_clicked()
     copyPng(ui->Boot_Option_02_Icon_lineEdit, guiConfigDir + "/os_icon2.png");
     copyPng(ui->Boot_Option_03_Icon_lineEdit, guiConfigDir + "/os_icon3.png");
     copyPng(ui->Boot_Option_04_Icon_lineEdit, guiConfigDir + "/os_icon4.png");
+}
+
+void MainWindow::on_Preview_pushButton_clicked()
+{
+    const QList<Selection> selections = currentSelections();
+    const QString confText = generateConfigText(selections);
+
+    const QList<QLineEdit *> iconEdits = {ui->Boot_Option_01_Icon_lineEdit,
+                                          ui->Boot_Option_02_Icon_lineEdit,
+                                          ui->Boot_Option_03_Icon_lineEdit,
+                                          ui->Boot_Option_04_Icon_lineEdit};
+    QList<PreviewEntry> entries;
+    for (const Selection &sel : selections) {
+        PreviewEntry e;
+        e.name = sel.entry.displayName;
+        e.iconPath = iconEdits.at(sel.slot - 1)->text();
+        if (e.iconPath.isEmpty()) // fall back to a previously staged copy
+            e.iconPath = guiConfigDir + QStringLiteral("/os_icon%1.png").arg(sel.slot);
+        entries << e;
+    }
+
+    const QString defaultName = ui->Default_Boot_comboBox->currentText();
+    int defaultIndex = 0;
+    for (int i = 0; i < selections.size(); ++i) {
+        if (selections.at(i).entry.displayName == defaultName) {
+            defaultIndex = i;
+            break;
+        }
+    }
+
+    QString background = ui->Background_lineEdit->text();
+    if (background.isEmpty())
+        background = guiConfigDir + QStringLiteral("/background.png");
+    int iconSize = ui->Icon_Size_comboBox->currentData().toInt();
+    if (iconSize <= 0)
+        iconSize = 128;
+
+    PreviewDialog dialog(background, entries, iconSize, defaultIndex, confText, this);
+    dialog.exec();
+}
+
+// Append one timestamped event (plus optional multi-line detail) to the
+// session-persistent log — most bug reports arrive without the dialog text,
+// so keep a copy the user can attach. English on purpose: it's diagnostics.
+void MainWindow::appendLog(const QString &event, const QString &details)
+{
+    const QString dir = guiConfigDir + QStringLiteral("/logs");
+    QDir().mkpath(dir);
+    const QString path =
+        dir + QLatin1Char('/') + QCoreApplication::applicationName() + QStringLiteral(".log");
+    QFile file(path);
+    if (file.size() > 512 * 1024) {
+        // Single rotation keeps the pair bounded at ~1 MB.
+        QFile::remove(path + QStringLiteral(".old"));
+        QFile::rename(path, path + QStringLiteral(".old"));
+    }
+    if (!file.open(QIODevice::Append | QIODevice::Text))
+        return;
+    QTextStream out(&file);
+    out << QDateTime::currentDateTime().toString(Qt::ISODate) << ' ' << event << '\n';
+    if (!details.isEmpty())
+        out << details.trimmed() << '\n';
 }
 
 // Dialog-sized excerpt of a script's captured output: PowerShell failures can
@@ -439,6 +678,7 @@ void MainWindow::on_Install_Config_clicked()
 {
     QString badScript;
     if (!Platform::installConfigScriptTrusted(&badScript)) {
+        appendLog(QStringLiteral("install config: refused, untrusted script"), badScript);
         QMessageBox::warning(this, tr("Install Config"),
                              tr("The config-install script was NOT run:\n\n%1\n\n"
                                 "It does not match the copy shipped with this version of the "
@@ -452,6 +692,7 @@ void MainWindow::on_Install_Config_clicked()
     }
     QString output;
     const int rc = Platform::installConfig(&output);
+    appendLog(QStringLiteral("install config: rc %1").arg(rc), output);
     if (Platform::installConfigShowsOwnDialogs()) {
         // The Linux script shows its own zenity password + result dialogs, so
         // a nonzero return only means the launch itself failed.
@@ -560,6 +801,13 @@ void MainWindow::readSettings()
     const QString boot2 = settings.value(QStringLiteral("BootOption02Text")).toString();
     const QString boot3 = settings.value(QStringLiteral("BootOption03Text")).toString();
     const QString boot4 = settings.value(QStringLiteral("BootOption04Text")).toString();
+    // Preferred over the text keys where present (see entryKey); text remains
+    // as the fallback for INIs written by older versions.
+    const QStringList savedKeys = {
+        settings.value(QStringLiteral("BootOption01Key")).toString(),
+        settings.value(QStringLiteral("BootOption02Key")).toString(),
+        settings.value(QStringLiteral("BootOption03Key")).toString(),
+        settings.value(QStringLiteral("BootOption04Key")).toString()};
     const QString defaultBoot = settings.value(QStringLiteral("DefaultBootText")).toString();
     const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
     const int iconSize = settings.value(QStringLiteral("IconSize")).toInt();
@@ -580,7 +828,7 @@ void MainWindow::readSettings()
         const QList<QComboBox *> combos = bootCombos();
         const QStringList saved = {boot1, boot2, boot3, boot4};
         for (int i = 0; i < combos.size(); ++i)
-            setComboText(combos.at(i), saved.at(i));
+            setComboByKeyOrText(combos.at(i), savedKeys.at(i), saved.at(i));
         // Repack any gaps a stale settings file may have left (OSes in 3/4,
         // 1/2 empty) so detected OSes always start at slot 1.
         compactBootSelections();
@@ -604,6 +852,14 @@ void MainWindow::writeSettings()
     settings.setValue(QStringLiteral("BootOption02Text"), ui->Boot_Option_02_comboBox->currentText());
     settings.setValue(QStringLiteral("BootOption03Text"), ui->Boot_Option_03_comboBox->currentText());
     settings.setValue(QStringLiteral("BootOption04Text"), ui->Boot_Option_04_comboBox->currentText());
+    const auto comboKey = [](QComboBox *combo) {
+        const QVariant data = combo->currentData();
+        return data.canConvert<BootEntry>() ? entryKey(data.value<BootEntry>()) : QString();
+    };
+    settings.setValue(QStringLiteral("BootOption01Key"), comboKey(ui->Boot_Option_01_comboBox));
+    settings.setValue(QStringLiteral("BootOption02Key"), comboKey(ui->Boot_Option_02_comboBox));
+    settings.setValue(QStringLiteral("BootOption03Key"), comboKey(ui->Boot_Option_03_comboBox));
+    settings.setValue(QStringLiteral("BootOption04Key"), comboKey(ui->Boot_Option_04_comboBox));
     settings.setValue(QStringLiteral("DefaultBootText"), ui->Default_Boot_comboBox->currentText());
     settings.setValue(QStringLiteral("InstallSourceComboBox"), ui->Install_Source_comboBox->currentIndex());
     settings.setValue(QStringLiteral("IconSize"), ui->Icon_Size_comboBox->currentData().toInt());
@@ -644,13 +900,35 @@ void MainWindow::on_About_pushButton_clicked()
 
 void MainWindow::on_updateButton_Clicked()
 {
-    bool ok = false;
-    const QString remoteRaw = OSDetector::runCommand(
-        QStringLiteral("curl"),
-        {QStringLiteral("-fsSL"), QStringLiteral("--max-time"), QStringLiteral("10"),
-         QLatin1String(VERSION_URL)}, &ok).trimmed();
+    // Asynchronous on purpose: the old synchronous curl call froze the UI for
+    // up to its 10-second timeout (and needed curl at runtime at all).
+    QPointer<QPushButton> button = qobject_cast<QPushButton *>(sender());
+    if (button)
+        button->setEnabled(false);
+    if (!network)
+        network = new QNetworkAccessManager(this);
+    QNetworkRequest request{QUrl(QLatin1String(VERSION_URL))};
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    request.setTransferTimeout(10000);
+#endif
+    QNetworkReply *reply = network->get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, button] {
+        reply->deleteLater();
+        if (button)
+            button->setEnabled(true);
+        onUpdateReply(reply->error() == QNetworkReply::NoError,
+                      QString::fromUtf8(reply->readAll()).trimmed(),
+                      reply->errorString());
+    });
+}
+
+void MainWindow::onUpdateReply(bool ok, const QString &remoteRaw, const QString &errorString)
+{
     const QVersionNumber remote = QVersionNumber::fromString(remoteRaw);
     const QVersionNumber local = QVersionNumber::fromString(QLatin1String(APP_VERSION));
+    appendLog(QStringLiteral("update check: local %1, remote \"%2\"%3")
+                  .arg(QLatin1String(APP_VERSION), remoteRaw,
+                       ok ? QString() : QStringLiteral(" (%1)").arg(errorString)));
 
     QMessageBox updateBox;
     updateBox.setTextFormat(Qt::RichText);

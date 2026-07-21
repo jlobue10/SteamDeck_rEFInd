@@ -74,10 +74,9 @@ sources mirror it).
 `SteamDeck_rEFInd_en_US.ts` is the source-language reference and
 intentionally has empty translations (source text is used as-is). The
 language is picked from the system locale automatically — on a Deck this
-follows the language set in Steam/desktop-mode settings; there is no in-app
-language switcher (a possible future improvement — a combo writing a
-`Language` key to the INI and installing the translator before `MainWindow`
-construction).
+follows the language set in Steam/desktop-mode settings; a Language combo in the
+GUI can override it at runtime (persisted as `Language/UiLanguage` in the
+INI; the switch retranslates live, including the RTL layout flip).
 
 Arabic, Persian, and Urdu are right-to-left languages: their catalogs translate Qt's `QT_LAYOUT_DIRECTION` key to `RTL` (anchored in `main.cpp` so `lupdate` keeps the key), which makes Qt mirror the entire widget layout automatically. The rEFInd boot screen itself stays left-to-right, so strings that reference on-screen icon order ("leftmost icon") still mean the physical left.
 
