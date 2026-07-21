@@ -30,6 +30,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->TimeOut_lineEdit->setValidator(new QIntValidator(-1, 99, this));
 
+    // OS icon size on the boot screen (rEFInd's big_icon_size). 128 is both
+    // rEFInd's default and the shipped PNGs' native size, so it emits no
+    // directive; larger sizes upscale the icons.
+    ui->Icon_Size_comboBox->addItem(tr("Small (96)"), 96);
+    ui->Icon_Size_comboBox->addItem(tr("Default (128)"), 128);
+    ui->Icon_Size_comboBox->addItem(tr("Medium (160)"), 160);
+    ui->Icon_Size_comboBox->addItem(tr("Large (192)"), 192);
+    ui->Icon_Size_comboBox->addItem(tr("Extra Large (256)"), 256);
+    ui->Icon_Size_comboBox->setCurrentIndex(ui->Icon_Size_comboBox->findData(128));
+
     homePath = QDir::homePath();
     guiDataDir = Platform::dataDir();
     guiConfigDir = guiDataDir + "/GUI";
@@ -349,6 +359,12 @@ void MainWindow::on_Create_Config_clicked()
     out << "banner background.png\n";
     out << "banner_scale fillscreen\n";
     out << "resolution 3\n";
+    const int iconSize = ui->Icon_Size_comboBox->currentData().toInt();
+    if (iconSize > 0 && iconSize != 128) {
+        out << "big_icon_size " << iconSize << "\n";
+        // Keep the tools row proportional (rEFInd defaults: big 128, small 48).
+        out << "small_icon_size " << iconSize * 48 / 128 << "\n";
+    }
     out << "enable_touch\n";
     out << (ui->Enable_Mouse_checkBox->isChecked() ? "" : "#") << "enable_mouse\n";
     out << "log_level 0\n";
@@ -537,6 +553,7 @@ void MainWindow::readSettings()
     const QString boot4 = settings.value(QStringLiteral("BootOption04Text")).toString();
     const QString defaultBoot = settings.value(QStringLiteral("DefaultBootText")).toString();
     const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
+    const int iconSize = settings.value(QStringLiteral("IconSize")).toInt();
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("Timeout"));
@@ -561,6 +578,11 @@ void MainWindow::readSettings()
     }
     setComboText(ui->Default_Boot_comboBox, defaultBoot);
     ui->Install_Source_comboBox->setCurrentIndex(installSource);
+    // Stored as the pixel value, not the index/text, so saved settings survive
+    // relabeling; an unset key (0) keeps the constructor's 128 default.
+    const int iconIdx = ui->Icon_Size_comboBox->findData(iconSize);
+    if (iconIdx >= 0)
+        ui->Icon_Size_comboBox->setCurrentIndex(iconIdx);
     if (!timeout.isEmpty())
         ui->TimeOut_lineEdit->setText(timeout);
 }
@@ -575,6 +597,7 @@ void MainWindow::writeSettings()
     settings.setValue(QStringLiteral("BootOption04Text"), ui->Boot_Option_04_comboBox->currentText());
     settings.setValue(QStringLiteral("DefaultBootText"), ui->Default_Boot_comboBox->currentText());
     settings.setValue(QStringLiteral("InstallSourceComboBox"), ui->Install_Source_comboBox->currentIndex());
+    settings.setValue(QStringLiteral("IconSize"), ui->Icon_Size_comboBox->currentData().toInt());
     settings.remove(QStringLiteral("LinuxComboBox"));
     settings.endGroup();
     settings.beginGroup(QStringLiteral("CheckBoxes"));
