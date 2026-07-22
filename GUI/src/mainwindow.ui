@@ -29,7 +29,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -61,9 +61,12 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>134</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <property name="toolTip">
         <string>Default Boot Selection</string>
@@ -112,9 +115,12 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>134</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <property name="toolTip">
         <string>Boot Option #1 Selection</string>
@@ -185,7 +191,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -204,38 +210,43 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>134</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <property name="toolTip">
         <string>Boot Option #2 Selection</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="4" alignment="Qt::AlignRight">
-      <widget class="QPushButton" name="Rand_BG_On_pushButton">
-       <property name="minimumSize">
-        <size>
-         <width>92</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>92</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Enable background randomizer service</string>
-       </property>
-       <property name="text">
-        <string>Rand BG On</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="5">
+     <item row="4" column="4" colspan="2">
+      <layout class="QHBoxLayout" name="Rand_BG_hboxLayout">
+       <item>
+        <widget class="QPushButton" name="Rand_BG_On_pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>92</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Enable background randomizer service</string>
+         </property>
+         <property name="text">
+          <string>Rand BG On</string>
+         </property>
+        </widget>
+       </item>
+       <item>
       <widget class="QPushButton" name="Rand_BG_Off_pushButton">
        <property name="minimumSize">
         <size>
@@ -245,7 +256,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -256,6 +267,8 @@
         <string>Rand BG Off</string>
        </property>
       </widget>
+       </item>
+      </layout>
      </item>
      <item row="5" column="0" colspan="2">
       <widget class="QLabel" name="Boot_Option_02_Icon_label">
@@ -280,7 +293,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -299,9 +312,12 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>134</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <property name="toolTip">
         <string>Boot Option #3 Selection (optional)</string>
@@ -329,7 +345,9 @@
        </item>
       </layout>
      </item>
-     <item row="6" column="4" alignment="Qt::AlignRight">
+     <item row="6" column="4" colspan="2">
+      <layout class="QHBoxLayout" name="Sysd_hboxLayout">
+       <item>
       <widget class="QPushButton" name="Enable_sysd_pushButton">
        <property name="minimumSize">
         <size>
@@ -339,7 +357,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -350,6 +368,30 @@
         <string>Sysd On</string>
        </property>
       </widget>
+       </item>
+       <item>
+      <widget class="QPushButton" name="Disable_sysd_pushButton">
+       <property name="minimumSize">
+        <size>
+         <width>92</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Disable systemd service</string>
+       </property>
+       <property name="text">
+        <string>Sysd Off</string>
+       </property>
+      </widget>
+       </item>
+      </layout>
      </item>
      <item row="7" column="0" colspan="2">
       <widget class="QLabel" name="Boot_Option_03_Icon_label">
@@ -374,7 +416,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -393,9 +435,12 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>134</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <property name="toolTip">
         <string>Boot Option #4 Selection (optional)</string>
@@ -412,7 +457,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -421,28 +466,6 @@
        </property>
        <property name="text">
         <string>Open Folder</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="5">
-      <widget class="QPushButton" name="Disable_sysd_pushButton">
-       <property name="minimumSize">
-        <size>
-         <width>92</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>92</width>
-         <height>32</height>
-        </size>
-       </property>
-       <property name="toolTip">
-        <string>Disable systemd service</string>
-       </property>
-       <property name="text">
-        <string>Sysd Off</string>
        </property>
       </widget>
      </item>
@@ -469,7 +492,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>92</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -501,9 +524,12 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>134</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QComboBox::AdjustToContents</enum>
        </property>
        <property name="toolTip">
         <string>Size of the OS icons on the rEFInd boot screen</string>
@@ -520,7 +546,7 @@
        </property>
        <property name="maximumSize">
         <size>
-         <width>85</width>
+         <width>16777215</width>
          <height>32</height>
         </size>
        </property>
@@ -602,8 +628,21 @@
       </widget>
      </item>
      <item row="11" column="4" colspan="2">
-      <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
+      <layout class="QHBoxLayout" name="rescanRowLayout">
+       <item>
+        <spacer name="rescanRowSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="Rescan_pushButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -619,7 +658,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
          </property>
@@ -631,7 +670,7 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
+       <item>
         <widget class="QPushButton" name="Deep_Scan_pushButton">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -647,7 +686,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
          </property>
@@ -678,6 +717,9 @@
            <height>32</height>
           </size>
          </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToContents</enum>
+         </property>
          <property name="toolTip">
           <string>User interface language</string>
          </property>
@@ -686,7 +728,7 @@
        <item>
         <widget class="QCheckBox" name="Extras_checkBox">
          <property name="toolTip">
-          <string>Also write boot stanzas for detected bootloaders that are not in one of the four slots</string>
+          <string>Also write boot stanzas for detected bootloaders that are not in one of the four slots. Only relevant when more than four OSes are detected.</string>
          </property>
          <property name="text">
           <string>Include all OSes</string>
@@ -716,7 +758,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
          </property>
@@ -742,9 +784,12 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToContents</enum>
          </property>
          <property name="toolTip">
           <string>Installation source and method</string>
@@ -762,6 +807,19 @@
         </widget>
        </item>
        <item>
+        <spacer name="installRowSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="Install_rEFInd">
          <property name="minimumSize">
           <size>
@@ -771,7 +829,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
          </property>
@@ -793,7 +851,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
          </property>
@@ -815,7 +873,7 @@
          </property>
          <property name="maximumSize">
           <size>
-           <width>140</width>
+           <width>16777215</width>
            <height>32</height>
           </size>
          </property>
