@@ -10,18 +10,6 @@
     <height>563</height>
    </rect>
   </property>
-  <property name="minimumSize">
-   <size>
-    <width>613</width>
-    <height>563</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>613</width>
-    <height>563</height>
-   </size>
-  </property>
   <property name="windowTitle">
    <string>Steam Deck rEFInd Setup</string>
   </property>
@@ -30,16 +18,7 @@
     <normaloff>:/SteamDeck_rEFInd.png</normaloff>:/SteamDeck_rEFInd.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="layoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>591</width>
-      <height>549</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_2">
+   <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="5">
       <widget class="QPushButton" name="Background_pushButton">
        <property name="minimumSize">
@@ -990,7 +969,6 @@
       </widget>
      </item>
     </layout>
-   </widget>
   </widget>
  </widget>
  <resources/>

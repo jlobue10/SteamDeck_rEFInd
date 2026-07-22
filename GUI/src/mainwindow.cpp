@@ -25,6 +25,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QThread>
+#include <QTimer>
 #include <QUrl>
 #include <QVariant>
 #include <QVersionNumber>
@@ -46,6 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    // The window must track the grid's sizeHint so longer translated strings
+    // widen it instead of squeezing; SetFixedSize keeps it non-user-resizable.
+    ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     ui->TimeOut_lineEdit->setValidator(new QIntValidator(-1, 99, this));
 
     // OS icon size on the boot screen (rEFInd's big_icon_size). 128 is both
@@ -176,6 +180,9 @@ void MainWindow::changeEvent(QEvent *event)
             setScanningUi(true);
         else
             populateBootCombos();
+        // Re-fit the window to the new strings once the pending layout
+        // invalidations from the retranslate have settled.
+        QTimer::singleShot(0, this, [this] { adjustSize(); });
     }
     QMainWindow::changeEvent(event);
 }
