@@ -25,6 +25,7 @@
 #include <QSettings>
 #include <QTextStream>
 #include <QThread>
+#include <QTimer>
 #include <QUrl>
 #include <QVariant>
 #include <QVersionNumber>
@@ -46,6 +47,9 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    // The window must track the grid's sizeHint so longer translated strings
+    // widen it instead of squeezing; SetFixedSize keeps it non-user-resizable.
+    ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     ui->TimeOut_lineEdit->setValidator(new QIntValidator(-1, 99, this));
 
     // OS icon size on the boot screen (rEFInd's big_icon_size). 128 is both
@@ -91,6 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
     applyDynamicTexts();
     populateLanguageCombo();
+    equalizeActionButtonWidths();
 
     const QList<QComboBox *> combos = bootCombos();
     for (QComboBox *combo : combos) {
@@ -124,6 +129,28 @@ void MainWindow::applyDynamicTexts()
         // Every ESP is readable already (or this is the elevated Windows
         // build), so a privileged scan would find nothing extra.
         ui->Deep_Scan_pushButton->setToolTip(tr("Not needed: no unreadable EFI System Partition was found"));
+    }
+}
+
+// The bottom action buttons form two visual columns across three
+// independently laid-out rows (Rescan over Create Config; Deep Scan over
+// Install Config over Preview). Each row right-packs its buttons, so giving
+// every button in a column the width of its widest member keeps the column
+// edges flush in every language.
+void MainWindow::equalizeActionButtonWidths()
+{
+    const QList<QList<QPushButton *>> columns = {
+        { ui->Rescan_pushButton, ui->Create_Config },
+        { ui->Deep_Scan_pushButton, ui->Install_Config, ui->Preview_pushButton },
+    };
+    for (const auto &column : columns) {
+        int width = 140; // the designed shared minimum
+        for (QPushButton *button : column) {
+            button->setMinimumWidth(0);
+            width = qMax(width, button->sizeHint().width());
+        }
+        for (QPushButton *button : column)
+            button->setMinimumWidth(width);
     }
 }
 
@@ -176,6 +203,10 @@ void MainWindow::changeEvent(QEvent *event)
             setScanningUi(true);
         else
             populateBootCombos();
+        equalizeActionButtonWidths();
+        // Re-fit the window to the new strings once the pending layout
+        // invalidations from the retranslate have settled.
+        QTimer::singleShot(0, this, [this] { adjustSize(); });
     }
     QMainWindow::changeEvent(event);
 }

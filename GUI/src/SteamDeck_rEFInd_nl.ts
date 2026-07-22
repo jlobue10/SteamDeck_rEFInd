@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.1" language="tr" sourcelanguage="en_US">
+<TS version="2.1" language="nl">
 <context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="14" />
         <source>Steam Deck rEFInd Setup</source>
-        <translation>Steam Deck için rEFInd Kurulumu</translation>
+        <translation>Steam Deck rEFInd-configuratie</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="37" />
@@ -15,245 +15,241 @@
         <location filename="mainwindow.ui" line="424" />
         <location filename="mainwindow.ui" line="500" />
         <source>Browse</source>
-        <translation>Gözat</translation>
+        <translation>Bladeren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="50" />
         <source>Default Boot Option</source>
-        <translation>Varsayılan önyükleme seçeneği</translation>
+        <translation>Standaard opstartoptie</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="72" />
         <source>Default Boot Selection</source>
-        <translation>Varsayılan önyükleme seçimi</translation>
+        <translation>Standaard opstartkeuze</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="85" />
         <source>Boot last booted OS</source>
-        <translation>Son başlatılan işletim sistemini başlat</translation>
+        <translation>Laatst opgestarte OS starten</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="126" />
         <source>Boot Option #1 Selection</source>
-        <translation>Önyükleme seçeneği #1 seçimi</translation>
+        <translation>Keuze opstartoptie #1</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="142" />
         <location filename="mainwindow.ui" line="161" />
         <source>SteamOS only option</source>
-        <translation>Yalnızca SteamOS için</translation>
+        <translation>Optie alleen voor SteamOS</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="145" />
         <source>Use Firmware_bootnum</source>
-        <translation>Firmware_bootnum kullan</translation>
+        <translation>Firmware_bootnum gebruiken</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="180" />
         <source>Boot Option #1 Icon</source>
-        <translation>Önyükleme seçeneği #1 simgesi</translation>
+        <translation>Pictogram opstartoptie #1</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="221" />
         <source>Boot Option #2 Selection</source>
-        <translation>Önyükleme seçeneği #2 seçimi</translation>
+        <translation>Keuze opstartoptie #2</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="242" />
         <source>Enable background randomizer service</source>
-        <translation>Rastgele arka plan hizmetini etkinleştir</translation>
+        <translation>Achtergrondrandomizer-service inschakelen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="245" />
         <source>Rand BG On</source>
-        <translation>Rastgele AP açık</translation>
+        <translation>Wissel-AG aan</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="264" />
         <source>Disable background randomizer service</source>
-        <translation>Rastgele arka plan hizmetini devre dışı bırak</translation>
+        <translation>Achtergrondrandomizer-service uitschakelen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="267" />
         <source>Rand BG Off</source>
-        <translation>Rastgele AP kapalı</translation>
+        <translation>Wissel-AG uit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="282" />
         <source>Boot Option #2 Icon</source>
-        <translation>Önyükleme seçeneği #2 simgesi</translation>
+        <translation>Pictogram opstartoptie #2</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="323" />
         <source>Boot Option #3 Selection (optional)</source>
-        <translation>Önyükleme seçeneği #3 seçimi (isteğe bağlı)</translation>
+        <translation>Keuze opstartoptie #3 (optioneel)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="332" />
         <source>Enable Mouse</source>
-        <translation>Fareyi etkinleştir</translation>
+        <translation>Muis inschakelen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="365" />
         <source>Install and enable systemd service</source>
-        <translation>systemd hizmetini kur ve etkinleştir</translation>
+        <translation>systemd-service installeren en inschakelen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="368" />
         <source>Sysd On</source>
-        <translation>Sysd açık</translation>
+        <translation>Sysd aan</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="387" />
+        <source>Disable systemd service</source>
+        <translation>systemd-service uitschakelen</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="390" />
+        <source>Sysd Off</source>
+        <translation>Sysd uit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="405" />
         <source>Boot Option #3 Icon</source>
-        <translation>Önyükleme seçeneği #3 simgesi</translation>
+        <translation>Pictogram opstartoptie #3</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="446" />
         <source>Boot Option #4 Selection (optional)</source>
-        <translation>Önyükleme seçeneği #4 seçimi (isteğe bağlı)</translation>
+        <translation>Keuze opstartoptie #4 (optioneel)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="465" />
         <source>Open the folder holding refind.conf and the background/icon PNGs</source>
-        <translation>refind.conf ile arka plan/simge PNG'lerinin bulunduğu klasörü aç</translation>
+        <translation>Open de map met refind.conf en de PNG's voor achtergrond en pictogrammen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="468" />
         <location filename="mainwindow.cpp" line="1073" />
         <source>Open Folder</source>
-        <translation>Klasörü aç</translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="731" />
-        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots. Only relevant when more than four OSes are detected.</source>
-        <translation>Dört yuvadan birinde olmayan algılanmış önyükleyiciler için de önyükleme kayıtları yazar. Yalnızca dörtten fazla işletim sistemi algılandığında geçerlidir.</translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="387" />
-        <source>Disable systemd service</source>
-        <translation>systemd hizmetini devre dışı bırak</translation>
-    </message>
-    <message>
-        <location filename="mainwindow.ui" line="390" />
-        <source>Sysd Off</source>
-        <translation>Sysd kapalı</translation>
+        <translation>Map openen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="481" />
         <source>Boot Option #4 Icon</source>
-        <translation>Önyükleme seçeneği #4 simgesi</translation>
+        <translation>Pictogram opstartoptie #4</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="513" />
         <source>Boot Icon Size</source>
-        <translation>Önyükleme simge boyutu</translation>
+        <translation>Grootte opstartpictogrammen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="535" />
         <source>Size of the OS icons on the rEFInd boot screen</source>
-        <translation>rEFInd önyükleme ekranındaki işletim sistemi simgelerinin boyutu</translation>
+        <translation>Grootte van de OS-pictogrammen op het rEFInd-opstartscherm</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="554" />
         <source>About</source>
-        <translation>Hakkında</translation>
+        <translation>Over</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="570" />
         <source>Timeout</source>
-        <translation>Zaman aşımı</translation>
+        <translation>Time-out</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="604" />
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Timeout in seconds&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Saniye cinsinden zaman aşımı&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Time-out in seconden&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="623" />
         <source>Seconds</source>
-        <translation>Saniye</translation>
+        <translation>Seconden</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="666" />
         <source>Rescan for installed OSes and bootloaders</source>
-        <translation>Kurulu işletim sistemlerini ve önyükleyicileri yeniden tara</translation>
+        <translation>Opnieuw scannen naar geïnstalleerde besturingssystemen en bootloaders</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="669" />
         <source>Rescan OSes</source>
-        <translation>Yeniden tara</translation>
+        <translation>Opnieuw scannen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="694" />
         <source>Scan the EFI System Partition with elevated rights (asks for your sudo password). Only needed for a bootloader that has no EFI boot entry.</source>
-        <translation>EFI sistem bölümünü yükseltilmiş yetkilerle tarar (sudo parolanızı sorar). Yalnızca EFI önyükleme girdisi olmayan bir önyükleyici için gereklidir.</translation>
+        <translation>Scan de EFI-systeempartitie met verhoogde rechten (vraagt om je sudo-wachtwoord). Alleen nodig voor een bootloader zonder EFI-opstartvermelding.</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="697" />
         <source>Deep Scan</source>
-        <translation>Derin tarama</translation>
+        <translation>Diepe scan</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="708" />
         <source>Language</source>
-        <translation>Dil</translation>
+        <translation>Taal</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="724" />
         <source>User interface language</source>
-        <translation>Arayüz dili</translation>
+        <translation>Taal van de gebruikersinterface</translation>
     </message>
     <message>
-        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots</source>
-        <translation type="vanished">Dört yuvadan birinde olmayan algılanmış önyükleyiciler için de önyükleme kayıtları yazar</translation>
+        <location filename="mainwindow.ui" line="731" />
+        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots. Only relevant when more than four OSes are detected.</source>
+        <translation>Schrijf ook opstartvermeldingen voor gedetecteerde bootloaders die niet in een van de vier posities staan. Alleen relevant wanneer er meer dan vier besturingssystemen zijn gedetecteerd.</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="734" />
         <source>Include all OSes</source>
-        <translation>Tüm sistemleri dahil et</translation>
+        <translation>Alle systemen opnemen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="766" />
         <source>Preview the rEFInd boot screen and the generated refind.conf</source>
-        <translation>rEFInd önyükleme ekranını ve oluşturulan refind.conf dosyasını önizle</translation>
+        <translation>Bekijk een voorbeeld van het rEFInd-opstartscherm en de gegenereerde refind.conf</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="769" />
         <source>Preview</source>
-        <translation>Önizleme</translation>
+        <translation>Voorbeeld</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="795" />
         <source>Installation source and method</source>
-        <translation>Kurulum kaynağı ve yöntemi</translation>
+        <translation>Installatiebron en -methode</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="837" />
         <source>Install rEFInd using selected method</source>
-        <translation>rEFInd'i seçilen yöntemle kur</translation>
+        <translation>rEFInd installeren met de gekozen methode</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="840" />
         <location filename="mainwindow.cpp" line="518" />
         <source>Install rEFInd</source>
-        <translation>rEFInd'i kur</translation>
+        <translation>rEFInd installeren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="859" />
         <source>Create config and copy PNG files (ready for install step)</source>
-        <translation>Yapılandırmayı oluştur ve PNG dosyalarını kopyala (kurulum adımına hazır)</translation>
+        <translation>Config aanmaken en PNG-bestanden kopiëren (klaar voor de installatiestap)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="862" />
         <location filename="mainwindow.cpp" line="673" />
         <source>Create Config</source>
-        <translation>Yapılandırma oluştur</translation>
+        <translation>Config aanmaken</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="881" />
         <source>Install config, icons and background</source>
-        <translation>Yapılandırmayı, simgeleri ve arka planı kur</translation>
+        <translation>Config, pictogrammen en achtergrond installeren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="884" />
@@ -262,72 +258,72 @@
         <location filename="mainwindow.cpp" line="795" />
         <location filename="mainwindow.cpp" line="800" />
         <source>Install Config</source>
-        <translation>Yapılandırmayı kur</translation>
+        <translation>Config installeren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="899" />
         <source>rEFInd Background selection</source>
-        <translation>rEFInd arka plan seçimi</translation>
+        <translation>rEFInd-achtergrondkeuze</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="915" />
         <source>Icon 1 PNG (leftmost icon)</source>
-        <translation>Simge 1 PNG'si (en soldaki simge)</translation>
+        <translation>PNG voor pictogram 1 (meest linkse pictogram)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="970" />
         <source>Boot Option #4</source>
-        <translation>Önyükleme seçeneği #4</translation>
+        <translation>Opstartoptie #4</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="983" />
         <source>Boot Option #3</source>
-        <translation>Önyükleme seçeneği #3</translation>
+        <translation>Opstartoptie #3</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="996" />
         <source>Boot Option #2</source>
-        <translation>Önyükleme seçeneği #2</translation>
+        <translation>Opstartoptie #2</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1009" />
         <source>Boot Option #1</source>
-        <translation>Önyükleme seçeneği #1</translation>
+        <translation>Opstartoptie #1</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="1022" />
         <source>Background</source>
-        <translation>Arka plan</translation>
+        <translation>Achtergrond</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="42" />
         <source>None</source>
-        <translation>Yok</translation>
+        <translation>Geen</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="116" />
         <source>Small (96)</source>
-        <translation>Küçük (96)</translation>
+        <translation>Klein (96)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="117" />
         <source>Default (128)</source>
-        <translation>Varsayılan (128)</translation>
+        <translation>Standaard (128)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="118" />
         <source>Medium (160)</source>
-        <translation>Orta (160)</translation>
+        <translation>Middelgroot (160)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="119" />
         <source>Large (192)</source>
-        <translation>Büyük (192)</translation>
+        <translation>Groot (192)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="120" />
         <source>Extra Large (256)</source>
-        <translation>Çok büyük (256)</translation>
+        <translation>Extra groot (256)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="121" />
@@ -337,68 +333,68 @@
     <message>
         <location filename="mainwindow.cpp" line="123" />
         <source>Requires efibootmgr (Linux only)</source>
-        <translation>efibootmgr gerektirir (yalnızca Linux)</translation>
+        <translation>Vereist efibootmgr (alleen Linux)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="125" />
         <location filename="mainwindow.cpp" line="126" />
         <source>systemd service (Linux only)</source>
-        <translation>systemd hizmeti (yalnızca Linux)</translation>
+        <translation>systemd-service (alleen Linux)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="131" />
         <source>Not needed: no unreadable EFI System Partition was found</source>
-        <translation>Gerekli değil: okunamayan EFI sistem bölümü bulunamadı</translation>
+        <translation>Niet nodig: er is geen onleesbare EFI-systeempartitie gevonden</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="162" />
         <source>System default</source>
-        <translation>Sistem varsayılanı</translation>
+        <translation>Systeemstandaard</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="275" />
         <source>Scanning…</source>
-        <translation>Taranıyor…</translation>
+        <translation>Scannen…</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="476" />
         <source>Image (*.png)</source>
-        <translation>Görüntü (*.png)</translation>
+        <translation>Afbeelding (*.png)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="492" />
         <source>Select Background PNG</source>
-        <translation>Arka plan PNG'sini seç</translation>
+        <translation>Achtergrond-PNG selecteren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="497" />
         <source>Select OS Icon 1 PNG</source>
-        <translation>İşletim sistemi simgesi 1 PNG'sini seç</translation>
+        <translation>PNG voor OS-pictogram 1 selecteren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="502" />
         <source>Select OS Icon 2 PNG</source>
-        <translation>İşletim sistemi simgesi 2 PNG'sini seç</translation>
+        <translation>PNG voor OS-pictogram 2 selecteren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="507" />
         <source>Select OS Icon 3 PNG</source>
-        <translation>İşletim sistemi simgesi 3 PNG'sini seç</translation>
+        <translation>PNG voor OS-pictogram 3 selecteren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="512" />
         <source>Select OS Icon 4 PNG</source>
-        <translation>İşletim sistemi simgesi 4 PNG'sini seç</translation>
+        <translation>PNG voor OS-pictogram 4 selecteren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="519" />
         <source>Failed to launch the installation script.</source>
-        <translation>Kurulum betiği başlatılamadı.</translation>
+        <translation>Kon het installatiescript niet starten.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="674" />
         <source>Could not write %1</source>
-        <translation>%1 yazılamadı</translation>
+        <translation>Kon %1 niet schrijven</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="772" />
@@ -409,31 +405,31 @@
 It does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version — a mismatch means it was modified (possibly tampered with) or belongs to a different version.
 
 Reinstall the GUI to restore the original script, then try again.</source>
-        <translation>Yapılandırma kurulum betiği ÇALIŞTIRILMADI:
+        <translation>Het config-installatiescript is NIET uitgevoerd:
 
 %1
 
-Uygulamanın bu sürümüyle birlikte gelen kopyayla eşleşmiyor. Betik root yetkileriyle çalıştığından, yalnızca birlikte gelen sürümle bayt bayt aynı olduğunda çalıştırılır — bir uyuşmazlık, betiğin değiştirildiği (muhtemelen kurcalandığı) veya başka bir sürüme ait olduğu anlamına gelir.
+Het komt niet overeen met de kopie die met deze versie van de app is meegeleverd. Omdat het met rootrechten draait, wordt het alleen uitgevoerd wanneer het byte voor byte de meegeleverde versie is — een verschil betekent dat het is gewijzigd (mogelijk gemanipuleerd) of bij een andere versie hoort.
 
-Özgün betiği geri yüklemek için GUI'yi yeniden kurun ve tekrar deneyin.</translation>
+Installeer de GUI opnieuw om het originele script te herstellen en probeer het daarna nogmaals.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="790" />
         <location filename="mainwindow.cpp" line="802" />
         <source>Installing the config failed (code %1).</source>
-        <translation>Yapılandırma kurulumu başarısız oldu (kod %1).</translation>
+        <translation>Het installeren van de config is mislukt (code %1).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="797" />
         <source>The config was installed successfully.</source>
-        <translation>Yapılandırma başarıyla kuruldu.</translation>
+        <translation>De config is met succes geïnstalleerd.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="798" />
         <source>The config was installed successfully.
 
 %1</source>
-        <translation>Yapılandırma başarıyla kuruldu.
+        <translation>De config is met succes geïnstalleerd.
 
 %1</translation>
     </message>
@@ -442,87 +438,87 @@ Uygulamanın bu sürümüyle birlikte gelen kopyayla eşleşmiyor. Betik root ye
         <source>Installing the config failed (code %1).
 
 %2</source>
-        <translation>Yapılandırma kurulumu başarısız oldu (kod %1).
+        <translation>Het installeren van de config is mislukt (code %1).
 
 %2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="817" />
         <source>Copy PNG</source>
-        <translation>PNG kopyala</translation>
+        <translation>PNG kopiëren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="818" />
         <source>Could not copy %1 to %2</source>
-        <translation>%1, %2 konumuna kopyalanamadı</translation>
+        <translation>Kon %1 niet naar %2 kopiëren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="843" />
         <source>Invalid PNG</source>
-        <translation>Geçersiz PNG</translation>
+        <translation>Ongeldige PNG</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="844" />
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
-        <translation>%1 geçerli bir PNG dosyası değil.
+        <translation>%1 is geen geldig PNG-bestand.
 
-Arka planlar ve işletim sistemi simgeleri gerçek PNG görüntüleri olmalıdır (yalnızca .png uzantılı dosyalar değil).</translation>
+Achtergronden en OS-pictogrammen moeten echte PNG-afbeeldingen zijn (niet slechts bestanden met de extensie .png).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="976" />
         <source>Check For Update</source>
-        <translation>Güncellemeleri denetle</translation>
+        <translation>Controleren op updates</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="979" />
         <source>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
-        <translation>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Özgün GUI geliştiricisi: &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Test ve kalite güvencesi için Deck Wizard'a özel teşekkürler&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Deck Wizard çift önyükleme rehberi&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p align='center'&gt;&lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd'&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Oorspronkelijke maker van de GUI: &lt;a href='https://github.com/jlobue10'&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Met speciale dank aan Deck Wizard voor het testen en de kwaliteitscontrole&lt;br&gt;&lt;br&gt;&lt;a href='https://www.youtube.com/watch?v=yBHzVSDVEqw'&gt;Dual-boot-tutorial van Deck Wizard&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1028" />
         <source>&lt;p align='center'&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
-        <translation>&lt;p align='center'&gt;Güncelleme denetimi başarısız oldu. İnternet bağlantınızı denetleyip yeniden deneyin.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p align='center'&gt;De updatecontrole is mislukt. Controleer je internetverbinding en probeer het opnieuw.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1031" />
         <source>&lt;p align='center'&gt;An update is available &lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
-        <translation>&lt;p align='center'&gt;Bir güncelleme &lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;burada&lt;/a&gt; mevcut&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p align='center'&gt;Er is een update beschikbaar &lt;a href='https://github.com/jlobue10/SteamDeck_rEFInd/releases'&gt;hier&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1035" />
         <source>&lt;p align='center'&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
-        <translation>&lt;p align='center'&gt;Güncelleme bulunamadı. En son sürümü kullanıyorsunuz.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
+        <translation>&lt;p align='center'&gt;Geen update gevonden. Je gebruikt de nieuwste versie.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1045" />
         <location filename="mainwindow.cpp" line="1052" />
         <source>systemd service</source>
-        <translation>systemd hizmeti</translation>
+        <translation>systemd-service</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1046" />
         <location filename="mainwindow.cpp" line="1053" />
         <source>Failed to launch the service toggle.</source>
-        <translation>Hizmet geçişi başlatılamadı.</translation>
+        <translation>Kon het omschakelen van de service niet starten.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1059" />
         <location filename="mainwindow.cpp" line="1066" />
         <source>Background Randomizer</source>
-        <translation>Rastgele arka plan</translation>
+        <translation>Achtergrondrandomizer</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1060" />
         <location filename="mainwindow.cpp" line="1067" />
         <source>Failed to launch the randomizer setup.</source>
-        <translation>Rastgele arka plan ayarı başlatılamadı.</translation>
+        <translation>Kon de randomizer-instelling niet starten.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1074" />
         <source>Failed to open %1 in the file manager.</source>
-        <translation>%1 dosya yöneticisinde açılamadı.</translation>
+        <translation>Kon %1 niet openen in de bestandsbeheerder.</translation>
     </message>
 </context>
 <context>
@@ -530,12 +526,12 @@ Arka planlar ve işletim sistemi simgeleri gerçek PNG görüntüleri olmalıdı
     <message>
         <location filename="platform.cpp" line="60" />
         <source>powershell.exe could not be started.</source>
-        <translation>powershell.exe başlatılamadı.</translation>
+        <translation>powershell.exe kon niet worden gestart.</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="173" />
         <source>sudo could not be started.</source>
-        <translation>sudo başlatılamadı.</translation>
+        <translation>sudo kon niet worden gestart.</translation>
     </message>
 </context>
 <context>
@@ -543,22 +539,22 @@ Arka planlar ve işletim sistemi simgeleri gerçek PNG görüntüleri olmalıdı
     <message>
         <location filename="previewdialog.cpp" line="34" />
         <source>No boot options selected.</source>
-        <translation>Önyükleme seçeneği seçilmedi.</translation>
+        <translation>Geen opstartopties geselecteerd.</translation>
     </message>
     <message>
         <location filename="previewdialog.cpp" line="89" />
         <source>Preview</source>
-        <translation>Önizleme</translation>
+        <translation>Voorbeeld</translation>
     </message>
     <message>
         <location filename="previewdialog.cpp" line="101" />
         <source>Approximate preview — rEFInd's real rendering also depends on the firmware resolution and theme.</source>
-        <translation>Yaklaşık önizleme — rEFInd'in gerçek görünümü ürün yazılımı çözünürlüğüne ve temaya da bağlıdır.</translation>
+        <translation>Benaderend voorbeeld — de werkelijke weergave van rEFInd hangt ook af van de firmwareresolutie en het thema.</translation>
     </message>
     <message>
         <location filename="previewdialog.cpp" line="107" />
         <source>Boot screen</source>
-        <translation>Önyükleme ekranı</translation>
+        <translation>Opstartscherm</translation>
     </message>
 </context>
 <context>
