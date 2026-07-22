@@ -329,7 +329,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="4" alignment="Qt::AlignRight">
+     <item row="8" column="4" alignment="Qt::AlignRight">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item alignment="Qt::AlignRight">
         <widget class="QLabel" name="Enable_Mouse_label">
@@ -350,7 +350,7 @@
        </item>
       </layout>
      </item>
-     <item row="6" column="5">
+     <item row="6" column="4" alignment="Qt::AlignRight">
       <widget class="QPushButton" name="Enable_sysd_pushButton">
        <property name="minimumSize">
         <size>
@@ -423,7 +423,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="4" alignment="Qt::AlignRight">
+     <item row="8" column="5">
       <widget class="QPushButton" name="Open_Folder_pushButton">
        <property name="minimumSize">
         <size>
@@ -445,7 +445,7 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="5">
+     <item row="6" column="5">
       <widget class="QPushButton" name="Disable_sysd_pushButton">
        <property name="minimumSize">
         <size>
