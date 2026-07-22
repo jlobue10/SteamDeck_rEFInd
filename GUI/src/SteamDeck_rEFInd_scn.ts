@@ -201,8 +201,8 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="710" />
-        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots</source>
-        <translation>Scrivi puru stanzi d'avviu pi li bootloader attruvati ca nun sunnu nta li quattru posti</translation>
+        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots. Only relevant when more than four OSes are detected.</source>
+        <translation>Scrivi puru stanzi d'avviu pi li bootloader attruvati ca nun sunnu nta li quattru posti. Rilivanti sulu quannu si tròvanu cchiù di quattru sistemi upirativi.</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="713" />
