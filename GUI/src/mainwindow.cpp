@@ -29,7 +29,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "2.7.0";
+static const char APP_VERSION[] = "3.0.0";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -169,7 +169,13 @@ void MainWindow::changeEvent(QEvent *event)
         populateLanguageCombo();
         // Refresh the translated "None" entries; selections are preserved by
         // key/text where they still match, and fall back to None otherwise.
-        populateBootCombos();
+        // While a scan is in flight, only re-apply the translated placeholder:
+        // populateBootCombos() → comboOptions() reads the detector's partition
+        // cache, which the worker thread is writing right then.
+        if (scanThread)
+            setScanningUi(true);
+        else
+            populateBootCombos();
     }
     QMainWindow::changeEvent(event);
 }
@@ -180,7 +186,11 @@ MainWindow::~MainWindow()
     // drain before teardown (its queued result callback is then discarded).
     if (scanThread)
         scanThread->wait();
-    writeSettings();
+    // Never persist before readSettings() has run (closing during the first
+    // scan): the combos still hold the "Scanning…" placeholder and every
+    // other control its compile-time default, which would clobber the INI.
+    if (settingsLoaded)
+        writeSettings();
     delete ui;
 }
 
@@ -891,6 +901,7 @@ void MainWindow::readSettings()
         ui->Icon_Size_comboBox->setCurrentIndex(iconIdx);
     if (!timeout.isEmpty())
         ui->TimeOut_lineEdit->setText(timeout);
+    settingsLoaded = true;
 }
 
 void MainWindow::writeSettings()

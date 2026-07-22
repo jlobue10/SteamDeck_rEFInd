@@ -96,6 +96,7 @@ private:
     OSDetector detector;
     QList<BootEntry> detected;
     bool populating = false;
+    bool settingsLoaded = false; // readSettings() ran; gates the exit write
     QThread *scanThread = nullptr;          // active background detection, if any
     QNetworkAccessManager *network = nullptr; // lazy, for the update check
 };
