@@ -125,6 +125,17 @@ On the Windows side, uninstalling "SteamDeck rEFInd GUI" from Settings > Apps as
 
 [Video tutorial by Deck Wizard](https://www.youtube.com/watch?v=ubWPIf2DbvE) — worth a watch before posting an issue.
 
+## Translations
+
+The GUI follows the system language and currently ships translations for 19 languages alongside English —
+German, Spanish, French, Italian, Portuguese, Russian, Ukrainian, Turkish,
+Japanese, Korean, Simplified Chinese, Vietnamese, Indonesian, Hindi,
+Bengali, Sicilian, Arabic, Persian (Farsi), and Urdu (right-to-left layout included
+for Arabic, Persian, and Urdu) (untranslated strings fall back to
+English). Translation contributions are welcome — see the contributor guide in
+[I18N_AUDIT.md](I18N_AUDIT.md): add a `SteamDeck_rEFInd_<lang>.ts` file under
+`GUI/src/`, list it in `CMakeLists.txt`, and translate it with Qt Linguist.
+
 ## Acknowledgements
 
 Special thanks to **[DeckWizard](https://www.youtube.com/c/DeckWizard)** for extensive testing and feedback.

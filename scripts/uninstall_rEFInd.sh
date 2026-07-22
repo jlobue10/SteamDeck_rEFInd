@@ -75,6 +75,15 @@ fi
 # "rEFInd Boot Manager" labels are covered.
 REMOVED_ENTRIES=""
 FOREIGN_ENTRIES=""
+# Snapshot the current NVRAM boot entries before changing them: a copy on
+# disk makes manual recovery trivial if anything goes sideways.
+NVRAM_BK_DIR="$HOME/.local/SteamDeck_rEFInd/nvram-backups"
+if mkdir -p "$NVRAM_BK_DIR" 2>/dev/null; then
+	efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null
+	# Keep the ten most recent snapshots.
+	ls -1t "$NVRAM_BK_DIR"/efibootmgr-*.txt 2>/dev/null | tail -n +11 | xargs -r rm -f
+fi
+
 if [ -n "$ESP_PARTUUID" ] && command -v efibootmgr >/dev/null 2>&1; then
 	while IFS= read -r line; do
 		num="$(printf '%s\n' "$line" | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*?[[:space:]].*/\1/p')"

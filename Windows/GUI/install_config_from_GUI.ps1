@@ -193,6 +193,11 @@ try {
     $src = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd\GUI'
     $dest = Join-Path $mount.Root 'EFI\refind'
     New-Item -ItemType Directory -Force $dest | Out-Null
+    # Keep one rollback copy of the live config before overwriting it.
+    $liveConf = Join-Path $dest 'refind.conf'
+    if (Test-Path $liveConf) {
+        Copy-Item -Force $liveConf (Join-Path $dest 'refind.conf.prev')
+    }
     $copied = 0
     foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
         $p = Join-Path $src $f

@@ -36,6 +36,9 @@ HOW="${RESOLVED#*|}"
 
 mkdir -p "$TARGET" 2>/dev/null || { echo "ERR_MKDIR $TARGET"; exit 4; }
 
+# Keep one rollback copy of the live config before overwriting it.
+[ -f "$TARGET/refind.conf" ] && cp -f "$TARGET/refind.conf" "$TARGET/refind.conf.prev" 2>/dev/null
+
 COPIED=0
 for f in $FILES; do
     [ -f "$SRC/$f" ] || continue
