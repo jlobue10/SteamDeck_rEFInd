@@ -127,8 +127,8 @@ On the Windows side, uninstalling "SteamDeck rEFInd GUI" from Settings > Apps as
 
 ## Translations
 
-The GUI follows the system language and currently ships translations for 19 languages alongside English —
-German, Spanish, French, Italian, Portuguese, Russian, Ukrainian, Turkish,
+The GUI follows the system language and currently ships translations for 20 languages alongside English —
+German, Dutch, Spanish, French, Italian, Portuguese, Russian, Ukrainian, Turkish,
 Japanese, Korean, Simplified Chinese, Vietnamese, Indonesian, Hindi,
 Bengali, Sicilian, Arabic, Persian (Farsi), and Urdu (right-to-left layout included
 for Arabic, Persian, and Urdu) (untranslated strings fall back to
