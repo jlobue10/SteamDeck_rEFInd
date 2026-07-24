@@ -99,7 +99,8 @@
 	# disk makes manual recovery trivial if anything goes sideways.
 	NVRAM_BK_DIR="$HOME/.local/SteamDeck_rEFInd/nvram-backups"
 	if mkdir -p "$NVRAM_BK_DIR" 2>/dev/null; then
-		efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null
+		# Best-effort: a failed snapshot must not abort the install (set -e).
+		efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null || true
 		# Keep the ten most recent snapshots.
 		ls -1t "$NVRAM_BK_DIR"/efibootmgr-*.txt 2>/dev/null | tail -n +11 | xargs -r rm -f
 	fi
