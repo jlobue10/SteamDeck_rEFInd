@@ -2,9 +2,24 @@
 # An alternate,  without pacman, rEFInd installation (from Sourceforge)
 # Please make sure that a password exists for the deck user before running
 (
+	READONLY_DISABLED=0
+	restore_readonly() {
+		status=$?
+		trap - EXIT
+		if [ "$READONLY_DISABLED" -eq 1 ]; then
+			if ! sudo steamos-readonly enable; then
+				echo "CRITICAL: SteamOS read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." >&2
+				exit 70
+			fi
+		fi
+		exit "$status"
+	}
+	trap restore_readonly EXIT
+	set -e
+
 	echo 0
 	echo "# Installation started: Password prompt..."
-	PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)"
+	PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)" || PASSWD=""
 	if ! printf '%s\n' "$PASSWD" | sudo -S -v 2>/dev/null; then
 		zenity --error --title="Password Error" --text="Incorrect password provided.\nPlease try again providing the correct sudo password." --width=400 2>/dev/null
 		echo 100
@@ -15,8 +30,8 @@
 	echo 20
 	echo "# Downloading rEFInd zip file..."
 	cd "$HOME/Downloads" || exit 1
-	wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
-	if [ $? -ne 0 ] || [ ! -s refind-bin-gnuefi-0.14.2.zip ]; then
+	if ! wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip ||
+		[ ! -s refind-bin-gnuefi-0.14.2.zip ]; then
 		zenity --error --title="Download Error" --text="Failed to download rEFInd from Sourceforge. Please check your internet connection and try again." --width=400 2>/dev/null
 		echo 100
 		echo "# Installation Failed. Could not download rEFInd."
@@ -24,15 +39,18 @@
 	fi
 	echo 25
 	echo "# Unzipping rEFInd zip..."
-	unzip -t refind-bin-gnuefi-0.14.2.zip >/dev/null 2>&1
-	if [ $? -ne 0 ]; then
+	if ! unzip -t refind-bin-gnuefi-0.14.2.zip >/dev/null 2>&1; then
 		zenity --error --title="Download Error" --text="The downloaded rEFInd archive is corrupt. Please try again." --width=400 2>/dev/null
 		echo 100
 		echo "# Installation Failed. Downloaded archive is corrupt."
 		exit 1
 	fi
 	unzip -o refind-bin-gnuefi-0.14.2.zip
-	sudo steamos-readonly disable
+	if ! sudo steamos-readonly disable; then
+		echo "# Installation failed: could not disable SteamOS read-only mode."
+		exit 1
+	fi
+	READONLY_DISABLED=1
 	sudo mkdir -p /esp/efi/refind
 	yes | sudo cp -f "$HOME/Downloads/refind-bin-0.14.2/refind/refind_x64.efi" /esp/efi/refind/
 	yes | sudo cp -rf "$HOME/Downloads/refind-bin-0.14.2/refind/drivers_x64/" /esp/efi/refind
@@ -73,7 +91,7 @@
 	# touch-usable, including rotating the portrait touch matrix onto
 	# rEFInd's landscape mode. Like the controller driver, download failure
 	# is non-fatal.
-	DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)"
+	DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)" || true
 	if [ "$DECK_PRODUCT" = "Galileo" ] || [ "$DECK_PRODUCT" = "Jupiter" ]; then
 		echo "# Installing touchscreen driver..."
 		TOUCH_DRV_URL="https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi"
@@ -95,7 +113,8 @@
 	# disk makes manual recovery trivial if anything goes sideways.
 	NVRAM_BK_DIR="$HOME/.local/SteamDeck_rEFInd/nvram-backups"
 	if mkdir -p "$NVRAM_BK_DIR" 2>/dev/null; then
-		efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null
+		# Best-effort: a failed snapshot must not abort the install (set -e).
+		efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null || true
 		# Keep the ten most recent snapshots.
 		ls -1t "$NVRAM_BK_DIR"/efibootmgr-*.txt 2>/dev/null | tail -n +11 | xargs -r rm -f
 	fi
@@ -105,18 +124,17 @@
 	# has been observed returning empty (util-linux 2.42), so fall back to
 	# sysfs, where a partition's parent directory is its disk.
 	# Diagnostics go to stderr: stdout is zenity's progress protocol.
-	ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")"
+	ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")" || true
 	ESP_PART="$(basename "$ESP_DEV")"
-	ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)"
+	ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)" || true
 	ESP_PARENT="$(lsblk -no PKNAME "$ESP_DEV" 2>/dev/null | head -1)"
 	if [ -z "$ESP_PARENT" ] && [ -n "$ESP_PART" ]; then
 		ESP_PARENT="$(basename "$(dirname "$(readlink -f "/sys/class/block/$ESP_PART")")")"
 	fi
 	ESP_DISK="/dev/$ESP_PARENT"
 	if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
-		echo "Warning: could not resolve the ESP's disk from /esp; falling back to /dev/nvme0n1 partition 1." >&2
-		ESP_DISK="/dev/nvme0n1"
-		ESP_PARTNUM=1
+		echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
+		exit 1
 	fi
 	# Recreate the SteamOS entry if it is missing (SteamOS updates can drop
 	# it). efibootmgr >= 18 appends "\t<device path>" after the label even
@@ -163,10 +181,27 @@
 		sudo efibootmgr -b "$WINDOWS_BOOTNUM" -A >/dev/null 2>&1 \
 			|| echo "Warning: could not deactivate the Windows boot entry." >&2
 	fi
-	sudo steamos-readonly enable
+	if ! sudo steamos-readonly enable; then
+		echo "# Installation failed: could not restore SteamOS read-only mode."
+		exit 1
+	fi
+	READONLY_DISABLED=0
 	echo 100
 	echo "# Installation finished."
 ) | zenity --title "Installing rEFInd from Sourceforge" --progress --no-cancel --width=500 2>/dev/null
+INSTALL_STATUS=${PIPESTATUS[0]}
+if [ "$INSTALL_STATUS" -ne 0 ]; then
+	if [ "$INSTALL_STATUS" -eq 70 ]; then
+		echo "Installation aborted and SteamOS read-only mode could not be restored." >&2
+		zenity --error --title="rEFInd installation failed" --width=450 \
+			--text="Installation stopped and read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." 2>/dev/null
+	else
+		echo "Installation aborted safely; SteamOS read-only mode was restored."
+		zenity --error --title="rEFInd installation failed" --width=450 \
+			--text="Installation stopped before completion. SteamOS read-only mode was restored. See the terminal window for details." 2>/dev/null
+	fi
+	exit "$INSTALL_STATUS"
+fi
 
 # Verify the result from live NVRAM and show it both in the terminal (the GUI
 # runs this in a transient xterm -- keep it open so the status can be read)
