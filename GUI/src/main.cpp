@@ -1,4 +1,5 @@
 #include "mainwindow.h"
+#include "platform.h"
 #include "uitranslation.h"
 
 #include <QApplication>
@@ -10,6 +11,7 @@ int main(int argc, char *argv[])
     // The name doubles as the translation-catalog prefix (see uitranslation.cpp).
     a.setApplicationName(QStringLiteral("SteamDeck_rEFInd"));
     a.setWindowIcon(QIcon(QStringLiteral(":/SteamDeck_rEFInd.png")));
+    Platform::prepareDataDir();
 
     // Saved override from the INI, or the system locale. Translator loading,
     // fallback order, and the qtbase catalogs all live in UiTranslation.

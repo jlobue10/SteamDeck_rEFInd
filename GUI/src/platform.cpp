@@ -10,6 +10,7 @@
 
 #ifdef Q_OS_WIN
 #include <qt_windows.h> // CREATE_NO_WINDOW
+#include <shlobj.h>     // SHGetKnownFolderPath
 #else
 #include <sys/stat.h> // ::stat, to trigger systemd ESP automounts
 #endif
@@ -26,19 +27,115 @@ QString dataDir()
     return QDir::fromNativeSeparators(base) + "/SteamDeck_rEFInd";
 }
 
-static bool runScriptInWindow(const QString &scriptPath, const QStringList &scriptArgs = {})
+static bool copySeedDir(const QString &source, const QString &destination)
 {
+    if (QFileInfo::exists(destination))
+        return true;
+    const QDir sourceDir(source);
+    if (!sourceDir.exists() || !QDir().mkpath(destination))
+        return false;
+    for (const QFileInfo &entry : sourceDir.entryInfoList(
+             QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot)) {
+        const QString target = destination + "/" + entry.fileName();
+        if (entry.isDir()) {
+            if (!copySeedDir(entry.filePath(), target))
+                return false;
+        } else if (!QFile::copy(entry.filePath(), target)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void prepareDataDir()
+{
+    const QString root = dataDir();
+    const QString shipped = QCoreApplication::applicationDirPath();
+    QDir().mkpath(root + "/GUI");
+    const QString seedConfig = shipped + "/GUI/refind.conf";
+    const QString userConfig = root + "/GUI/refind.conf";
+    if (!QFileInfo::exists(userConfig) && QFileInfo::exists(seedConfig))
+        QFile::copy(seedConfig, userConfig);
+    copySeedDir(shipped + "/icons", root + "/icons");
+    copySeedDir(shipped + "/backgrounds", root + "/backgrounds");
+}
+
+static bool isBelow(const QString &path, const QString &root)
+{
+    const QString cleanPath = QDir::cleanPath(path);
+    QString cleanRoot = QDir::cleanPath(root);
+    if (!cleanRoot.endsWith('/'))
+        cleanRoot += '/';
+    return cleanPath.startsWith(cleanRoot, Qt::CaseInsensitive);
+}
+
+static QString knownFolderPath(REFKNOWNFOLDERID folderId)
+{
+    PWSTR nativePath = nullptr;
+    if (FAILED(SHGetKnownFolderPath(folderId, KF_FLAG_DEFAULT, nullptr, &nativePath)))
+        return {};
+    const QString path = QDir::fromNativeSeparators(QString::fromWCharArray(nativePath));
+    CoTaskMemFree(nativePath);
+    return path;
+}
+
+static QString trustedScriptPath(const QString &name)
+{
+    const QString appDir = QFileInfo(QCoreApplication::applicationDirPath()).canonicalFilePath();
+    const QString script = QFileInfo(appDir + "/windows/" + name).canonicalFilePath();
+    if (appDir.isEmpty() || script.isEmpty() || !isBelow(script, appDir))
+        return {};
+
+    const QStringList protectedRoots = {
+        knownFolderPath(FOLDERID_ProgramFiles),
+        knownFolderPath(FOLDERID_ProgramFilesX64),
+        knownFolderPath(FOLDERID_ProgramFilesX86)
+    };
+    for (const QString &root : protectedRoots) {
+        if (!root.isEmpty() && isBelow(appDir, QDir::fromNativeSeparators(root)))
+            return script;
+    }
+    return {};
+}
+
+static QString systemPowerShell()
+{
+    QString systemDirectory(MAX_PATH, Qt::Uninitialized);
+    UINT length = GetSystemDirectoryW(
+        reinterpret_cast<LPWSTR>(systemDirectory.data()),
+        static_cast<UINT>(systemDirectory.size()));
+    if (length == 0)
+        return {};
+    if (length >= static_cast<UINT>(systemDirectory.size())) {
+        systemDirectory.resize(static_cast<int>(length) + 1);
+        length = GetSystemDirectoryW(
+            reinterpret_cast<LPWSTR>(systemDirectory.data()),
+            static_cast<UINT>(systemDirectory.size()));
+        if (length == 0 || length >= static_cast<UINT>(systemDirectory.size()))
+            return {};
+    }
+    systemDirectory.resize(static_cast<int>(length));
+    return QDir::toNativeSeparators(QDir::fromNativeSeparators(systemDirectory)
+                                    + "/WindowsPowerShell/v1.0/powershell.exe");
+}
+
+static bool runScriptInWindow(const QString &scriptName, const QStringList &scriptArgs = {})
+{
+    const QString scriptPath = trustedScriptPath(scriptName);
+    const QString powershell = systemPowerShell();
+    if (scriptPath.isEmpty() || powershell.isEmpty())
+        return false;
     QStringList args = {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
                         QStringLiteral("Bypass"), QStringLiteral("-NoExit"),
                         QStringLiteral("-File"), QDir::toNativeSeparators(scriptPath)};
     args += scriptArgs;
-    return QProcess::startDetached(QStringLiteral("powershell.exe"), args);
+    return QProcess::startDetached(powershell, args);
 }
 
 bool runInstallerScript(const QString &installSource)
 {
     Q_UNUSED(installSource); // only the SourceForge download exists on Windows
-    return runScriptInWindow(dataDir() + "/windows/install_rEFInd.ps1");
+    return runScriptInWindow(QStringLiteral("install_rEFInd.ps1"));
 }
 
 int installConfig(QString *output)
@@ -51,10 +148,18 @@ int installConfig(QString *output)
     proc.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args) {
         args->flags |= CREATE_NO_WINDOW;
     });
-    proc.start(QStringLiteral("powershell.exe"),
+    const QString script = trustedScriptPath(QStringLiteral("install_config_from_GUI.ps1"));
+    const QString powershell = systemPowerShell();
+    if (script.isEmpty() || powershell.isEmpty()) {
+        if (output)
+            *output = QCoreApplication::translate(
+                "Platform", "The privileged helper is not installed under Program Files.");
+        return -1;
+    }
+    proc.start(powershell,
                {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
                 QStringLiteral("Bypass"), QStringLiteral("-File"),
-                QDir::toNativeSeparators(dataDir() + "/windows/install_config_from_GUI.ps1")});
+                QDir::toNativeSeparators(script)});
     if (!proc.waitForStarted()) {
         if (output)
             *output = QCoreApplication::translate("Platform",
@@ -74,16 +179,17 @@ bool installConfigShowsOwnDialogs()
 
 bool installConfigScriptTrusted(QString *detail)
 {
-    // The .ps1 scripts are Authenticode-signed at release time, and signing
-    // rewrites the file, so a hash embedded at build time could never match.
+    const QString script = trustedScriptPath(QStringLiteral("install_config_from_GUI.ps1"));
     if (detail)
-        detail->clear();
-    return true;
+        *detail = script.isEmpty()
+            ? QCoreApplication::applicationDirPath() + "/windows/install_config_from_GUI.ps1"
+            : script;
+    return !script.isEmpty();
 }
 
 bool setBackgroundRandomizer(bool enable)
 {
-    return runScriptInWindow(dataDir() + "/windows/rEFInd_bg_randomizer_task.ps1",
+    return runScriptInWindow(QStringLiteral("rEFInd_bg_randomizer_task.ps1"),
                              {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
 }
 
@@ -127,6 +233,10 @@ QStringList installSourceOptions()
 QString dataDir()
 {
     return QDir::homePath() + "/.local/SteamDeck_rEFInd";
+}
+
+void prepareDataDir()
+{
 }
 
 bool runInstallerScript(const QString &installSource)

@@ -14,6 +14,10 @@ namespace Platform {
 // %LOCALAPPDATA%\SteamDeck_rEFInd on Windows.
 QString dataDir();
 
+// Populate a new per-user data directory from the immutable files shipped next
+// to the executable. Existing user files are never overwritten.
+void prepareDataDir();
+
 // Launches the rEFInd installer for the chosen source in a new terminal window.
 bool runInstallerScript(const QString &installSource);
 
@@ -40,9 +44,8 @@ bool installConfigShowsOwnDialogs();
 // staged zenity script and the ESP-resolution helper it sources into its
 // root payload. On mismatch (tampered, missing, or from another version)
 // returns false and puts the offending file's path in *detail — the caller
-// must refuse to run them and suggest reinstalling. Always true on Windows:
-// the .ps1 scripts are Authenticode-signed instead, and signing rewrites the
-// file so a build-time hash could never match.
+// must refuse to run them and suggest reinstalling. On Windows, privileged
+// scripts must resolve beneath the Program Files installation directory.
 bool installConfigScriptTrusted(QString *detail = nullptr);
 
 // Enables/disables the boot-background randomizer (systemd unit / scheduled task).

@@ -3,20 +3,23 @@
 # (the counterpart of rEFInd_bg_randomizer.service on Linux).
 param(
     [switch]$Enable,
-    [switch]$Disable
+    [switch]$Disable,
+    [switch]$Migrate
 )
 $ErrorActionPreference = 'Stop'
 
-$taskName = 'rEFInd_bg_randomizer'
+$taskName = 'SteamDeck_rEFInd_bg_randomizer'
+$legacyTaskName = 'rEFInd_bg_randomizer'
 $dataDir = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd'
-$script = Join-Path $dataDir 'windows\rEFInd_bg_randomizer.ps1'
+$script = Join-Path $PSScriptRoot 'rEFInd_bg_randomizer.ps1'
 $logFile = Join-Path $dataDir 'rEFInd_bg_randomizer.log'
+$powerShell = Join-Path $env:SystemRoot 'System32\WindowsPowerShell\v1.0\powershell.exe'
 
-if ($Enable) {
+function Register-RefindRandomizerTask {
     if (-not (Test-Path $script)) {
         throw "Randomizer script not found: $script"
     }
-    $action = New-ScheduledTaskAction -Execute 'powershell.exe' `
+    $action = New-ScheduledTaskAction -Execute $powerShell `
         -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$script`""
     $trigger = New-ScheduledTaskTrigger -AtLogOn -User $env:USERNAME
     $principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -RunLevel Highest -LogonType Interactive
@@ -26,6 +29,11 @@ if ($Enable) {
         -StartWhenAvailable -MultipleInstances IgnoreNew -ExecutionTimeLimit (New-TimeSpan -Minutes 5)
     Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger `
         -Principal $principal -Settings $settings -Force | Out-Null
+}
+
+if ($Enable) {
+    Register-RefindRandomizerTask
+    Unregister-ScheduledTask -TaskName $legacyTaskName -Confirm:$false -ErrorAction SilentlyContinue
     Write-Host 'Background randomizer task enabled (runs at each logon). Running it once now...'
     Start-ScheduledTask -TaskName $taskName
     Start-Sleep -Seconds 1
@@ -44,8 +52,16 @@ if ($Enable) {
         Get-Content $logFile | ForEach-Object { Write-Host $_ }
     }
 } elseif ($Disable) {
-    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue
+    foreach ($name in $taskName,$legacyTaskName) {
+        Unregister-ScheduledTask -TaskName $name -Confirm:$false -ErrorAction SilentlyContinue
+    }
     Write-Host 'Background randomizer task disabled.'
+} elseif ($Migrate) {
+    if (Get-ScheduledTask -TaskName $legacyTaskName -ErrorAction SilentlyContinue) {
+        Register-RefindRandomizerTask
+        Unregister-ScheduledTask -TaskName $legacyTaskName -Confirm:$false
+        Write-Host 'Migrated the legacy background randomizer task.'
+    }
 } else {
-    Write-Host 'Usage: rEFInd_bg_randomizer_task.ps1 -Enable | -Disable'
+    Write-Host 'Usage: rEFInd_bg_randomizer_task.ps1 -Enable | -Disable | -Migrate'
 }
