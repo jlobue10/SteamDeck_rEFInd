@@ -123,6 +123,10 @@ endif()
 
 target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
+if(WIN32)
+    target_link_libraries(SteamDeck_rEFInd PRIVATE shell32)
+endif()
+
 if(MSVC)
     # MinGW gets the manifest via rEFInd_GUI.rc; MSVC generates its own.
     target_link_options(SteamDeck_rEFInd PRIVATE "/MANIFESTUAC:level='requireAdministrator' uiAccess='false'")

@@ -58,10 +58,10 @@ keep producing unsigned builds.
 2. **Stage A** — upload `deploy/` and submit it under `deploy-contents`;
    SignPath returns the folder with `SteamDeck_rEFInd.exe` and the `.ps1` scripts
    signed. These replace the unsigned copies.
-3. Build the portable ZIP and the installer from the now-signed `deploy/`.
+3. Build the installer from the now-signed `deploy/`.
 4. **Stage B** — upload the setup exe and submit it under `installer`; the
    signed installer replaces the unsigned one.
-5. Attach the signed installer + portable ZIP to the release.
+5. Attach the signed installer to the release.
 
 ## Verifying a signature locally
 
