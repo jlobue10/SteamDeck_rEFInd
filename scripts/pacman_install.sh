@@ -2,9 +2,24 @@
 # A simple Steam Deck rEFInd automated install script using Pacman
 # Please make sure that a password exists for the deck user before running
 (
+	READONLY_DISABLED=0
+	restore_readonly() {
+		status=$?
+		trap - EXIT
+		if [ "$READONLY_DISABLED" -eq 1 ]; then
+			if ! sudo steamos-readonly enable; then
+				echo "CRITICAL: SteamOS read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." >&2
+				exit 70
+			fi
+		fi
+		exit "$status"
+	}
+	trap restore_readonly EXIT
+	set -e
+
 	echo 0
 	echo "# Installation started: Password prompt..."
-	PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)"
+	PASSWD="$(zenity --password --title="Enter sudo password" 2>/dev/null)" || PASSWD=""
 	if ! printf '%s\n' "$PASSWD" | sudo -S -v 2>/dev/null; then
 		zenity --error --title="Password Error" --text="Incorrect password provided.\nPlease try again providing the correct sudo password." --width=400 2>/dev/null
 		echo 100
@@ -12,7 +27,11 @@
 		exit 1
 	fi
 	unset PASSWD
-	sudo steamos-readonly disable
+	if ! sudo steamos-readonly disable; then
+		echo "# Installation failed: could not disable SteamOS read-only mode."
+		exit 1
+	fi
+	READONLY_DISABLED=1
 	echo 20
 	echo "# Initializing Pacman repositories..."
 	sudo pacman-key --init
@@ -58,7 +77,7 @@
 	# touch-usable, including rotating the portrait touch matrix onto
 	# rEFInd's landscape mode. Like the controller driver, download failure
 	# is non-fatal.
-	DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)"
+	DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)" || true
 	if [ "$DECK_PRODUCT" = "Galileo" ] || [ "$DECK_PRODUCT" = "Jupiter" ]; then
 		echo "# Installing touchscreen driver..."
 		TOUCH_DRV_URL="https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi"
@@ -90,18 +109,17 @@
 	# has been observed returning empty (util-linux 2.42), so fall back to
 	# sysfs, where a partition's parent directory is its disk.
 	# Diagnostics go to stderr: stdout is zenity's progress protocol.
-	ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")"
+	ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")" || true
 	ESP_PART="$(basename "$ESP_DEV")"
-	ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)"
+	ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)" || true
 	ESP_PARENT="$(lsblk -no PKNAME "$ESP_DEV" 2>/dev/null | head -1)"
 	if [ -z "$ESP_PARENT" ] && [ -n "$ESP_PART" ]; then
 		ESP_PARENT="$(basename "$(dirname "$(readlink -f "/sys/class/block/$ESP_PART")")")"
 	fi
 	ESP_DISK="/dev/$ESP_PARENT"
 	if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
-		echo "Warning: could not resolve the ESP's disk from /esp; falling back to /dev/nvme0n1 partition 1." >&2
-		ESP_DISK="/dev/nvme0n1"
-		ESP_PARTNUM=1
+		echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
+		exit 1
 	fi
 	# Recreate the SteamOS entry if it is missing (SteamOS updates can drop
 	# it). efibootmgr >= 18 appends "\t<device path>" after the label even
@@ -150,17 +168,33 @@
 	fi
 	echo 90
 	echo "# Enabling bootnext-refind service..."
-	sudo cp -f "$HOME/.local/SteamDeck_rEFInd/bootnext-refind.service" /etc/systemd/system/bootnext-refind.service
 	sudo systemctl daemon-reload
 	sudo systemctl enable --now bootnext-refind.service
 	if [ -n "$NEW_BOOTNUM" ]; then
 		sudo efibootmgr -n "$NEW_BOOTNUM" >/dev/null 2>&1 \
 			|| echo "Warning: could not set rEFInd as the next boot." >&2
 	fi
-	sudo steamos-readonly enable
+	if ! sudo steamos-readonly enable; then
+		echo "# Installation failed: could not restore SteamOS read-only mode."
+		exit 1
+	fi
+	READONLY_DISABLED=0
 	echo 100
 	echo "# Installation finished."
 ) | zenity --title "Installing rEFInd with Pacman" --progress --no-cancel --width=500 2>/dev/null
+INSTALL_STATUS=${PIPESTATUS[0]}
+if [ "$INSTALL_STATUS" -ne 0 ]; then
+	if [ "$INSTALL_STATUS" -eq 70 ]; then
+		echo "Installation aborted and SteamOS read-only mode could not be restored." >&2
+		zenity --error --title="rEFInd installation failed" --width=450 \
+			--text="Installation stopped and read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." 2>/dev/null
+	else
+		echo "Installation aborted safely; SteamOS read-only mode was restored."
+		zenity --error --title="rEFInd installation failed" --width=450 \
+			--text="Installation stopped before completion. SteamOS read-only mode was restored. See the terminal window for details." 2>/dev/null
+	fi
+	exit "$INSTALL_STATUS"
+fi
 
 # Verify the result from live NVRAM and show it both in the terminal (the GUI
 # runs this in a transient xterm -- keep it open so the status can be read)
