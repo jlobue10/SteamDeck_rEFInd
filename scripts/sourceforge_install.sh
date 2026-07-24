@@ -196,9 +196,9 @@ if [ "$INSTALL_STATUS" -ne 0 ]; then
 		zenity --error --title="rEFInd installation failed" --width=450 \
 			--text="Installation stopped and read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." 2>/dev/null
 	else
-		echo "Installation aborted safely; SteamOS read-only mode was restored."
+		echo "Installation aborted safely; SteamOS read-only protection is intact."
 		zenity --error --title="rEFInd installation failed" --width=450 \
-			--text="Installation stopped before completion. SteamOS read-only mode was restored. See the terminal window for details." 2>/dev/null
+			--text="Installation stopped before completion. SteamOS read-only protection is intact. See the terminal window for details." 2>/dev/null
 	fi
 	exit "$INSTALL_STATUS"
 fi
