@@ -43,6 +43,12 @@ function Enable-RefindFirmwarePrivilege {
                 $token, $false, [ref]$state, 0, [IntPtr]::Zero, [IntPtr]::Zero)) {
             throw "AdjustTokenPrivileges failed: $([Runtime.InteropServices.Marshal]::GetLastWin32Error())"
         }
+        # AdjustTokenPrivileges returns TRUE but sets ERROR_NOT_ALL_ASSIGNED
+        # (1300) when the token lacks the privilege (not elevated); UEFI
+        # variable reads would then fail with a confusing Win32 error later.
+        if ([Runtime.InteropServices.Marshal]::GetLastWin32Error() -eq 1300) {
+            throw 'SeSystemEnvironmentPrivilege is not held; run elevated.'
+        }
     } finally {
         [RefindFirmware.Native]::CloseHandle($token) | Out-Null
     }
