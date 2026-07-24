@@ -97,9 +97,11 @@ if [ -z "$ESP_PARENT" ] && [ -n "$ESP_PART" ]; then
 fi
 ESP_DISK="/dev/$ESP_PARENT"
 if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
-	echo "Warning: could not resolve the ESP's disk from /esp; falling back to /dev/nvme0n1 partition 1." >&2
-	ESP_DISK="/dev/nvme0n1"
-	ESP_PARTNUM=1
+	echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
+	# Read-only mode was disabled at the top of this script; don't leave the
+	# system writable on the failure path.
+	sudo steamos-readonly enable
+	exit 1
 fi
 
 # Recreate the SteamOS entry if it is missing (SteamOS updates can drop it).

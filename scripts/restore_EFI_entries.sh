@@ -16,9 +16,8 @@ if [ -z "$ESP_PARENT" ] && [ -n "$ESP_PART" ]; then
 fi
 ESP_DISK="/dev/$ESP_PARENT"
 if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
-	echo "Warning: could not resolve the ESP's disk from /esp; falling back to /dev/nvme0n1 partition 1." >&2
-	ESP_DISK="/dev/nvme0n1"
-	ESP_PARTNUM=1
+	echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
+	exit 1
 fi
 
 # efibootmgr >= 18 appends "\t<device path>" after the label even without -v,
