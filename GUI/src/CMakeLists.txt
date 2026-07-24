@@ -124,7 +124,9 @@ endif()
 target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network)
 
 if(WIN32)
-    target_link_libraries(SteamDeck_rEFInd PRIVATE shell32)
+    # shell32: SHGetKnownFolderPath; ole32: CoTaskMemFree; uuid: the
+    # FOLDERID_* GUID definitions (MinGW resolves them from libuuid).
+    target_link_libraries(SteamDeck_rEFInd PRIVATE shell32 ole32 uuid)
 endif()
 
 if(MSVC)

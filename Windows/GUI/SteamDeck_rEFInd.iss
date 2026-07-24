@@ -52,6 +52,33 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 ; plus windows\*.ps1, icons\, backgrounds\, and GUI\refind.conf (seed config).
 Source: "..\..\deploy\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 
+[InstallDelete]
+; Pre-3.x installed the app itself into %LOCALAPPDATA%\SteamDeck_rEFInd
+; (per-user). Its self-elevating exe and privileged helper scripts must not
+; stay runnable from the user-writable data directory, so remove the legacy
+; program files — keeping the user's GUI\, icons\ and backgrounds\ data —
+; along with the old per-user shortcuts that point at the removed exe.
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\windows"
+Type: files; Name: "{localappdata}\SteamDeck_rEFInd\{#AppExe}"
+Type: files; Name: "{localappdata}\SteamDeck_rEFInd\*.dll"
+Type: files; Name: "{localappdata}\SteamDeck_rEFInd\unins*"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\platforms"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\styles"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\imageformats"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\iconengines"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\tls"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\networkinformation"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\generic"
+Type: filesandordirs; Name: "{localappdata}\SteamDeck_rEFInd\translations"
+Type: files; Name: "{userdesktop}\{#AppName}.lnk"
+Type: filesandordirs; Name: "{userprograms}\{#AppName}"
+
+[Registry]
+; Drop the legacy per-user (HKCU) uninstall registration so Settings > Apps
+; doesn't list a duplicate whose uninstaller binaries were removed above. The
+; machine-wide registration under HKLM supersedes it.
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Uninstall\{{3D7E1C42-9A5B-4F60-BE18-2C6A9D4F1E70}_is1"; ValueType: none; Flags: deletekey dontcreatekey
+
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app}"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"

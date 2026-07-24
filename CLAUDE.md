@@ -50,7 +50,7 @@ mkdir -p build && cd build
 cmake ..
 make
 ```
-Windows (MSYS2 UCRT64): `cmake -G Ninja -S GUI/src -B build-win && cmake --build build-win`, then `bash Windows/GUI/assemble-deploy.sh build-win/SteamDeck_rEFInd.exe deploy` and compile `Windows/GUI/SteamDeck_rEFInd.iss` with Inno Setup. The Windows exe embeds a `requireAdministrator` manifest (via `rEFInd_GUI.rc` for MinGW / a link flag for MSVC). Pushing a `v*` tag runs `.github/workflows/windows-release.yml` to build + SignPath-sign + release the installer and portable ZIP (see `Windows/GUI/SIGNING.md`).
+Windows (MSYS2 UCRT64): `cmake -G Ninja -S GUI/src -B build-win && cmake --build build-win`, then `bash Windows/GUI/assemble-deploy.sh build-win/SteamDeck_rEFInd.exe deploy` and compile `Windows/GUI/SteamDeck_rEFInd.iss` with Inno Setup. The Windows exe embeds a `requireAdministrator` manifest (via `rEFInd_GUI.rc` for MinGW / a link flag for MSVC). Pushing a `v*` tag runs `.github/workflows/windows-release.yml` to build + SignPath-sign + release the installer (see `Windows/GUI/SIGNING.md`; no portable build is published — outside Program Files the app's privileged helpers would be user-writable).
 
 Requires Qt5 or Qt6 (`Widgets`, `LinguistTools`) and a C++17 toolchain. No test suite; validate by building and exercising against a real or spare ESP. The official Linux release artifact is produced via `PKGBUILD` (`makepkg`).
 
