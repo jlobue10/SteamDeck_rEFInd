@@ -119,10 +119,16 @@ function Enable-UefiPrivilege {
 }
 
 function Get-UefiVar([string]$name) {
-    $buf = New-Object byte[] 4096
-    $n = [RefindUefi.Native]::GetFirmwareEnvironmentVariableW($name, $EfiGlobalGuid, $buf, $buf.Length)
-    if ($n -eq 0) { return $null }
-    return ,$buf[0..($n - 1)]
+    for ($size = 1024; $size -le 1MB; $size *= 2) {
+        $buf = New-Object byte[] $size
+        $n = [RefindUefi.Native]::GetFirmwareEnvironmentVariableW($name, $EfiGlobalGuid, $buf, $buf.Length)
+        if ($n -gt 0) { return ,$buf[0..($n - 1)] }
+        $errorCode = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+        if ($errorCode -eq 122) { continue }
+        if ($errorCode -eq 2 -or $errorCode -eq 203) { return $null }
+        throw "Reading UEFI variable $name failed with Win32 error $errorCode."
+    }
+    throw "UEFI variable $name exceeds the 1 MiB safety limit."
 }
 
 # Empty/absent $value deletes the variable.
@@ -338,8 +344,9 @@ try {
     # Entries carrying Windows Boot Manager's optional-data blob are always
     # left alone -- overwriting {bootmgr}'s own variable would break Windows.
     $freeId = $null
-    foreach ($i in 0..255) {
-        $id = '{0:X4}' -f $i
+    $candidateIds = @((Get-BootOrderIds) + @(0..255 | ForEach-Object { '{0:X4}' -f $_ }) |
+        Select-Object -Unique)
+    foreach ($id in $candidateIds) {
         $existing = Get-UefiVar "Boot$id"
         if (-not $existing) {
             if (-not $freeId) { $freeId = $id }
@@ -349,6 +356,12 @@ try {
         if (-not $entryId -and $hex.Contains($loaderHex) -and $hex.Contains($espGuidHex) -and
             -not $hex.Contains($BootmgrBlobHex)) {
             $entryId = $id
+        }
+    }
+    if (-not $freeId) {
+        foreach ($i in 0..65535) {
+            $id = '{0:X4}' -f $i
+            if (-not (Get-UefiVar "Boot$id")) { $freeId = $id; break }
         }
     }
     if (-not $entryId) { $entryId = $freeId }
@@ -457,7 +470,7 @@ if ($backup) {
     Write-Host ''
     Write-Host "Previous boot settings were saved to: $backup"
     Write-Host 'To remove rEFInd again, run (as Administrator):'
-    Write-Host "  powershell -ExecutionPolicy Bypass -File `"$env:LOCALAPPDATA\SteamDeck_rEFInd\windows\uninstall_rEFInd.ps1`""
+    Write-Host "  powershell -ExecutionPolicy Bypass -File `"$env:ProgramFiles\SteamDeck_rEFInd\windows\uninstall_rEFInd.ps1`""
     Write-Host 'or uninstall "SteamDeck rEFInd GUI" from Windows Settings > Apps.'
 }
 

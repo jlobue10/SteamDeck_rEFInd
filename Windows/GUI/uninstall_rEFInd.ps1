@@ -93,10 +93,16 @@ function Enable-UefiPrivilege {
 }
 
 function Get-UefiVar([string]$name) {
-    $buf = New-Object byte[] 4096
-    $n = [RefindUefi.Native]::GetFirmwareEnvironmentVariableW($name, $EfiGlobalGuid, $buf, $buf.Length)
-    if ($n -eq 0) { return $null }
-    return ,$buf[0..($n - 1)]
+    for ($size = 1024; $size -le 1MB; $size *= 2) {
+        $buf = New-Object byte[] $size
+        $n = [RefindUefi.Native]::GetFirmwareEnvironmentVariableW($name, $EfiGlobalGuid, $buf, $buf.Length)
+        if ($n -gt 0) { return ,$buf[0..($n - 1)] }
+        $errorCode = [Runtime.InteropServices.Marshal]::GetLastWin32Error()
+        if ($errorCode -eq 122) { continue }
+        if ($errorCode -eq 2 -or $errorCode -eq 203) { return $null }
+        throw "Reading UEFI variable $name failed with Win32 error $errorCode."
+    }
+    throw "UEFI variable $name exceeds the 1 MiB safety limit."
 }
 
 # Empty/absent $value deletes the variable.
@@ -170,8 +176,9 @@ if ($esp -and $esp.Part) {
     try {
         $espGuidHex = ConvertTo-HexString (([guid]$esp.Part.Guid).ToByteArray())
         $loaderHex = ConvertTo-HexString ([System.Text.Encoding]::Unicode.GetBytes($RefindLoader))
-        foreach ($i in 0..255) {
-            $id = '{0:X4}' -f $i
+        $candidateIds = @((Get-BootOrderIds) + @(0..255 | ForEach-Object { '{0:X4}' -f $_ }) |
+            Select-Object -Unique)
+        foreach ($id in $candidateIds) {
             $bytes = Get-UefiVar "Boot$id"
             if (-not $bytes) { continue }
             $hex = ConvertTo-HexString $bytes
@@ -216,9 +223,11 @@ if ($esp -and $esp.Part) {
 }
 
 # 4. Remove the background randomizer scheduled task, if enabled.
-if (Get-ScheduledTask -TaskName 'rEFInd_bg_randomizer' -ErrorAction SilentlyContinue) {
-    Unregister-ScheduledTask -TaskName 'rEFInd_bg_randomizer' -Confirm:$false
-    Write-Host 'Removed the rEFInd_bg_randomizer scheduled task.'
+foreach ($taskName in 'SteamDeck_rEFInd_bg_randomizer','rEFInd_bg_randomizer') {
+    if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
+        Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
+        Write-Host "Removed the $taskName scheduled task."
+    }
 }
 
 # Summary, read back from live NVRAM.
