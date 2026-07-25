@@ -520,6 +520,26 @@ Li sfunni e l'iconi di sistema hannu a èssiri veri immàggini PNG (no simprici 
         <source>Failed to open %1 in the file manager.</source>
         <translation>Nun si potti gràpiri %1 nta lu gestori di file.</translation>
     </message>
+    <message>
+        <location filename="mainwindow.ui" line="544"/>
+        <source>Res Override</source>
+        <translation>Furzari a risuluzzioni</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="551"/>
+        <source>Write this width and height to the config instead of the automatically detected resolution. Leave unchecked to use the recommended automatic value.</source>
+        <translation>Scrivi sta larghizza e altizza nta la cunfigurazzioni mmeci di la risuluzzioni arrilivata autumaticamenti. Lassa senza signari pi usari lu valuri autumàticu cunsigghiatu.</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="576"/>
+        <source>Width in pixels</source>
+        <translation>Larghizza in pixel</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="611"/>
+        <source>Height in pixels</source>
+        <translation>Altizza in pixel</translation>
+    </message>
 </context>
 <context>
     <name>Platform</name>
@@ -532,6 +552,11 @@ Li sfunni e l'iconi di sistema hannu a èssiri veri immàggini PNG (no simprici 
         <location filename="platform.cpp" line="173" />
         <source>sudo could not be started.</source>
         <translation>Nun si potti avviari sudo.</translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="155"/>
+        <source>The privileged helper is not installed under Program Files.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

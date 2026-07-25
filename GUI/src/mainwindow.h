@@ -77,6 +77,7 @@ private:
     QString steamFirmwareBootNum();
     QList<Selection> currentSelections();
     QString generateConfigText(const QList<Selection> &selections);
+    QSize resolutionOverride() const;
     void onUpdateReply(bool ok, const QString &remoteRaw, const QString &errorString);
     void startDetection(bool resetToDefaults);
     void detectionFinished(const QList<BootEntry> &result, bool resetToDefaults);
@@ -96,6 +97,7 @@ private:
     QString settingsPath;
     OSDetector detector;
     QList<BootEntry> detected;
+    QSize panelPrefill; // quirk/EDID resolution, computed off-thread by startDetection
     bool populating = false;
     bool settingsLoaded = false; // readSettings() ran; gates the exit write
     QThread *scanThread = nullptr;          // active background detection, if any

@@ -30,7 +30,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.0.1";
+static const char APP_VERSION[] = "3.1.0";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -42,6 +42,8 @@ static QString noneOption()
     return MainWindow::tr("None");
 }
 
+static QSize effectivePanelResolution(); // defined above generateConfigText()
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -51,6 +53,12 @@ MainWindow::MainWindow(QWidget *parent)
     // widen it instead of squeezing; SetFixedSize keeps it non-user-resizable.
     ui->centralwidget->layout()->setSizeConstraint(QLayout::SetFixedSize);
     ui->TimeOut_lineEdit->setValidator(new QIntValidator(-1, 99, this));
+    ui->Res_Width_lineEdit->setValidator(new QIntValidator(1, 9999, this));
+    ui->Res_Height_lineEdit->setValidator(new QIntValidator(1, 9999, this));
+    connect(ui->Res_Override_checkBox, &QCheckBox::toggled,
+            ui->Res_Width_lineEdit, &QWidget::setEnabled);
+    connect(ui->Res_Override_checkBox, &QCheckBox::toggled,
+            ui->Res_Height_lineEdit, &QWidget::setEnabled);
 
     // OS icon size on the boot screen (rEFInd's big_icon_size). 128 is both
     // rEFInd's default and the shipped PNGs' native size, so it emits no
@@ -232,7 +240,12 @@ void MainWindow::startDetection(bool resetToDefaults)
     setScanningUi(true);
     QThread *thread = QThread::create([this, resetToDefaults] {
         const QList<BootEntry> result = detector.detect();
-        QMetaObject::invokeMethod(this, [this, result, resetToDefaults] {
+        // Also resolve the panel resolution here: the quirk probes and the
+        // EDID read each shell out on Windows, and readSettings() needs the
+        // value on the GUI thread to seed the Res Override boxes.
+        const QSize panelRes = effectivePanelResolution();
+        QMetaObject::invokeMethod(this, [this, result, panelRes, resetToDefaults] {
+            panelPrefill = panelRes;
             detectionFinished(result, resetToDefaults);
         }, Qt::QueuedConnection);
     });
@@ -572,6 +585,38 @@ QList<MainWindow::Selection> MainWindow::currentSelections()
     return selections;
 }
 
+// The resolution the built-in panel would report automatically: device
+// quirks first (portrait-native Legion Go panels, the Xbox Ally's wrong
+// numbered-mode pick), then the panel's native EDID/DRM mode. The generated
+// config deliberately does NOT use this — numbered mode 3 is the right mode
+// on every Deck — it only seeds the Res Override boxes. Note both Deck
+// panels are portrait-native, so the seed reads 800x1280 there; that is the
+// honest EDID value, and the override is never armed by default. Each quirk
+// probe shells out on Windows, so call from the GUI thread sparingly.
+static QSize effectivePanelResolution()
+{
+    if (OSDetector::isLegionGo2())
+        return QSize(1920, 1200);
+    if (OSDetector::isLegionGo())
+        return QSize(2560, 1600);
+    if (OSDetector::isXboxAlly())
+        return QSize(1920, 1080);
+    return OSDetector::nativePanelResolution();
+}
+
+// The user-armed resolution override, or an invalid QSize when the checkbox
+// is off or either box doesn't hold a positive number.
+QSize MainWindow::resolutionOverride() const
+{
+    if (!ui->Res_Override_checkBox->isChecked())
+        return QSize();
+    const int w = ui->Res_Width_lineEdit->text().toInt();
+    const int h = ui->Res_Height_lineEdit->text().toInt();
+    if (w <= 0 || h <= 0)
+        return QSize();
+    return QSize(w, h);
+}
+
 // Renders the full refind.conf as text — shared by Create Config (which
 // writes it) and the Preview dialog (which only displays it).
 QString MainWindow::generateConfigText(const QList<Selection> &selections)
@@ -588,7 +633,14 @@ QString MainWindow::generateConfigText(const QList<Selection> &selections)
     out << "hideui singleuser,hints,arrows,label,badges\n";
     out << "banner background.png\n";
     out << "banner_scale fillscreen\n";
-    out << "resolution 3\n";
+    // An explicitly armed Res Override wins; numbered mode 3 stays the
+    // default — it is the right mode on every Deck. The override is never
+    // active unless the user enabled the checkbox.
+    const QSize forced = resolutionOverride();
+    if (forced.isValid())
+        out << "resolution " << forced.width() << " " << forced.height() << "\n";
+    else
+        out << "resolution 3\n";
     const int iconSize = ui->Icon_Size_comboBox->currentData().toInt();
     if (iconSize > 0 && iconSize != 128) {
         out << "big_icon_size " << iconSize << "\n";
@@ -907,6 +959,12 @@ void MainWindow::readSettings()
     const QString timeout = settings.value(QStringLiteral("Timeout")).toString();
     settings.endGroup();
 
+    settings.beginGroup(QStringLiteral("Resolution"));
+    const bool resOverrideOn = settings.value(QStringLiteral("ResOverrideEnabled")).toBool();
+    QString resW = settings.value(QStringLiteral("ResOverrideWidth")).toString();
+    QString resH = settings.value(QStringLiteral("ResOverrideHeight")).toString();
+    settings.endGroup();
+
     settings.beginGroup(QStringLiteral("Paths"));
     lastBrowseDir = settings.value(QStringLiteral("LastBrowseDir")).toString();
     settings.endGroup();
@@ -932,6 +990,17 @@ void MainWindow::readSettings()
         ui->Icon_Size_comboBox->setCurrentIndex(iconIdx);
     if (!timeout.isEmpty())
         ui->TimeOut_lineEdit->setText(timeout);
+    // Seed the Res Override boxes with the panel's reported resolution
+    // (device quirk, else the EDID/DRM native mode) only when nothing was
+    // ever stored; saved values — including edits made with the override
+    // later disarmed — always win.
+    if (resW.isEmpty() && resH.isEmpty() && panelPrefill.isValid() && !panelPrefill.isEmpty()) {
+        resW = QString::number(panelPrefill.width());
+        resH = QString::number(panelPrefill.height());
+    }
+    ui->Res_Width_lineEdit->setText(resW);
+    ui->Res_Height_lineEdit->setText(resH);
+    ui->Res_Override_checkBox->setChecked(resOverrideOn);
     settingsLoaded = true;
 }
 
@@ -964,6 +1033,11 @@ void MainWindow::writeSettings()
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Timeout"));
     settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());
+    settings.endGroup();
+    settings.beginGroup(QStringLiteral("Resolution"));
+    settings.setValue(QStringLiteral("ResOverrideEnabled"), ui->Res_Override_checkBox->isChecked());
+    settings.setValue(QStringLiteral("ResOverrideWidth"), ui->Res_Width_lineEdit->text());
+    settings.setValue(QStringLiteral("ResOverrideHeight"), ui->Res_Height_lineEdit->text());
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Paths"));
     settings.setValue(QStringLiteral("LastBrowseDir"), lastBrowseDir);

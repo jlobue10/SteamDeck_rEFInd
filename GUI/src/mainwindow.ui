@@ -536,6 +536,90 @@
        </property>
       </widget>
      </item>
+     <item row="10" column="4" colspan="2" alignment="Qt::AlignRight">
+      <layout class="QHBoxLayout" name="resOverrideLayout">
+       <item alignment="Qt::AlignRight">
+        <widget class="QLabel" name="Res_Override_label">
+         <property name="text">
+          <string>Res Override</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="Res_Override_checkBox">
+         <property name="toolTip">
+          <string>Write this width and height to the config instead of the automatically detected resolution. Leave unchecked to use the recommended automatic value.</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="Res_Width_lineEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Width in pixels</string>
+         </property>
+         <property name="maxLength">
+          <number>4</number>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="Res_X_label">
+         <property name="text">
+          <string notr="true">x</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="Res_Height_lineEdit">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Height in pixels</string>
+         </property>
+         <property name="maxLength">
+          <number>4</number>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="11" column="0">
       <widget class="QPushButton" name="About_pushButton">
        <property name="minimumSize">
