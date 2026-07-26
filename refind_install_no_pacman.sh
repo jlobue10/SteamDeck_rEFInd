@@ -20,9 +20,12 @@ yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/tools_x64/ /esp/efi/refin
 yes | sudo ./refind-bin-0.14.2/refind-install
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/icons/ /esp/efi/refind
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/fonts/ /esp/efi/refind
-yes | sudo cp $CURRENT_WD/refind.conf /esp/efi/refind/refind.conf
-yes | sudo cp -rf $CURRENT_WD/themes/ /esp/efi/refind
-yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
+yes | sudo cp "$CURRENT_WD/refind.conf" /esp/efi/refind/refind.conf
+# backgrounds/, not themes/: there is no themes/ directory in this repo, so the
+# old copy always errored and refind.conf's "banner themes/background.png" could
+# never resolve -- rEFInd silently fell back to its default banner.
+yes | sudo cp -rf "$CURRENT_WD/backgrounds/" /esp/efi/refind
+yes | sudo cp -rf "$CURRENT_WD/icons/" /esp/efi/refind
 
 # SkorionOS Xbox 360 USB controller UEFI driver: dropping it into rEFInd's
 # drivers_x64 folder makes wired/docked Xbox-style gamepads usable in the
@@ -147,14 +150,18 @@ if [ -n "$WINDOWS_BOOTNUM" ]; then
 		|| echo "Warning: could not deactivate the Windows boot entry." >&2
 fi
 
-# Granting executable permissions to EFI entry restore script
-chmod +x $CURRENT_WD/scripts/restore_EFI_entries.sh
-mkdir -p ~/.local/SteamDeck_rEFInd/scripts/
-cp $CURRENT_WD/scripts/restore_EFI_entries.sh ~/.local/SteamDeck_rEFInd/scripts/
+# The unit below runs this script as root on every boot, so it has to live
+# somewhere the desktop user cannot write -- /etc is a persistent overlay on
+# SteamOS, so a root-owned copy there survives updates too. Installing it under
+# $HOME/.local instead would let any code running as the user replace it and
+# get root at the next boot.
+sudo install -d -m 0755 /etc/SteamDeck_rEFInd
+sudo install -o root -g root -m 0755 "$CURRENT_WD/scripts/restore_EFI_entries.sh" \
+	/etc/SteamDeck_rEFInd/restore_EFI_entries.sh
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
-yes | sudo cp $CURRENT_WD/systemd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+yes | sudo cp "$CURRENT_WD/systemd/bootnext-refind.service" /etc/systemd/system/bootnext-refind.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now bootnext-refind.service
 if [ -n "$NEW_BOOTNUM" ]; then

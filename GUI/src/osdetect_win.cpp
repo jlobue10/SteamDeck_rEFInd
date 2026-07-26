@@ -7,11 +7,21 @@
 
 // All system queries go through Windows PowerShell (always present on
 // Windows 10/11) with -Command passed as a single QProcess argument.
+//
+// The OutputEncoding prologue is load-bearing: Windows PowerShell 5.1 writes
+// redirected output in the OEM console codepage, and runCommand() decodes as
+// UTF-8. Any non-ASCII byte -- a localized volume label such as "Réservé au
+// système", or any user-renamed volume with an accent -- then made the whole
+// ConvertTo-Json payload invalid UTF-8, so QJsonDocument rejected it,
+// listPartitions() returned empty, and detection found no OS at all.
 static QString runPowerShell(const QString &command, bool *ok = nullptr)
 {
+    static const QString prologue =
+        QStringLiteral("[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;");
     return OSDetector::runCommand(QStringLiteral("powershell.exe"),
                                   {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
-                                   QStringLiteral("Bypass"), QStringLiteral("-Command"), command},
+                                   QStringLiteral("Bypass"), QStringLiteral("-Command"),
+                                   prologue + command},
                                   ok);
 }
 

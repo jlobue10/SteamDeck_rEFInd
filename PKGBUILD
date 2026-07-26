@@ -2,7 +2,7 @@
 
 _pkgname=SteamDeck_rEFInd
 pkgname=${_pkgname}
-pkgver=3.1.1
+pkgver=3.1.2
 pkgrel=1
 pkgdesc='SteamDeck rEFInd installer and customization GUI'
 arch=('x86_64')
@@ -38,4 +38,11 @@ package() {
 	install -Dm644 "${srcdir}/$_pkgname/SteamDeck_rEFInd.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png"
         install -Dm644 "${srcdir}/$_pkgname/systemd/rEFInd_bg_randomizer.service" "${pkgdir}/etc/systemd/system/rEFInd_bg_randomizer.service"
         install -Dm644 "${srcdir}/$_pkgname/systemd/bootnext-refind.service" "${pkgdir}/etc/systemd/system/bootnext-refind.service"
+        # Root-owned copies of the scripts the units above run as root. They must
+        # NOT be executed out of $HOME/.local (user-writable = root escalation),
+        # so the units point here; lib_esp_target.sh ships alongside the
+        # randomizer because that script sources it from its own directory.
+        install -Dm755 "${srcdir}/$_pkgname/scripts/restore_EFI_entries.sh" "${pkgdir}/etc/SteamDeck_rEFInd/restore_EFI_entries.sh"
+        install -Dm755 "${srcdir}/$_pkgname/scripts/rEFInd_bg_randomizer.sh" "${pkgdir}/etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh"
+        install -Dm644 "${srcdir}/$_pkgname/scripts/lib_esp_target.sh" "${pkgdir}/etc/SteamDeck_rEFInd/lib_esp_target.sh"
 }

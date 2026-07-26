@@ -12,7 +12,12 @@ BG_DIR=/home/deck/.local/SteamDeck_rEFInd/backgrounds
 . "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/lib_esp_target.sh" || exit 1
 trap esp_cleanup EXIT
 
-RAND_BG="$(ls "$BG_DIR" | grep .png | shuf -n1)"
+# -type f (not -L) and an anchored *.png glob on purpose: this runs as root at
+# every boot over a directory the desktop user owns, so following a symlink
+# named *.png would copy any root-readable file onto the ESP, and the old
+# `ls | grep .png` also matched unanchored ("notes-png.txt") and broke on
+# spaces in filenames.
+RAND_BG="$(find "$BG_DIR" -maxdepth 1 -type f -iname '*.png' 2>/dev/null | shuf -n1)"
 [ -n "$RAND_BG" ] || exit 0
 
 RESOLVED="$(resolve_refind_dir)" || {
@@ -21,6 +26,7 @@ RESOLVED="$(resolve_refind_dir)" || {
 }
 TARGET="${RESOLVED%%|*}"
 
-cp -f "$BG_DIR/$RAND_BG" "$TARGET/background.png" || exit 1
+esp_make_writable "$TARGET"
+cp -f "$RAND_BG" "$TARGET/background.png" || exit 1
 # Flush before a temporary mount (if one was made) is torn down by the trap.
 sync

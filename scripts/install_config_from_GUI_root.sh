@@ -73,13 +73,36 @@ esp_ensure_mounted() {
         return 0
     fi
     mp="$(mktemp -d)"
-    if mount "$dev" "$mp" 2> /dev/null; then
+    # Read-only for the probe: this runs as root without a password and mounts
+    # EVERY ESP-typed partition just to test whether rEFInd is on it, including
+    # whatever removable media is attached. Only the ESP actually chosen as the
+    # target gets remounted writable, via esp_make_writable below.
+    if mount -o ro,nosuid,nodev,noexec "$dev" "$mp" 2> /dev/null; then
         printf '%s\n' "$mp" >> "$ESP_TMPMNT_LIST"
         printf '%s\n' "$mp"
         return 0
     fi
     rmdir "$mp" 2> /dev/null
     return 1
+}
+
+# Make the ESP behind $1 (a mount point or any path under one) writable, but
+# only if it is one of our own read-only probe mounts. ESPs the system already
+# had mounted are left exactly as they were.
+esp_make_writable() {
+    local path="$1" m
+    [ -n "$path" ] || return 0
+    [ -f "$ESP_TMPMNT_LIST" ] || return 0
+    while read -r m; do
+        [ -n "$m" ] || continue
+        case "$path" in
+            "$m" | "$m"/*)
+                mount -o remount,rw "$m" 2> /dev/null
+                return 0
+                ;;
+        esac
+    done < "$ESP_TMPMNT_LIST"
+    return 0
 }
 
 esp_has_refind() { compgen -G "$1/EFI/refind/refind*.efi" > /dev/null 2>&1; }
@@ -173,6 +196,8 @@ RESOLVED="$(resolve_refind_dir)" || {
 }
 TARGET="${RESOLVED%%|*}"
 HOW="${RESOLVED#*|}"
+
+esp_make_writable "$TARGET"
 
 mkdir -p "$TARGET" 2> /dev/null || {
     echo "Could not create $TARGET -- the EFI System Partition may be mounted read-only."

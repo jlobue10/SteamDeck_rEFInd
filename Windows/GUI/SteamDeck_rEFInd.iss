@@ -7,7 +7,7 @@
 ; %LOCALAPPDATA%\SteamDeck_rEFInd.
 
 #define AppName "SteamDeck rEFInd GUI"
-#define AppVersion "3.1.1"
+#define AppVersion "3.1.2"
 #define AppExe "SteamDeck_rEFInd.exe"
 
 [Setup]

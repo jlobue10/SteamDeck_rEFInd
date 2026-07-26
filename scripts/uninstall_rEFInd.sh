@@ -158,6 +158,10 @@ if [ "$REMOVE_APP" -eq 1 ]; then
 	fi
 	rm -rf "$HOME/.local/SteamDeck_rEFInd"
 	rm -f "$HOME/Desktop/SteamDeck_rEFInd.desktop" "$HOME/Desktop/refind_GUI.desktop"
+	# The XDG launcher install-GUI.sh installs; without this the app-menu entry
+	# survives with an Exec target that no longer exists.
+	rm -f "$HOME/.local/share/applications/SteamDeck_rEFInd.desktop"
+	update-desktop-database "$HOME/.local/share/applications" 2>/dev/null
 	# The passwordless-config pieces install-GUI.sh put on the /etc overlay
 	# (remove the sudoers rule before the root-owned script it whitelists).
 	sudo rm -f /etc/sudoers.d/zz_SteamDeck_rEFInd_install_config

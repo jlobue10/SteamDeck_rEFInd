@@ -181,6 +181,16 @@
 		sudo efibootmgr -b "$WINDOWS_BOOTNUM" -A >/dev/null 2>&1 \
 			|| echo "Warning: could not deactivate the Windows boot entry." >&2
 	fi
+	echo 90
+	echo "# Enabling bootnext-refind service..."
+	# Same block as pacman_install.sh: without the unit, the next SteamOS update
+	# can reorder or drop the rEFInd entry and the Deck boots straight to SteamOS.
+	sudo systemctl daemon-reload
+	sudo systemctl enable --now bootnext-refind.service
+	if [ -n "$NEW_BOOTNUM" ]; then
+		sudo efibootmgr -n "$NEW_BOOTNUM" >/dev/null 2>&1 \
+			|| echo "Warning: could not set rEFInd as the next boot." >&2
+	fi
 	if ! sudo steamos-readonly enable; then
 		echo "# Installation failed: could not restore SteamOS read-only mode."
 		exit 1

@@ -1,15 +1,19 @@
 #!/bin/bash
 # A simple Steam Deck rEFInd automated install script
 
-passwd --status deck | tee ~/deck_passwd_status.txt
-awk '{
+# The invoking user, not a hardcoded "deck": this also runs on Bazzite,
+# ChimeraOS, and Decks whose user was renamed, where `passwd --status deck`
+# fails and every sudo call below would then fail too.
+INSTALL_USER="$(id -un)"
+passwd --status "$INSTALL_USER" | tee ~/deck_passwd_status.txt
+awk -v user="$INSTALL_USER" '{
 	if($2 =="P")
     {
 		print "Password is already set.";
 	}
     else
     {
-		print "Password has not been set. Please set password for deck user now.";
+		print "Password has not been set. Please set password for " user " now.";
 		system("passwd");
 	}
 }' ~/deck_passwd_status.txt
@@ -26,9 +30,9 @@ if sudo test -f /esp/efi/refind/refind.conf; then
 	sudo mv /esp/efi/refind/refind.conf /esp/efi/refind/refind-bkp.conf
 fi
 CURRENT_WD=$(pwd)
-yes | sudo cp $CURRENT_WD/refind-GUI.conf /esp/efi/refind/refind.conf
-yes | sudo cp -rf $CURRENT_WD/backgrounds/ /esp/efi/refind
-yes | sudo cp -rf $CURRENT_WD/icons/ /esp/efi/refind
+yes | sudo cp "$CURRENT_WD"/refind-GUI.conf /esp/efi/refind/refind.conf
+yes | sudo cp -rf "$CURRENT_WD"/backgrounds/ /esp/efi/refind
+yes | sudo cp -rf "$CURRENT_WD"/icons/ /esp/efi/refind
 
 # SkorionOS Xbox 360 USB controller UEFI driver: dropping it into rEFInd's
 # drivers_x64 folder makes wired/docked Xbox-style gamepads usable in the
@@ -153,14 +157,18 @@ if [ -n "$WINDOWS_BOOTNUM" ]; then
 		|| echo "Warning: could not deactivate the Windows boot entry." >&2
 fi
 
-# Granting executable permissions to EFI entry restore script
-chmod +x $CURRENT_WD/scripts/restore_EFI_entries.sh
-mkdir -p $HOME/.local/SteamDeck_rEFInd/GUI
-cp $CURRENT_WD/scripts/restore_EFI_entries.sh $HOME/.local/SteamDeck_rEFInd/
+# The unit below runs this script as root on every boot, so it has to live
+# somewhere the desktop user cannot write -- /etc is a persistent overlay on
+# SteamOS, so a root-owned copy there survives updates too. Installing it under
+# $HOME/.local instead would let any code running as the user replace it and
+# get root at the next boot.
+sudo install -d -m 0755 /etc/SteamDeck_rEFInd
+sudo install -o root -g root -m 0755 "$CURRENT_WD/scripts/restore_EFI_entries.sh" \
+	/etc/SteamDeck_rEFInd/restore_EFI_entries.sh
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)
-yes | sudo cp $CURRENT_WD/systemd/bootnext-refind.service /etc/systemd/system/bootnext-refind.service
+yes | sudo cp "$CURRENT_WD/systemd/bootnext-refind.service" /etc/systemd/system/bootnext-refind.service
 sudo systemctl daemon-reload
 sudo systemctl enable --now bootnext-refind.service
 if [ -n "$NEW_BOOTNUM" ]; then

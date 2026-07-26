@@ -34,6 +34,8 @@ RESOLVED="$(resolve_refind_dir)" || { echo "ERR_NOTARGET"; exit 3; }
 TARGET="${RESOLVED%%|*}"
 HOW="${RESOLVED#*|}"
 
+esp_make_writable "$TARGET"
+
 mkdir -p "$TARGET" 2>/dev/null || { echo "ERR_MKDIR $TARGET"; exit 4; }
 
 # Keep one rollback copy of the live config before overwriting it.

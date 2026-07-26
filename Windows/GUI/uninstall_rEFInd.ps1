@@ -136,6 +136,16 @@ function Get-BootOrderIds {
 }
 
 function Set-BootOrderIds([string[]]$ids) {
+    # Never call through with an empty list: Set-UefiVar treats a zero-length
+    # value as "delete the variable", so writing an empty order would remove
+    # BootOrder itself and leave the machine with no boot order at all (the
+    # Windows Boot Manager entry would still exist but be listed nowhere).
+    # A BootOrder still naming a deleted entry is harmless -- firmware skips
+    # missing entries -- so refusing is strictly safer than deleting.
+    if (-not $ids -or $ids.Count -eq 0) {
+        Write-Warning 'Refusing to write an empty BootOrder; leaving it unchanged.'
+        return $false
+    }
     $bytes = New-Object System.Collections.Generic.List[byte]
     foreach ($id in $ids) {
         $v = [convert]::ToUInt16($id, 16)
@@ -197,8 +207,29 @@ if ($esp -and $esp.Part) {
             }
         }
         if ($removed.Count) {
-            $order = @(Get-BootOrderIds) | Where-Object { $removed -notcontains $_ }
-            if (-not (Set-BootOrderIds $order)) {
+            $order = @(@(Get-BootOrderIds) | Where-Object { $removed -notcontains $_ })
+            if ($order.Count -eq 0) {
+                # Every id in BootOrder was a rEFInd entry we just deleted.
+                # Rebuild from the surviving Boot#### entries, preferring the
+                # one carrying the WINDOWS blob ({bootmgr}'s own variable),
+                # rather than writing an empty order (which would delete it).
+                $survivors = @()
+                $winFirst = @()
+                foreach ($id in $candidateIds) {
+                    if ($removed -contains $id) { continue }
+                    $b = Get-UefiVar "Boot$id"
+                    if (-not $b) { continue }
+                    if ((ConvertTo-HexString $b).Contains($BootmgrBlobHex)) {
+                        $winFirst += $id
+                    } else {
+                        $survivors += $id
+                    }
+                }
+                $order = @($winFirst) + @($survivors)
+            }
+            if ($order.Count -eq 0) {
+                Write-Warning 'No boot entries remain to order; leaving BootOrder unchanged.'
+            } elseif (-not (Set-BootOrderIds $order)) {
                 Write-Warning 'Could not update the firmware boot order.'
             }
         }

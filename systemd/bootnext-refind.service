@@ -4,7 +4,10 @@ Description=Set UEFI BootNext to rEFInd (and restore missing EFI entries)
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/bash -c '/home/deck/.local/SteamDeck_rEFInd/scripts/restore_EFI_entries.sh'
+# Root-owned copy on the persistent /etc overlay, NOT the one under
+# /home/deck/.local: a root unit must never execute a path the desktop user can
+# write, or replacing that file is a password-free root escalation.
+ExecStart=/etc/SteamDeck_rEFInd/restore_EFI_entries.sh
 
 [Install]
 WantedBy=multi-user.target

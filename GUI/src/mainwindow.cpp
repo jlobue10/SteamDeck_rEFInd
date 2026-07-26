@@ -30,7 +30,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.1.1";
+static const char APP_VERSION[] = "3.1.2";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -323,12 +323,20 @@ QList<BootEntry> MainWindow::comboOptions()
         }
         options.append(e);
     };
-    addFallback({QStringLiteral("Windows (SD)"), QStringLiteral("Windows Micro SD"),
-                 QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"),
-                 detector.removableEspPartUuid(true), false});
-    addFallback({QStringLiteral("Windows (USB)"), QStringLiteral("Windows USB"),
-                 QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"),
-                 detector.removableEspPartUuid(false), false});
+    // Only offered when the medium is actually present: unlike the Ventoy and
+    // Batocera fallbacks below, which carry a filesystem label as their volume,
+    // these are identified by partition GUID, and that is empty with no SD/USB
+    // ESP inserted. A stanza with no volume line makes rEFInd resolve the
+    // loader on its own ESP, so picking "Windows (SD)" with no card in would
+    // silently boot the *internal* Windows under the SD label.
+    const QString sdUuid = detector.removableEspPartUuid(true);
+    if (!sdUuid.isEmpty())
+        addFallback({QStringLiteral("Windows (SD)"), QStringLiteral("Windows Micro SD"),
+                     QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"), sdUuid, false});
+    const QString usbUuid = detector.removableEspPartUuid(false);
+    if (!usbUuid.isEmpty())
+        addFallback({QStringLiteral("Windows (USB)"), QStringLiteral("Windows USB"),
+                     QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"), usbUuid, false});
     addFallback({QStringLiteral("Ventoy"), QStringLiteral("Ventoy"),
                  QStringLiteral("/EFI/BOOT/grubx64_real.efi"), QStringLiteral("VTOYEFI"), false});
     addFallback({QStringLiteral("Batocera (SD)"), QStringLiteral("Batocera"),
@@ -551,12 +559,31 @@ QString MainWindow::steamFirmwareBootNum()
     return match.hasMatch() ? match.captured(1) : QString();
 }
 
+// rEFInd tokenizes config lines on whitespace and treats a double quote as a
+// string delimiter, so any value that can contain either has to be quoted, and
+// characters that would end the quoted string or the stanza have to go. These
+// values are not user-typed: menuName/loaderPath come from ESP vendor directory
+// names and from `title` lines in another ESP's loader/entries/*.conf, so a
+// directory called "My Distro" broke the stanza, and a crafted systemd-boot
+// title containing a quote plus braces could inject an extra boot stanza into a
+// config that is then installed to the ESP by root.
+static QString confQuote(const QString &value)
+{
+    QString clean = value;
+    clean.remove(QLatin1Char('"'));
+    clean.remove(QLatin1Char('{'));
+    clean.remove(QLatin1Char('}'));
+    clean.replace(QLatin1Char('\n'), QLatin1Char(' '));
+    clean.replace(QLatin1Char('\r'), QLatin1Char(' '));
+    return QLatin1Char('"') + clean + QLatin1Char('"');
+}
+
 QString MainWindow::createBootStanza(const BootEntry &entry, const QString &iconPath)
 {
     QString stanza;
     QTextStream out(&stanza);
-    out << "\nmenuentry \"" << entry.menuName << "\" {\n";
-    out << "\ticon " << iconPath << "\n";
+    out << "\nmenuentry " << confQuote(entry.menuName) << " {\n";
+    out << "\ticon " << confQuote(iconPath) << "\n";
     if (entry.supportsFirmwareBootnum && ui->Firmware_bootnum_CheckBox->isChecked()) {
         const QString bootNum = steamFirmwareBootNum();
         if (!bootNum.isEmpty()) {
@@ -567,8 +594,8 @@ QString MainWindow::createBootStanza(const BootEntry &entry, const QString &icon
         // Lookup failed: fall through to the regular loader entry.
     }
     if (!entry.volume.isEmpty())
-        out << "\tvolume \"" << entry.volume << "\"\n";
-    out << "\tloader " << entry.loaderPath << "\n";
+        out << "\tvolume " << confQuote(entry.volume) << "\n";
+    out << "\tloader " << confQuote(entry.loaderPath) << "\n";
     out << "\tgraphics on\n}\n";
     return stanza;
 }
@@ -616,9 +643,12 @@ QSize MainWindow::resolutionOverride() const
 {
     if (!ui->Res_Override_checkBox->isChecked())
         return QSize();
+    // Bounded, not just positive: setText() from the INI bypasses the widgets'
+    // validators, so a hand-edited or corrupt INI could otherwise emit
+    // "resolution 99999 99999" and leave rEFInd with no usable mode.
     const int w = ui->Res_Width_lineEdit->text().toInt();
     const int h = ui->Res_Height_lineEdit->text().toInt();
-    if (w <= 0 || h <= 0)
+    if (w < 640 || h < 480 || w > 16384 || h > 16384)
         return QSize();
     return QSize(w, h);
 }
@@ -628,9 +658,16 @@ QSize MainWindow::resolutionOverride() const
 QString MainWindow::generateConfigText(const QList<Selection> &selections)
 {
     QString text;
-    QString timeout = ui->TimeOut_lineEdit->text();
-    if (timeout.isEmpty())
-        timeout = QStringLiteral("5");
+    // Re-validate rather than trusting the widget text: QIntValidator accepts
+    // the intermediate string "-" while typing, and setText() from the INI is
+    // never validated at all. "timeout -" parses as 0 in rEFInd, which means
+    // "wait forever" -- on a handheld with no keyboard attached that is a menu
+    // that never boots.
+    bool timeoutOk = false;
+    int timeoutValue = ui->TimeOut_lineEdit->text().trimmed().toInt(&timeoutOk);
+    if (!timeoutOk || timeoutValue < -1 || timeoutValue > 99)
+        timeoutValue = 5;
+    const QString timeout = QString::number(timeoutValue);
 
     QTextStream out(&text);
     out << "# GUI generated refind.conf Config File\n";
@@ -732,8 +769,20 @@ void MainWindow::on_Create_Config_clicked()
                               tr("Could not write %1").arg(conf.fileName()));
         return;
     }
-    conf.write(generateConfigText(currentSelections()).toUtf8());
+    // A short write must not be reported as success: Install Config would copy
+    // a truncated refind.conf to the ESP, and a config cut off mid-stanza is a
+    // boot menu missing entries.
+    const QByteArray payload = generateConfigText(currentSelections()).toUtf8();
+    const qint64 written = conf.write(payload);
+    const bool flushed = conf.flush();
     conf.close();
+    if (written != payload.size() || !flushed || conf.error() != QFileDevice::NoError) {
+        QMessageBox::critical(this, tr("Create Config"),
+                              tr("Could not write %1 completely — the disk may be full. "
+                                 "The config was not updated.")
+                                  .arg(conf.fileName()));
+        return;
+    }
 
     copyPng(ui->Background_lineEdit, guiConfigDir + "/background.png");
     copyPng(ui->Boot_Option_01_Icon_lineEdit, guiConfigDir + "/os_icon1.png");
@@ -869,9 +918,22 @@ bool MainWindow::copyPng(QLineEdit *edit, const QString &destPath)
     const QString source = edit->text();
     if (source.isEmpty() || source == destPath)
         return true;
+    // Copy aside and rename over the target, so a failed copy leaves the
+    // previously staged image intact. Removing the destination first meant that
+    // choosing an image on since-unplugged external media destroyed the good
+    // staged copy while refind.conf still referenced it.
+    const QString tmpPath = destPath + QStringLiteral(".new");
+    QFile::remove(tmpPath);
+    if (!QFile::copy(source, tmpPath)) {
+        QFile::remove(tmpPath);
+        QMessageBox::warning(this, tr("Copy PNG"),
+                             tr("Could not copy %1 to %2").arg(source, destPath));
+        return false;
+    }
     if (QFile::exists(destPath))
         QFile::remove(destPath);
-    if (!QFile::copy(source, destPath)) {
+    if (!QFile::rename(tmpPath, destPath)) {
+        QFile::remove(tmpPath);
         QMessageBox::warning(this, tr("Copy PNG"),
                              tr("Could not copy %1 to %2").arg(source, destPath));
         return false;

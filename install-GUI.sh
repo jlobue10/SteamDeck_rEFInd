@@ -13,15 +13,59 @@ fi
 cd SteamDeck_rEFInd || exit 1
 CURRENT_WD="$(pwd)"
 
+# Thanks to Maclay74 steam-patch for the following syntax
+RELEASE=$(curl -s 'https://api.github.com/repos/jlobue10/SteamDeck_rEFInd/releases' | jq -r 'first(.[] | select(.prerelease == false))')
+VERSION=$(jq -r '.tag_name' <<< "${RELEASE}")
+# Releases also carry a -debug- split package (symbols only); install only the
+# regular package.
+DOWNLOAD_URL=$(jq -r 'first(.assets[].browser_download_url | select(endswith("x86_64.pkg.tar.zst") and (contains("-debug-") | not)))' <<< "${RELEASE}")
+
+if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
+    echo "Error: could not determine a release download URL from the GitHub API. Aborting." >&2
+    exit 1
+fi
+
+# Check out the tag matching the package being installed. The GUI refuses to run
+# the config-install scripts unless they hash-match the copies embedded in the
+# binary at build time, so staging main-branch scripts next to a release binary
+# makes Install Config fail as "possibly tampered with" for every user the
+# moment either script changes after a release.
+if [ -n "$VERSION" ] && [ "$VERSION" != "null" ]; then
+    if git fetch --depth 1 origin "refs/tags/$VERSION:refs/tags/$VERSION" >/dev/null 2>&1 &&
+        git checkout -q "$VERSION" >/dev/null 2>&1; then
+        printf 'Staging scripts from tag %s.\n' "$VERSION"
+    else
+        echo "Warning: could not check out $VERSION; staging main-branch scripts instead." >&2
+        echo "If Install Config later reports the script as modified, that is why." >&2
+    fi
+fi
+
 sudo steamos-readonly disable
 # Make sure readonly gets re-enabled even if the script aborts partway through
 trap 'sudo steamos-readonly enable' EXIT
-mkdir -p "$HOME/.local/SteamDeck_rEFInd"
-cp -rf "$CURRENT_WD/GUI/" "$HOME/.local/SteamDeck_rEFInd"
+mkdir -p "$HOME/.local/SteamDeck_rEFInd/GUI"
+# Stage GUI/ file by file rather than with a blanket cp -rf: rEFInd_GUI.ini holds
+# every saved setting, and refind.conf / background.png / os_icon*.png are what
+# Create Config staged. Re-running this installer is the documented recovery
+# after a SteamOS update, and it must not silently reset the user's config.
+for _src in "$CURRENT_WD"/GUI/*; do
+    [ -e "$_src" ] || continue
+    case "$(basename "$_src")" in
+        rEFInd_GUI.ini | refind.conf | background.png | os_icon?.png)
+            [ -e "$HOME/.local/SteamDeck_rEFInd/GUI/$(basename "$_src")" ] ||
+                cp -rf "$_src" "$HOME/.local/SteamDeck_rEFInd/GUI/"
+            ;;
+        *)
+            cp -rf "$_src" "$HOME/.local/SteamDeck_rEFInd/GUI/"
+            ;;
+    esac
+done
 cp -rf "$CURRENT_WD/icons/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/backgrounds/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/scripts/" "$HOME/.local/SteamDeck_rEFInd"
-cp -f "$CURRENT_WD/refind-GUI.conf" "$HOME/.local/SteamDeck_rEFInd/GUI/refind.conf"
+# Seed the config template only on a first install, for the same reason.
+[ -e "$HOME/.local/SteamDeck_rEFInd/GUI/refind.conf" ] ||
+    cp -f "$CURRENT_WD/refind-GUI.conf" "$HOME/.local/SteamDeck_rEFInd/GUI/refind.conf"
 # Shortcut inside GUI/ (the folder the app's Open Folder button shows) to the
 # backgrounds folder the randomizer picks from.
 ln -sfn ../backgrounds "$HOME/.local/SteamDeck_rEFInd/GUI/backgrounds"
@@ -35,18 +79,6 @@ fi
 #Clean up old icon...
 if [ -f "$HOME/Desktop/refind_GUI.desktop" ]; then
     rm -f "$HOME/Desktop/refind_GUI.desktop"
-fi
-
-# Thanks to Maclay74 steam-patch for the following syntax
-RELEASE=$(curl -s 'https://api.github.com/repos/jlobue10/SteamDeck_rEFInd/releases' | jq -r 'first(.[] | select(.prerelease == false))')
-VERSION=$(jq -r '.tag_name' <<< "${RELEASE}")
-# Releases also carry a -debug- split package (symbols only); install only the
-# regular package.
-DOWNLOAD_URL=$(jq -r 'first(.assets[].browser_download_url | select(endswith("x86_64.pkg.tar.zst") and (contains("-debug-") | not)))' <<< "${RELEASE}")
-
-if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
-    echo "Error: could not determine a release download URL from the GitHub API. Aborting." >&2
-    exit 1
 fi
 
 printf "Installing version %s...\n" "${VERSION}"
@@ -95,6 +127,21 @@ sudo install -d -m 0755 /etc/SteamDeck_rEFInd
 sudo install -o root -g root -m 0755 \
     "$CURRENT_WD/scripts/install_config_from_GUI_root.sh" \
     /etc/SteamDeck_rEFInd/install_config_from_GUI.sh
+
+# The two systemd units run these as root on every boot, so they get root-owned
+# copies here too -- executing (or sourcing) a $HOME/.local path from a root
+# unit would let any code running as the desktop user get root at the next boot.
+# The package installs the same files; doing it here as well means the units are
+# safe even when the installed release predates this change.
+sudo install -o root -g root -m 0755 \
+    "$CURRENT_WD/scripts/restore_EFI_entries.sh" \
+    /etc/SteamDeck_rEFInd/restore_EFI_entries.sh
+sudo install -o root -g root -m 0755 \
+    "$CURRENT_WD/scripts/rEFInd_bg_randomizer.sh" \
+    /etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh
+sudo install -o root -g root -m 0644 \
+    "$CURRENT_WD/scripts/lib_esp_target.sh" \
+    /etc/SteamDeck_rEFInd/lib_esp_target.sh
 
 INSTALL_USER="$(id -un)"
 sed "s/^USER /$INSTALL_USER /" "$CURRENT_WD/scripts/zz_SteamDeck_rEFInd_install_config" \
