@@ -30,7 +30,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.1.2";
+static const char APP_VERSION[] = "3.1.3";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -559,15 +559,12 @@ QString MainWindow::steamFirmwareBootNum()
     return match.hasMatch() ? match.captured(1) : QString();
 }
 
-// rEFInd tokenizes config lines on whitespace and treats a double quote as a
-// string delimiter, so any value that can contain either has to be quoted, and
-// characters that would end the quoted string or the stanza have to go. These
-// values are not user-typed: menuName/loaderPath come from ESP vendor directory
-// names and from `title` lines in another ESP's loader/entries/*.conf, so a
-// directory called "My Distro" broke the stanza, and a crafted systemd-boot
-// title containing a quote plus braces could inject an extra boot stanza into a
-// config that is then installed to the ESP by root.
-static QString confQuote(const QString &value)
+// These values are not user-typed: menuName/loaderPath come from ESP vendor
+// directory names and from `title` lines in another ESP's loader/entries/*.conf,
+// so a crafted systemd-boot title containing a quote plus braces could inject an
+// extra boot stanza into a config that is then installed to the ESP by root.
+// Stripping the quote/brace/newline characters closes that off.
+static QString confSanitize(const QString &value)
 {
     QString clean = value;
     clean.remove(QLatin1Char('"'));
@@ -575,7 +572,15 @@ static QString confQuote(const QString &value)
     clean.remove(QLatin1Char('}'));
     clean.replace(QLatin1Char('\n'), QLatin1Char(' '));
     clean.replace(QLatin1Char('\r'), QLatin1Char(' '));
-    return QLatin1Char('"') + clean + QLatin1Char('"');
+    return clean;
+}
+
+// Only menuentry titles and volume labels may be quoted. rEFInd does not strip
+// quotes from icon/loader path tokens, so quoting those lines (v3.1.2) made
+// every generated stanza unbootable — path lines get confSanitize() only.
+static QString confQuote(const QString &value)
+{
+    return QLatin1Char('"') + confSanitize(value) + QLatin1Char('"');
 }
 
 QString MainWindow::createBootStanza(const BootEntry &entry, const QString &iconPath)
@@ -583,7 +588,7 @@ QString MainWindow::createBootStanza(const BootEntry &entry, const QString &icon
     QString stanza;
     QTextStream out(&stanza);
     out << "\nmenuentry " << confQuote(entry.menuName) << " {\n";
-    out << "\ticon " << confQuote(iconPath) << "\n";
+    out << "\ticon " << confSanitize(iconPath) << "\n";
     if (entry.supportsFirmwareBootnum && ui->Firmware_bootnum_CheckBox->isChecked()) {
         const QString bootNum = steamFirmwareBootNum();
         if (!bootNum.isEmpty()) {
@@ -595,7 +600,7 @@ QString MainWindow::createBootStanza(const BootEntry &entry, const QString &icon
     }
     if (!entry.volume.isEmpty())
         out << "\tvolume " << confQuote(entry.volume) << "\n";
-    out << "\tloader " << confQuote(entry.loaderPath) << "\n";
+    out << "\tloader " << confSanitize(entry.loaderPath) << "\n";
     out << "\tgraphics on\n}\n";
     return stanza;
 }
