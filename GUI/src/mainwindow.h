@@ -8,6 +8,7 @@
 #include <QList>
 #include <QMainWindow>
 #include <QString>
+#include <QVariant>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -60,7 +61,11 @@ private:
     };
 
     void readSettings();
+    void readEarlySettings();
     void writeSettings();
+    void initSettingsPersistence();
+    void persistSetting(const QString &group, const QString &key, const QVariant &value);
+    void persistBootSelections();
     QList<QComboBox *> bootCombos() const;
     QList<BootEntry> comboOptions();
     void populateBootCombos();

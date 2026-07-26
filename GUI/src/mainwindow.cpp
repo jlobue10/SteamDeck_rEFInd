@@ -30,7 +30,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.1.0";
+static const char APP_VERSION[] = "3.1.1";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -111,9 +111,15 @@ MainWindow::MainWindow(QWidget *parent)
                 this, [this](int) { refreshDefaultBootCombo(); });
     }
 
+    // Every control except the boot-option combos (whose contents come from
+    // the scan) restores before the window shows and persists as it is
+    // changed — see readEarlySettings()/initSettingsPersistence().
+    readEarlySettings();
+    initSettingsPersistence();
+
     // Detection shells out (lsblk / PowerShell) and can take seconds; run it
-    // off the GUI thread so the window appears immediately. Settings load
-    // once the combos have real contents to select from.
+    // off the GUI thread so the window appears immediately. Boot-option
+    // selections load once the combos have real contents to select from.
     startDetection(false);
 }
 
@@ -925,7 +931,13 @@ void MainWindow::on_Boot_Option_04_Icon_lineEdit_editingFinished()
     checkPNGFile(ui->Boot_Option_04_Icon_lineEdit);
 }
 
-void MainWindow::readSettings()
+// Restores every control whose value doesn't depend on scan results. Runs
+// in the constructor, unlike readSettings(): that waits for the first
+// detection pass to deliver (many seconds of PowerShell probing on Windows),
+// and until then the controls sat on their compile-time defaults as if the
+// saved values had been lost — worse, a control changed during that window
+// was silently reverted when readSettings() finally applied the INI.
+void MainWindow::readEarlySettings()
 {
     QSettings settings(settingsPath, QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("CheckBoxes"));
@@ -939,6 +951,102 @@ void MainWindow::readSettings()
     settings.endGroup();
 
     settings.beginGroup(QStringLiteral("ComboBoxes"));
+    const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
+    const int iconSize = settings.value(QStringLiteral("IconSize")).toInt();
+    settings.endGroup();
+    ui->Install_Source_comboBox->setCurrentIndex(installSource);
+    // Stored as the pixel value, not the index/text, so saved settings survive
+    // relabeling; an unset key (0) keeps the constructor's 128 default.
+    const int iconIdx = ui->Icon_Size_comboBox->findData(iconSize);
+    if (iconIdx >= 0)
+        ui->Icon_Size_comboBox->setCurrentIndex(iconIdx);
+
+    settings.beginGroup(QStringLiteral("Timeout"));
+    const QString timeout = settings.value(QStringLiteral("Timeout")).toString();
+    settings.endGroup();
+    if (!timeout.isEmpty())
+        ui->TimeOut_lineEdit->setText(timeout);
+
+    settings.beginGroup(QStringLiteral("Resolution"));
+    ui->Res_Width_lineEdit->setText(settings.value(QStringLiteral("ResOverrideWidth")).toString());
+    ui->Res_Height_lineEdit->setText(settings.value(QStringLiteral("ResOverrideHeight")).toString());
+    ui->Res_Override_checkBox->setChecked(settings.value(QStringLiteral("ResOverrideEnabled")).toBool());
+    settings.endGroup();
+
+    settings.beginGroup(QStringLiteral("Paths"));
+    lastBrowseDir = settings.value(QStringLiteral("LastBrowseDir")).toString();
+    settings.endGroup();
+}
+
+void MainWindow::persistSetting(const QString &group, const QString &key, const QVariant &value)
+{
+    QSettings settings(settingsPath, QSettings::IniFormat);
+    settings.beginGroup(group);
+    settings.setValue(key, value);
+    settings.endGroup();
+}
+
+// Writes each setting the moment the user changes its control, like
+// browsePng() already did for LastBrowseDir: the destructor's writeSettings()
+// never runs when the app is force-terminated (overlay / task switcher,
+// suspend on handhelds), which used to drop every change since launch.
+void MainWindow::initSettingsPersistence()
+{
+    connect(ui->Last_OS_CheckBox, &QCheckBox::toggled, this, [this](bool on) {
+        persistSetting(QStringLiteral("CheckBoxes"), QStringLiteral("LastOSCheckBox"), on);
+    });
+    connect(ui->Firmware_bootnum_CheckBox, &QCheckBox::toggled, this, [this](bool on) {
+        persistSetting(QStringLiteral("CheckBoxes"), QStringLiteral("FW_bootNum_CheckBox"), on);
+    });
+    connect(ui->Enable_Mouse_checkBox, &QCheckBox::toggled, this, [this](bool on) {
+        persistSetting(QStringLiteral("CheckBoxes"), QStringLiteral("Enable_Mouse_CheckBox"), on);
+    });
+    connect(ui->Extras_checkBox, &QCheckBox::toggled, this, [this](bool on) {
+        persistSetting(QStringLiteral("CheckBoxes"), QStringLiteral("IncludeExtraEntries"), on);
+    });
+    connect(ui->Install_Source_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        if (index >= 0)
+            persistSetting(QStringLiteral("ComboBoxes"), QStringLiteral("InstallSourceComboBox"), index);
+    });
+    connect(ui->Icon_Size_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        if (index >= 0)
+            persistSetting(QStringLiteral("ComboBoxes"), QStringLiteral("IconSize"),
+                           ui->Icon_Size_comboBox->currentData().toInt());
+    });
+    connect(ui->TimeOut_lineEdit, &QLineEdit::textEdited, this, [this](const QString &text) {
+        persistSetting(QStringLiteral("Timeout"), QStringLiteral("Timeout"), text);
+    });
+    connect(ui->Res_Override_checkBox, &QCheckBox::toggled, this, [this](bool on) {
+        persistSetting(QStringLiteral("Resolution"), QStringLiteral("ResOverrideEnabled"), on);
+    });
+    connect(ui->Res_Width_lineEdit, &QLineEdit::textEdited, this, [this](const QString &text) {
+        persistSetting(QStringLiteral("Resolution"), QStringLiteral("ResOverrideWidth"), text);
+    });
+    connect(ui->Res_Height_lineEdit, &QLineEdit::textEdited, this, [this](const QString &text) {
+        persistSetting(QStringLiteral("Resolution"), QStringLiteral("ResOverrideHeight"), text);
+    });
+
+    // Boot-option selections only restore after the scan, so gate on
+    // settingsLoaded (a half-restored set must not overwrite the INI — same
+    // reason the destructor is gated) and on populating (combo rebuilds).
+    const auto persistSelections = [this] {
+        if (settingsLoaded && !populating)
+            persistBootSelections();
+    };
+    for (QComboBox *combo : bootCombos())
+        connect(combo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, persistSelections);
+    connect(ui->Default_Boot_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, persistSelections);
+}
+
+// Restores the boot-option selections; everything else is handled by
+// readEarlySettings() before the window even shows.
+void MainWindow::readSettings()
+{
+    QSettings settings(settingsPath, QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("ComboBoxes"));
     const QString boot1 = settings.value(QStringLiteral("BootOption01Text")).toString();
     const QString boot2 = settings.value(QStringLiteral("BootOption02Text")).toString();
     const QString boot3 = settings.value(QStringLiteral("BootOption03Text")).toString();
@@ -951,22 +1059,13 @@ void MainWindow::readSettings()
         settings.value(QStringLiteral("BootOption03Key")).toString(),
         settings.value(QStringLiteral("BootOption04Key")).toString()};
     const QString defaultBoot = settings.value(QStringLiteral("DefaultBootText")).toString();
-    const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
-    const int iconSize = settings.value(QStringLiteral("IconSize")).toInt();
     settings.endGroup();
 
-    settings.beginGroup(QStringLiteral("Timeout"));
-    const QString timeout = settings.value(QStringLiteral("Timeout")).toString();
-    settings.endGroup();
-
+    // Re-read rather than reusing readEarlySettings()' values: the boxes are
+    // live during the scan and edits persist immediately.
     settings.beginGroup(QStringLiteral("Resolution"));
-    const bool resOverrideOn = settings.value(QStringLiteral("ResOverrideEnabled")).toBool();
-    QString resW = settings.value(QStringLiteral("ResOverrideWidth")).toString();
-    QString resH = settings.value(QStringLiteral("ResOverrideHeight")).toString();
-    settings.endGroup();
-
-    settings.beginGroup(QStringLiteral("Paths"));
-    lastBrowseDir = settings.value(QStringLiteral("LastBrowseDir")).toString();
+    const QString resW = settings.value(QStringLiteral("ResOverrideWidth")).toString();
+    const QString resH = settings.value(QStringLiteral("ResOverrideHeight")).toString();
     settings.endGroup();
 
     populateBootCombos();
@@ -982,29 +1081,22 @@ void MainWindow::readSettings()
         compactBootSelections();
     }
     setComboText(ui->Default_Boot_comboBox, defaultBoot);
-    ui->Install_Source_comboBox->setCurrentIndex(installSource);
-    // Stored as the pixel value, not the index/text, so saved settings survive
-    // relabeling; an unset key (0) keeps the constructor's 128 default.
-    const int iconIdx = ui->Icon_Size_comboBox->findData(iconSize);
-    if (iconIdx >= 0)
-        ui->Icon_Size_comboBox->setCurrentIndex(iconIdx);
-    if (!timeout.isEmpty())
-        ui->TimeOut_lineEdit->setText(timeout);
     // Seed the Res Override boxes with the panel's reported resolution
     // (device quirk, else the EDID/DRM native mode) only when nothing was
     // ever stored; saved values — including edits made with the override
-    // later disarmed — always win.
+    // later disarmed — always win. Deferred here because panelPrefill is
+    // computed on the detection worker thread.
     if (resW.isEmpty() && resH.isEmpty() && panelPrefill.isValid() && !panelPrefill.isEmpty()) {
-        resW = QString::number(panelPrefill.width());
-        resH = QString::number(panelPrefill.height());
+        ui->Res_Width_lineEdit->setText(QString::number(panelPrefill.width()));
+        ui->Res_Height_lineEdit->setText(QString::number(panelPrefill.height()));
     }
-    ui->Res_Width_lineEdit->setText(resW);
-    ui->Res_Height_lineEdit->setText(resH);
-    ui->Res_Override_checkBox->setChecked(resOverrideOn);
     settingsLoaded = true;
 }
 
-void MainWindow::writeSettings()
+// The nine boot-selection keys, written together (they are only meaningful
+// as a set): by the destructor's exit snapshot and, once settingsLoaded, by
+// every user change to one of the five combos.
+void MainWindow::persistBootSelections()
 {
     QSettings settings(settingsPath, QSettings::IniFormat);
     settings.beginGroup(QStringLiteral("ComboBoxes"));
@@ -1021,6 +1113,14 @@ void MainWindow::writeSettings()
     settings.setValue(QStringLiteral("BootOption03Key"), comboKey(ui->Boot_Option_03_comboBox));
     settings.setValue(QStringLiteral("BootOption04Key"), comboKey(ui->Boot_Option_04_comboBox));
     settings.setValue(QStringLiteral("DefaultBootText"), ui->Default_Boot_comboBox->currentText());
+    settings.endGroup();
+}
+
+void MainWindow::writeSettings()
+{
+    persistBootSelections();
+    QSettings settings(settingsPath, QSettings::IniFormat);
+    settings.beginGroup(QStringLiteral("ComboBoxes"));
     settings.setValue(QStringLiteral("InstallSourceComboBox"), ui->Install_Source_comboBox->currentIndex());
     settings.setValue(QStringLiteral("IconSize"), ui->Icon_Size_comboBox->currentData().toInt());
     settings.remove(QStringLiteral("LinuxComboBox"));
