@@ -2,6 +2,8 @@
 
 An easy [rEFInd](https://www.rodsbooks.com/refind/) boot manager setup for the Steam Deck, for dual booting SteamOS alongside Windows (internal NVMe or micro SD card), other Linux distros, Batocera, and Ventoy.
 
+![Steam Deck rEFInd Setup main window with auto-detected boot options](images/SteamDeck_rEFInd_GUI_screenshot.png)
+
 Please feel free to donate and support me at the following link. Donations are not required, nor are they expected. I will continue to work on this repository and potential future variations, with or without donations.
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=2PSSUQVX33L6N">
   <img src="https://raw.githubusercontent.com/stefan-niedermann/paypal-donate-button/master/paypal-donate-button.png" alt="Donate with PayPal" />
