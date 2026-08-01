@@ -2,7 +2,7 @@
 
 _pkgname=SteamDeck_rEFInd
 pkgname=${_pkgname}
-pkgver=3.2.0
+pkgver=3.2.1
 pkgrel=1
 pkgdesc='SteamDeck rEFInd installer and customization GUI'
 arch=('x86_64')

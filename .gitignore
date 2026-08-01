@@ -24,3 +24,8 @@ qrc_*.cpp
 
 # Packaged release artifacts
 *.pkg.tar.zst
+
+# Raw upstream theme clones (working material; the normalized copies under
+# themes/<name>/ are the shipped ones)
+themes/*-main/
+themes/*-master/
