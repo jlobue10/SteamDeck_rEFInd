@@ -38,7 +38,18 @@ if [ -z "$USER_HOME" ] || [ ! -d "$USER_HOME" ]; then
     exit 2
 fi
 SRC="$USER_HOME/.local/SteamDeck_rEFInd/GUI"
-FILES="refind.conf background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png"
+FILES="refind.conf background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png active_theme.conf"
+
+# active_theme.conf publishes into the themes/ subdirectory (the generated
+# refind.conf's include line points at themes/active_theme.conf); everything
+# else lands next to refind.conf. Like the images, it is optional: absent when
+# the Theme combo is None, and its absence must not fail the install.
+dest_dir_for() {
+    case "$1" in
+        active_theme.conf) printf '%s\n' "$TARGET/themes" ;;
+        *) printf '%s\n' "$TARGET" ;;
+    esac
+}
 
 # ---------------------------------------------------------------------------
 # ESP resolution, inlined from scripts/lib_esp_target.sh (see rule 1 above).
@@ -214,7 +225,8 @@ mkdir -p "$TARGET" 2> /dev/null || {
 # small ESP). Only the exact ".<name>.new.<suffix>" shapes created below are
 # matched, so no live file can be touched.
 for f in $FILES refind.conf.prev; do
-    for stale in "$TARGET/.$f.new."*; do
+    d="$(dest_dir_for "$f")"
+    for stale in "$d/.$f.new."*; do
         [ -f "$stale" ] && rm -f -- "$stale" 2> /dev/null
     done
 done
@@ -237,8 +249,13 @@ for f in $FILES; do
     # exfiltrate any root-readable file onto the (world-readable when
     # temp-mounted) ESP. runuser can only read what the user can.
     runuser -u "$RUN_USER" -- test -f "$SRC/$f" 2> /dev/null || continue
-    stage="$(mktemp "$TARGET/.${f}.new.XXXXXX")" || {
-        echo "Could not create a staging file in $TARGET -- the ESP may be full or read-only."
+    d="$(dest_dir_for "$f")"
+    mkdir -p "$d" 2> /dev/null || {
+        echo "Could not create $d -- the EFI System Partition may be mounted read-only."
+        exit 4
+    }
+    stage="$(mktemp "$d/.${f}.new.XXXXXX")" || {
+        echo "Could not create a staging file in $d -- the ESP may be full or read-only."
         exit 5
     }
     STAGED["$f"]="$stage"
@@ -280,7 +297,7 @@ fi
 for f in $FILES; do
     [ "$f" = refind.conf ] && continue
     [ -n "${STAGED[$f]:-}" ] || continue
-    if ! mv -f -- "${STAGED[$f]}" "$TARGET/$f" 2> /dev/null; then
+    if ! mv -f -- "${STAGED[$f]}" "$(dest_dir_for "$f")/$f" 2> /dev/null; then
         echo "Failed while publishing $f; the live config was not changed."
         exit 5
     fi

@@ -1,0 +1,15 @@
+[Unit]
+Description=Randomize Theme on each rEFInd boot
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# Root-owned copy on the persistent /etc overlay, NOT the one under
+# /home/deck/.local: a root unit must never execute (or source) a path the
+# desktop user can write, or replacing it is a password-free root escalation.
+# lib_esp_target.sh, which this script sources from its own directory, is
+# installed alongside it there.
+ExecStart=/etc/SteamDeck_rEFInd/rEFInd_theme_randomizer.sh
+
+[Install]
+WantedBy=multi-user.target

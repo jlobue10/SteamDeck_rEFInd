@@ -46,6 +46,9 @@ private slots:
     void on_Disable_sysd_pushButton_clicked();
     void on_Rand_BG_On_pushButton_clicked();
     void on_Rand_BG_Off_pushButton_clicked();
+    void on_Install_Themes_pushButton_clicked();
+    void on_Theme_Rand_On_pushButton_clicked();
+    void on_Theme_Rand_Off_pushButton_clicked();
     void on_Open_Folder_pushButton_clicked();
     void on_Preview_pushButton_clicked();
     void on_Language_comboBox_currentIndexChanged(int index);
@@ -89,6 +92,11 @@ private:
     void setScanningUi(bool scanning);
     void applyDynamicTexts();
     void populateLanguageCombo();
+    void populateThemeCombo();
+    QString themesRootDir() const;
+    QStringList availableThemes() const;
+    QString resolveThemeChoice(const QString &choice);
+    bool stageActiveThemeConf(const QString &themeName);
     void equalizeActionButtonWidths();
     void appendLog(const QString &event, const QString &details = QString());
     static QString entryKey(const BootEntry &entry);

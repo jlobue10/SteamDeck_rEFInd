@@ -12,3 +12,4 @@
 #
 # The trailing "" forbids passing any arguments to the whitelisted script.
 USER ALL = NOPASSWD: /etc/SteamDeck_rEFInd/install_config_from_GUI.sh ""
+USER ALL = NOPASSWD: /etc/SteamDeck_rEFInd/install_themes_from_GUI.sh ""

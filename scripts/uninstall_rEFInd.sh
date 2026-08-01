@@ -86,7 +86,7 @@ echo "Removing the Deck-side rEFInd install..."
 # 1. Disable the systemd units first: bootnext-refind re-creates the rEFInd
 # boot entry (restore_EFI_entries.sh) on every boot, which would undo the
 # cleanup below on the next reboot.
-for unit in bootnext-refind.service rEFInd_bg_randomizer.service; do
+for unit in bootnext-refind.service rEFInd_bg_randomizer.service rEFInd_theme_randomizer.service; do
 	if systemctl is-enabled "$unit" >/dev/null 2>&1; then
 		sudo systemctl disable --now "$unit" >/dev/null 2>&1
 		echo "Disabled $unit."

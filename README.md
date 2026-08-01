@@ -45,6 +45,41 @@ If you ever need to do it manually, edit `/esp/efi/refind/refind.conf` with `sud
 
 For quick config changes from Game Mode, set up the [Plasma Nested Session](https://gist.github.com/davidedmundson/8e1732b2c8b539fd3e6ab41a65bcab74) and add its shortcut to Steam. Launch the nested session, run the GUI, install your changes, then use the 'Return to Gaming Mode' desktop shortcut to exit.
 
+## Themes
+
+The repo ships a set of community rEFInd themes under `themes/`. A theme restyles the whole boot menu at once — background, OS/tool icons, selection highlights, and (for some themes) fonts — by way of the theme's own `theme.conf`, which supersedes the matching settings in the generated `refind.conf`.
+
+How it works: when a theme is selected, **Create Config** appends a single stable line to the end of the generated config — `include themes/active_theme.conf` — and stages `active_theme.conf` (a copy of the chosen theme's `theme.conf`) next to it. Switching themes just replaces that one file; `refind.conf` itself never changes per theme.
+
+Using themes from the GUI:
+
+1. **Theme** dropdown — pick a theme (or `Random` to have one picked for you at Create Config time; `None` keeps the classic look). Then **Create Config** and **Install Config** as usual.
+2. **Install Themes** — copies the whole `themes/` tree to the ESP (`EFI/refind/themes/`, about 12 MB). Needed once before an installed config's theme can render, and again only if the shipped themes change.
+3. **Theme Rand On / Theme Rand Off** (SteamOS/Linux only) — enable or disable the per-boot theme randomizer service (`rEFInd_theme_randomizer`): on each SteamOS boot it copies a random theme's `theme.conf` over `themes/active_theme.conf` on the ESP. It only acts when the live `refind.conf` contains the theme include line, so it is inert while the Theme dropdown is `None`.
+
+Note: if both the background randomizer and the theme randomizer are enabled, the theme's banner wins — a theme's `theme.conf` sets its own `banner`, which supersedes the randomized `background.png`.
+
+### Theme credits
+
+**All theming credit goes to the original theme authors.** These themes are redistributed here (unmodified apart from folder-name normalization) purely for install convenience; please star/support the upstream repos.
+
+| Theme | Author | Upstream | License |
+|---|---|---|---|
+| BlackCatMuzzle | Scorpi-ON (XIIIMICT) | https://github.com/XIIIMICT/BlackCatMuzzle-rEFInd | MIT |
+| Matrix-rEFInd | Yannis Vierkötter (Yannis4444) | https://github.com/Yannis4444/Matrix-rEFInd | MIT |
+| rEFInd-fallout | awanwar | https://github.com/awanwar/rEFInd-fallout | MIT |
+| rEFInd-glassy | Pr0cella | https://github.com/Pr0cella/rEFInd-glassy | No stated theme license (its LICENSE file covers only the bundled Nimbus font, AGPL-3.0) — redistributed with attribution* |
+| rEFInd-mountain | Chris Alves (Chrisae9) | https://github.com/Chrisae9/rEFInd-mountain | MIT |
+| Starwars-rEFInd | thilakshan2003 | https://github.com/thilakshan2003/Starwars-rEFInd | No license file — redistributed with attribution* |
+| wave | zeeshan933 | https://github.com/zeeshan933/Refind-Themes | No license file — redistributed with attribution* |
+
+\* These themes carry no explicit redistribution license; they are included with full attribution and links to the originals, and will be removed immediately at the original author's request.
+
+More themes to explore (installable manually the same way — drop a folder under `themes/` whose `theme.conf` uses `themes/<folder>/...` paths):
+
+- [rEFInd Themes Collection](https://refind-themes-collection.netlify.app/)
+- [rodsbooks.com — Using rEFInd Themes](https://www.rodsbooks.com/refind/themes.html)
+
 ## Windows app (new in 2.0.0)
 
 The GUI also builds and runs on Windows (Qt6), so you can configure and install rEFInd from the Windows side of a dual-boot Deck. Download `SteamDeck_rEFInd-<version>-setup.exe` from the [Releases](https://github.com/jlobue10/SteamDeck_rEFInd/releases) page. The installer requests Administrator access so executable code and privileged helpers can be protected under Program Files; mutable configuration stays in `%LOCALAPPDATA%\SteamDeck_rEFInd`. Release builds are code-signed via SignPath Foundation — see `Windows/GUI/SIGNING.md`.

@@ -95,6 +95,7 @@ for _src in "$CURRENT_WD"/GUI/*; do
 done
 cp -rf "$CURRENT_WD/icons/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/backgrounds/" "$HOME/.local/SteamDeck_rEFInd"
+cp -rf "$CURRENT_WD/themes/" "$HOME/.local/SteamDeck_rEFInd"
 cp -rf "$CURRENT_WD/scripts/" "$HOME/.local/SteamDeck_rEFInd"
 # Seed the config template only on a first install, for the same reason.
 [ -e "$HOME/.local/SteamDeck_rEFInd/GUI/refind.conf" ] ||
@@ -140,6 +141,13 @@ if [ -f /etc/systemd/system/rEFInd_bg_randomizer.service ]; then
     sudo rm /etc/systemd/system/rEFInd_bg_randomizer.service
 fi
 
+if [ -f /etc/systemd/system/rEFInd_theme_randomizer.service ]; then
+    sudo systemctl disable --now rEFInd_theme_randomizer.service
+    # Force removing old service file from previous versions
+    echo -e "\nRemoving old rEFInd_theme_randomizer.service\n"
+    sudo rm /etc/systemd/system/rEFInd_theme_randomizer.service
+fi
+
 # The package's post_install scriptlet handles daemon-reload plus enabling and
 # starting bootnext-refind.service.
 if ! sudo pacman -U --noconfirm "$INSTALL_PKG"; then
@@ -160,6 +168,12 @@ sudo install -d -m 0755 /etc/SteamDeck_rEFInd
 sudo install -o root -g root -m 0755 \
     "$CURRENT_WD/scripts/install_config_from_GUI_root.sh" \
     /etc/SteamDeck_rEFInd/install_config_from_GUI.sh
+# The themes installer (the GUI's Install Themes button) follows the exact
+# same passwordless pattern: root-owned self-contained script + a NOPASSWD
+# sudoers line for exactly that path (second line of the same rule file).
+sudo install -o root -g root -m 0755 \
+    "$CURRENT_WD/scripts/install_themes_from_GUI_root.sh" \
+    /etc/SteamDeck_rEFInd/install_themes_from_GUI.sh
 
 # The two systemd units run these as root on every boot, so they get root-owned
 # copies here too -- executing (or sourcing) a $HOME/.local path from a root
@@ -172,9 +186,24 @@ sudo install -o root -g root -m 0755 \
 sudo install -o root -g root -m 0755 \
     "$CURRENT_WD/scripts/rEFInd_bg_randomizer.sh" \
     /etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh
+sudo install -o root -g root -m 0755 \
+    "$CURRENT_WD/scripts/rEFInd_theme_randomizer.sh" \
+    /etc/SteamDeck_rEFInd/rEFInd_theme_randomizer.sh
 sudo install -o root -g root -m 0644 \
     "$CURRENT_WD/scripts/lib_esp_target.sh" \
     /etc/SteamDeck_rEFInd/lib_esp_target.sh
+
+# The theme randomizer unit ships in the release package like the two units
+# above, but the installed release may predate it. Stage the unit file
+# directly when the package didn't provide it, so the GUI's Theme Rand
+# buttons work immediately; the removal block before `pacman -U` above keeps
+# a later package upgrade from colliding with this copy.
+if [ ! -f /etc/systemd/system/rEFInd_theme_randomizer.service ]; then
+    sudo install -o root -g root -m 0644 \
+        "$CURRENT_WD/systemd/rEFInd_theme_randomizer.service" \
+        /etc/systemd/system/rEFInd_theme_randomizer.service
+    sudo systemctl daemon-reload
+fi
 
 # The randomizer runs as root under systemd, where $HOME is /root. Record the
 # actual desktop user's backgrounds directory as data in a root-owned file on

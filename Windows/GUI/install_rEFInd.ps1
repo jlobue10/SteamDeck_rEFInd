@@ -413,6 +413,16 @@ try {
             Copy-Item -Recurse -Force -LiteralPath $p -Destination $dest
         }
     }
+    # Themes are optional (only used when refind.conf includes
+    # themes/active_theme.conf), so a failed copy warns instead of aborting.
+    $themesSrc = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd\themes'
+    if (Test-Path -LiteralPath $themesSrc -PathType Container) {
+        try {
+            Copy-Item -Recurse -Force -LiteralPath $themesSrc -Destination $dest
+        } catch {
+            Write-Warning "Could not copy themes to the ESP; theming will be unavailable. $_"
+        }
+    }
     Publish-FileAtomically $sourceConf $conf
 
     # Record what actually landed on the ESP while it is still mounted; the
