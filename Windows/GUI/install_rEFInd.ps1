@@ -111,29 +111,48 @@ function Set-InstallerDirectoryAcl([string]$Path) {
             -ArgumentList $ruleArgs
         [void]$acl.AddAccessRule($rule)
     }
-    [System.IO.Directory]::SetAccessControl($Path, $acl)
+    # Set-Acl works under both Windows PowerShell 5.1 (which the GUI launches
+    # via the pinned System32 powershell.exe) and pwsh;
+    # [System.IO.Directory]::SetAccessControl exists only on .NET Framework.
+    Set-Acl -LiteralPath $Path -AclObject $acl
 }
 
 function New-InstallerStagingDirectory {
-    $commonData = [Environment]::GetFolderPath(
-        [Environment+SpecialFolder]::CommonApplicationData)
-    if ([string]::IsNullOrWhiteSpace($commonData)) {
-        throw 'Could not resolve the protected common application-data directory.'
+    # Stage under %SystemRoot%\Temp: every path component is writable only by
+    # SYSTEM and Administrators, so an unelevated process cannot pre-create,
+    # squat, or junction the staging directory. (ProgramData, used previously,
+    # grants Users create-subfolder plus CREATOR OWNER FullControl, letting an
+    # attacker own the app subdirectory -- and keep rights via an open handle
+    # even after Set-Acl.)
+    $tempRoot = Join-Path $env:SystemRoot 'Temp'
+    if (-not (Test-Path -LiteralPath $tempRoot -PathType Container)) {
+        throw "The system temporary directory is missing: $tempRoot"
     }
-    $root = Join-Path $commonData 'SteamDeck_rEFInd\InstallerStaging'
-    [System.IO.Directory]::CreateDirectory($root) | Out-Null
-    if (([System.IO.File]::GetAttributes($root) -band
-         [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
-        throw "Installer staging root is a reparse point: $root"
-    }
-    Set-InstallerDirectoryAcl $root
 
-    $path = Join-Path $root ([guid]::NewGuid().ToString('N'))
+    # Best-effort purge of staging directories left behind by crashed runs.
+    Get-ChildItem -LiteralPath $tempRoot -Directory `
+            -Filter 'SteamDeck_rEFInd-Staging-*' -ErrorAction SilentlyContinue |
+        ForEach-Object {
+            Remove-Item -Recurse -Force -LiteralPath $_.FullName -ErrorAction SilentlyContinue
+        }
+
+    $path = Join-Path $tempRoot ('SteamDeck_rEFInd-Staging-' + [guid]::NewGuid().ToString('N'))
+    if (Test-Path -LiteralPath $path) {
+        # A freshly generated GUID name can never legitimately exist already.
+        throw "Installer staging directory unexpectedly exists: $path"
+    }
     [System.IO.Directory]::CreateDirectory($path) | Out-Null
+    if (([System.IO.File]::GetAttributes($path) -band
+         [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "Installer staging directory is a reparse point: $path"
+    }
     Set-InstallerDirectoryAcl $path
     return $path
 }
 
+# Magic-byte sanity check on a download's leading bytes (PK for ZIP, MZ for
+# PE). Deliberately NOT Authenticode -- rEFInd's binaries are unsigned -- so
+# this only rejects truncated downloads and HTML error pages, not tampering.
 function Test-FileSignature([string]$Path, [byte[]]$Signature) {
     if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
     $stream = [System.IO.File]::OpenRead($Path)
@@ -148,9 +167,11 @@ function Test-FileSignature([string]$Path, [byte[]]$Signature) {
     }
 }
 
-# Copy to a unique file beside the destination, verify the completed size, and
-# rename only after success. A full ESP or interrupted copy therefore leaves
-# the previous live file in place.
+# Staged same-directory swap: copy to a unique file beside the destination,
+# verify the completed size, and swap it into place only after success, so a
+# full ESP or interrupted copy leaves the previous live file untouched. Not
+# truly atomic -- Move-Item -Force is delete-then-move, not ReplaceFile, so
+# there is a short window during the final swap with no live file.
 function Publish-FileAtomically([string]$Source, [string]$Destination) {
     if (-not (Test-Path -LiteralPath $Source -PathType Leaf)) {
         throw "Source file is missing: $Source"
