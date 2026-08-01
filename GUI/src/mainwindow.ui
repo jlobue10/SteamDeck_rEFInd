@@ -784,7 +784,7 @@
        </item>
       </layout>
      </item>
-     <item row="13" column="0" colspan="6">
+     <item row="14" column="0" colspan="6">
       <layout class="QHBoxLayout" name="bottomRowLayout">
        <item>
         <widget class="QLabel" name="Language_label">
@@ -856,7 +856,7 @@
        </item>
       </layout>
      </item>
-     <item row="14" column="0" colspan="6">
+     <item row="13" column="0" colspan="6">
       <layout class="QHBoxLayout" name="themeRowLayout">
        <item>
         <widget class="QLabel" name="Theme_label">
