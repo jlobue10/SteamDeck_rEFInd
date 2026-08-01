@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.cpp" line="1590"/>
+        <location filename="mainwindow.cpp" line="1613"/>
         <source>Open Folder</source>
         <translation>फ़ोल्डर खोलें</translation>
     </message>
@@ -280,9 +280,9 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
-        <location filename="mainwindow.cpp" line="1545"/>
-        <location filename="mainwindow.cpp" line="1560"/>
-        <location filename="mainwindow.cpp" line="1565"/>
+        <location filename="mainwindow.cpp" line="1568"/>
+        <location filename="mainwindow.cpp" line="1583"/>
+        <location filename="mainwindow.cpp" line="1588"/>
         <source>Install Themes</source>
         <translation>थीम इंस्टॉल करें</translation>
     </message>
@@ -325,10 +325,10 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1080"/>
-        <location filename="mainwindow.cpp" line="1086"/>
-        <location filename="mainwindow.cpp" line="1104"/>
-        <location filename="mainwindow.cpp" line="1110"/>
-        <location filename="mainwindow.cpp" line="1115"/>
+        <location filename="mainwindow.cpp" line="1109"/>
+        <location filename="mainwindow.cpp" line="1127"/>
+        <location filename="mainwindow.cpp" line="1133"/>
+        <location filename="mainwindow.cpp" line="1138"/>
         <source>Install Config</source>
         <translation>कॉन्फ़िग इंस्टॉल करें</translation>
     </message>
@@ -491,7 +491,7 @@
         <translation>%1 पूरी तरह नहीं लिखा जा सका — डिस्क भरी हो सकती है। कॉन्फ़िगरेशन अपडेट नहीं हुआ।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1087"/>
+        <location filename="mainwindow.cpp" line="1110"/>
         <source>The config-install script was NOT run:
 
 %1
@@ -508,18 +508,18 @@ Reinstall the GUI to restore the original script, then try again.</source>
 मूल स्क्रिप्ट बहाल करने के लिए GUI फिर से इंस्टॉल करें, फिर पुनः प्रयास करें।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1105"/>
-        <location filename="mainwindow.cpp" line="1117"/>
+        <location filename="mainwindow.cpp" line="1128"/>
+        <location filename="mainwindow.cpp" line="1140"/>
         <source>Installing the config failed (code %1).</source>
         <translation>कॉन्फ़िगरेशन इंस्टॉल विफल रहा (कोड %1)।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1112"/>
+        <location filename="mainwindow.cpp" line="1135"/>
         <source>The config was installed successfully.</source>
         <translation>कॉन्फ़िगरेशन सफलतापूर्वक इंस्टॉल हो गया।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1113"/>
+        <location filename="mainwindow.cpp" line="1136"/>
         <source>The config was installed successfully.
 
 %1</source>
@@ -528,7 +528,7 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1118"/>
+        <location filename="mainwindow.cpp" line="1141"/>
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -537,28 +537,28 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1138"/>
-        <location filename="mainwindow.cpp" line="1148"/>
-        <location filename="mainwindow.cpp" line="1155"/>
+        <location filename="mainwindow.cpp" line="1161"/>
+        <location filename="mainwindow.cpp" line="1171"/>
+        <location filename="mainwindow.cpp" line="1178"/>
         <source>Copy PNG</source>
         <translation>PNG कॉपी करें</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="935"/>
         <location filename="mainwindow.cpp" line="944"/>
-        <location filename="mainwindow.cpp" line="1139"/>
-        <location filename="mainwindow.cpp" line="1149"/>
-        <location filename="mainwindow.cpp" line="1156"/>
+        <location filename="mainwindow.cpp" line="1162"/>
+        <location filename="mainwindow.cpp" line="1172"/>
+        <location filename="mainwindow.cpp" line="1179"/>
         <source>Could not copy %1 to %2</source>
         <translation>%1 को %2 में कॉपी नहीं किया जा सका</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1181"/>
+        <location filename="mainwindow.cpp" line="1204"/>
         <source>Invalid PNG</source>
         <translation>अमान्य PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1182"/>
+        <location filename="mainwindow.cpp" line="1205"/>
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -567,58 +567,58 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 पृष्ठभूमि और OS आइकन असली PNG छवियाँ होनी चाहिए (केवल .png एक्सटेंशन वाली फ़ाइलें नहीं)।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1445"/>
+        <location filename="mainwindow.cpp" line="1468"/>
         <source>Check For Update</source>
         <translation>अपडेट जाँचें</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1471"/>
         <source>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;मूल GUI निर्माता: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;परीक्षण और गुणवत्ता जाँच के लिए Deck Wizard का विशेष धन्यवाद&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard डुअल बूट ट्यूटोरियल&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1497"/>
+        <location filename="mainwindow.cpp" line="1520"/>
         <source>&lt;p align=&apos;center&apos;&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;अपडेट जाँच विफल रही। कृपया अपना इंटरनेट कनेक्शन जाँचें और फिर से प्रयास करें।&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1500"/>
+        <location filename="mainwindow.cpp" line="1523"/>
         <source>&lt;p align=&apos;center&apos;&gt;An update is available &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;अपडेट &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;यहाँ&lt;/a&gt; उपलब्ध है&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1504"/>
+        <location filename="mainwindow.cpp" line="1527"/>
         <source>&lt;p align=&apos;center&apos;&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;कोई अपडेट नहीं मिला। आप नवीनतम संस्करण उपयोग कर रहे हैं।&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1514"/>
-        <location filename="mainwindow.cpp" line="1521"/>
+        <location filename="mainwindow.cpp" line="1537"/>
+        <location filename="mainwindow.cpp" line="1544"/>
         <source>systemd service</source>
         <translation>systemd सेवा</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1515"/>
-        <location filename="mainwindow.cpp" line="1522"/>
+        <location filename="mainwindow.cpp" line="1538"/>
+        <location filename="mainwindow.cpp" line="1545"/>
         <source>Failed to launch the service toggle.</source>
         <translation>सेवा टॉगल शुरू नहीं हो सका।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1528"/>
-        <location filename="mainwindow.cpp" line="1535"/>
+        <location filename="mainwindow.cpp" line="1551"/>
+        <location filename="mainwindow.cpp" line="1558"/>
         <source>Background Randomizer</source>
         <translation>यादृच्छिक पृष्ठभूमि</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1529"/>
-        <location filename="mainwindow.cpp" line="1536"/>
-        <location filename="mainwindow.cpp" line="1577"/>
-        <location filename="mainwindow.cpp" line="1584"/>
+        <location filename="mainwindow.cpp" line="1552"/>
+        <location filename="mainwindow.cpp" line="1559"/>
+        <location filename="mainwindow.cpp" line="1600"/>
+        <location filename="mainwindow.cpp" line="1607"/>
         <source>Failed to launch the randomizer setup.</source>
         <translation>यादृच्छिक पृष्ठभूमि सेटअप शुरू नहीं हो सका।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1546"/>
+        <location filename="mainwindow.cpp" line="1569"/>
         <source>The themes-install script was NOT run:
 
 %1
@@ -635,12 +635,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 इसे इंस्टॉल या बहाल करने के लिए GUI फिर से इंस्टॉल करें (SteamOS पर install-GUI.sh दोबारा चलाएँ), फिर पुनः प्रयास करें।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1562"/>
+        <location filename="mainwindow.cpp" line="1585"/>
         <source>The themes were installed successfully.</source>
         <translation>थीमें सफलतापूर्वक इंस्टॉल हो गईं।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1563"/>
+        <location filename="mainwindow.cpp" line="1586"/>
         <source>The themes were installed successfully.
 
 %1</source>
@@ -649,12 +649,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1567"/>
+        <location filename="mainwindow.cpp" line="1590"/>
         <source>Installing the themes failed (code %1).</source>
         <translation>थीम इंस्टॉल विफल रहा (कोड %1)।</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1568"/>
+        <location filename="mainwindow.cpp" line="1591"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
@@ -663,13 +663,13 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1576"/>
-        <location filename="mainwindow.cpp" line="1583"/>
+        <location filename="mainwindow.cpp" line="1599"/>
+        <location filename="mainwindow.cpp" line="1606"/>
         <source>Theme Randomizer</source>
         <translation>यादृच्छिक थीम</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1591"/>
+        <location filename="mainwindow.cpp" line="1614"/>
         <source>Failed to open %1 in the file manager.</source>
         <translation>फ़ाइल प्रबंधक में %1 खोला नहीं जा सका।</translation>
     </message>
@@ -696,22 +696,32 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 <context>
     <name>PreviewDialog</name>
     <message>
-        <location filename="previewdialog.cpp" line="34"/>
+        <location filename="previewdialog.cpp" line="62"/>
         <source>No boot options selected.</source>
         <translation>कोई बूट विकल्प चयनित नहीं है।</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="89"/>
+        <location filename="previewdialog.cpp" line="166"/>
         <source>Preview</source>
         <translation>पूर्वावलोकन</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="101"/>
+        <location filename="previewdialog.cpp" line="181"/>
         <source>Approximate preview — rEFInd&apos;s real rendering also depends on the firmware resolution and theme.</source>
         <translation>अनुमानित पूर्वावलोकन — rEFInd का वास्तविक प्रदर्शन फ़र्मवेयर रिज़ॉल्यूशन और थीम पर भी निर्भर करता है।</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="107"/>
+        <location filename="previewdialog.cpp" line="184"/>
+        <source>Approximate preview showing the randomly picked &quot;%1&quot; theme — Random picks a theme anew each time the config is created.</source>
+        <translation>यादृच्छिक रूप से चुनी गई थीम &quot;%1&quot; दिखाता अनुमानित पूर्वावलोकन — &quot;यादृच्छिक&quot; हर बार कॉन्फ़िग बनाते समय नई थीम चुनता है।</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="188"/>
+        <source>Approximate preview with the &quot;%1&quot; theme applied — rEFInd&apos;s real rendering also depends on the firmware resolution and the theme&apos;s other settings.</source>
+        <translation>थीम &quot;%1&quot; लागू किए हुए अनुमानित पूर्वावलोकन — rEFInd का वास्तविक प्रदर्शन फ़र्मवेयर रिज़ॉल्यूशन और थीम की अन्य सेटिंग्स पर भी निर्भर करता है।</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="197"/>
         <source>Boot screen</source>
         <translation>बूट स्क्रीन</translation>
     </message>

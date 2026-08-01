@@ -1041,7 +1041,30 @@ void MainWindow::on_Preview_pushButton_clicked()
     if (iconSize <= 0)
         iconSize = 128;
 
-    PreviewDialog dialog(background, entries, iconSize, defaultIndex, confText, this);
+    // The theme include is the last line of the generated config, so the
+    // chosen theme's banner/icon-size/selection supersede the choices above
+    // — resolve the combo choice (Random becomes a concrete pick, as at
+    // Create Config time) and hand the preview its visual directives.
+    PreviewTheme theme;
+    bool randomPick = false;
+    QString themeChoice = ui->Theme_comboBox->currentData().toString();
+    if (themeChoice == QLatin1String(kRandomThemeKey)) {
+        const QStringList themes = availableThemes();
+        themeChoice = themes.isEmpty()
+                          ? QString()
+                          : themes.at(QRandomGenerator::global()->bounded(themes.size()));
+        randomPick = !themeChoice.isEmpty();
+    }
+    if (!themeChoice.isEmpty()) {
+        const QString themesRoot = themesRootDir();
+        theme = PreviewTheme::load(themesRoot + QLatin1Char('/') + themeChoice
+                                       + QStringLiteral("/theme.conf"),
+                                   themesRoot);
+        theme.name = themeChoice;
+        theme.randomPick = randomPick;
+    }
+
+    PreviewDialog dialog(background, entries, iconSize, defaultIndex, theme, confText, this);
     dialog.exec();
 }
 

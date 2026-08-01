@@ -699,6 +699,16 @@ Torna a nstallari la GUI (nta SteamOS, torna a esiquiri install-GUI.sh) pi lu ns
         <source>Boot screen</source>
         <translation>Schirmata d'avviu</translation>
     </message>
+    <message>
+        <location filename="previewdialog.cpp" line="184" />
+        <source>Approximate preview showing the randomly picked &quot;%1&quot; theme — Random picks a theme anew each time the config is created.</source>
+        <translation>Antiprima apprussimativa chi mustra lu tema &quot;%1&quot; scigghiutu a casu — &quot;Casuali&quot; scegghi un tema novu ogni vota ca si crea la cunfigurazzioni.</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="188" />
+        <source>Approximate preview with the &quot;%1&quot; theme applied — rEFInd&apos;s real rendering also depends on the firmware resolution and the theme&apos;s other settings.</source>
+        <translation>Antiprima apprussimativa cu lu tema &quot;%1&quot; applicatu — comu rEFInd si vidi pi daveru dipenni puru di la risuluzzioni di lu firmware e di l&apos;àutri mpustazzioni di lu tema.</translation>
+    </message>
 </context>
 <context>
     <name>QGuiApplication</name>
