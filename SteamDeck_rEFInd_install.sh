@@ -1,6 +1,38 @@
 #!/bin/bash
 # A simple Steam Deck rEFInd automated install script
 
+READONLY_DISABLED=0
+disable_readonly() {
+	if [ "$READONLY_DISABLED" -eq 1 ]; then
+		return 0
+	fi
+	if ! sudo steamos-readonly disable; then
+		echo "Error: could not disable SteamOS read-only mode." >&2
+		return 1
+	fi
+	READONLY_DISABLED=1
+}
+enable_readonly() {
+	if [ "$READONLY_DISABLED" -eq 0 ]; then
+		return 0
+	fi
+	if ! sudo steamos-readonly enable; then
+		echo "CRITICAL: SteamOS read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." >&2
+		return 1
+	fi
+	READONLY_DISABLED=0
+}
+restore_readonly_on_exit() {
+	status=$?
+	trap - EXIT
+	if [ "$READONLY_DISABLED" -eq 1 ] && ! enable_readonly; then
+		status=70
+	fi
+	exit "$status"
+}
+trap restore_readonly_on_exit EXIT
+set -e
+
 # The invoking user, not a hardcoded "deck": this also runs on Bazzite,
 # ChimeraOS, and Decks whose user was renamed, where `passwd --status deck`
 # fails and every sudo call below would then fail too.
@@ -18,7 +50,7 @@ awk -v user="$INSTALL_USER" '{
 	}
 }' ~/deck_passwd_status.txt
 
-sudo steamos-readonly disable
+disable_readonly
 sudo pacman-key --init
 sudo pacman-key --populate archlinux
 sudo pacman -Sy --noconfirm --needed refind
@@ -61,7 +93,7 @@ rm -f "$XBOX360_DRV_TMP"
 # this driver produces AbsolutePointer so the rEFInd menu is touch-usable,
 # including rotating the portrait touch matrix onto rEFInd's landscape mode.
 # Like the controller driver, download failure is non-fatal.
-DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)"
+DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)" || true
 if [ "$DECK_PRODUCT" = "Galileo" ] || [ "$DECK_PRODUCT" = "Jupiter" ]; then
 	TOUCH_DRV_URL="https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi"
 	TOUCH_DRV_TMP="$(mktemp)"
@@ -83,7 +115,7 @@ echo "Updating EFI boot entries..."
 # disk makes manual recovery trivial if anything goes sideways.
 NVRAM_BK_DIR="$HOME/.local/SteamDeck_rEFInd/nvram-backups"
 if mkdir -p "$NVRAM_BK_DIR" 2>/dev/null; then
-	efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null
+	efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null || true
 	# Keep the ten most recent snapshots.
 	ls -1t "$NVRAM_BK_DIR"/efibootmgr-*.txt 2>/dev/null | tail -n +11 | xargs -r rm -f
 fi
@@ -102,9 +134,6 @@ fi
 ESP_DISK="/dev/$ESP_PARENT"
 if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
 	echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
-	# Read-only mode was disabled at the top of this script; don't leave the
-	# system writable on the failure path.
-	sudo steamos-readonly enable
 	exit 1
 fi
 
@@ -177,9 +206,9 @@ if [ -n "$NEW_BOOTNUM" ]; then
 fi
 
 # Clean up temporary files, created for code clarity
-yes | rm $HOME/deck_passwd_status.txt
+rm -f "$HOME/deck_passwd_status.txt"
 
-sudo steamos-readonly enable
+enable_readonly || exit 70
 
 # Verify the result from live NVRAM rather than trusting the steps above.
 echo
