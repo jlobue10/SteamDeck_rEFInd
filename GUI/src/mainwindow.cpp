@@ -32,7 +32,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.1.3";
+static const char APP_VERSION[] = "3.2.0";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
