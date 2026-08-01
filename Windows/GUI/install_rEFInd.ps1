@@ -39,6 +39,9 @@ $EfiGlobalGuid = '{8BE4DF61-93CA-11D2-AA0D-00E098032B8C}'
 # Optional-data signature of Windows Boot Manager's own Boot#### entry; any
 # entry carrying it belongs to {bootmgr} and must never be overwritten.
 $BootmgrBlobHex = '57494e444f5753'
+$SystemDirectory = [Environment]::SystemDirectory
+$MountvolExe = Join-Path $SystemDirectory 'mountvol.exe'
+$BcdeditExe = Join-Path $SystemDirectory 'bcdedit.exe'
 
 # mountvol reports failure on stderr, which Windows PowerShell 5.1 turns into a
 # terminating RemoteException when redirected under ErrorActionPreference Stop;
@@ -46,7 +49,7 @@ $BootmgrBlobHex = '57494e444f5753'
 function Invoke-Mountvol([string[]]$mvArgs) {
     $eap = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
-    try { mountvol @mvArgs 2>$null | Out-Null } finally { $ErrorActionPreference = $eap }
+    try { & $MountvolExe @mvArgs 2>$null | Out-Null } finally { $ErrorActionPreference = $eap }
     return $LASTEXITCODE
 }
 
@@ -79,10 +82,93 @@ function Invoke-Bcdedit {
     $prev = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try {
-        $out = & bcdedit @BcdArgs 2>&1 | ForEach-Object { "$_" }
+        $out = & $BcdeditExe @BcdArgs 2>&1 | ForEach-Object { "$_" }
         return [pscustomobject]@{ Ok = ($LASTEXITCODE -eq 0); Output = @($out) }
     } finally {
         $ErrorActionPreference = $prev
+    }
+}
+
+# Create the download/extraction workspace outside the user-writable TEMP
+# directory. The DACL intentionally grants only SYSTEM and the elevated
+# Administrators group; granting the current user SID would also grant the
+# caller's unelevated processes, because both UAC tokens share that SID.
+function Set-InstallerDirectoryAcl([string]$Path) {
+    $administrators = New-Object -TypeName System.Security.Principal.SecurityIdentifier `
+        -ArgumentList 'S-1-5-32-544'
+    $system = New-Object -TypeName System.Security.Principal.SecurityIdentifier `
+        -ArgumentList 'S-1-5-18'
+    $acl = New-Object -TypeName System.Security.AccessControl.DirectorySecurity
+    $acl.SetOwner($administrators)
+    $acl.SetAccessRuleProtection($true, $false)
+    $inheritance = [System.Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'
+    $propagation = [System.Security.AccessControl.PropagationFlags]::None
+    $allow = [System.Security.AccessControl.AccessControlType]::Allow
+    foreach ($sid in @($administrators, $system)) {
+        $ruleArgs = @($sid, [System.Security.AccessControl.FileSystemRights]::FullControl,
+                      $inheritance, $propagation, $allow)
+        $rule = New-Object -TypeName System.Security.AccessControl.FileSystemAccessRule `
+            -ArgumentList $ruleArgs
+        [void]$acl.AddAccessRule($rule)
+    }
+    [System.IO.Directory]::SetAccessControl($Path, $acl)
+}
+
+function New-InstallerStagingDirectory {
+    $commonData = [Environment]::GetFolderPath(
+        [Environment+SpecialFolder]::CommonApplicationData)
+    if ([string]::IsNullOrWhiteSpace($commonData)) {
+        throw 'Could not resolve the protected common application-data directory.'
+    }
+    $root = Join-Path $commonData 'SteamDeck_rEFInd\InstallerStaging'
+    [System.IO.Directory]::CreateDirectory($root) | Out-Null
+    if (([System.IO.File]::GetAttributes($root) -band
+         [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "Installer staging root is a reparse point: $root"
+    }
+    Set-InstallerDirectoryAcl $root
+
+    $path = Join-Path $root ([guid]::NewGuid().ToString('N'))
+    [System.IO.Directory]::CreateDirectory($path) | Out-Null
+    Set-InstallerDirectoryAcl $path
+    return $path
+}
+
+function Test-FileSignature([string]$Path, [byte[]]$Signature) {
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { return $false }
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        if ($stream.Length -lt $Signature.Length) { return $false }
+        foreach ($expected in $Signature) {
+            if ($stream.ReadByte() -ne $expected) { return $false }
+        }
+        return $true
+    } finally {
+        $stream.Dispose()
+    }
+}
+
+# Copy to a unique file beside the destination, verify the completed size, and
+# rename only after success. A full ESP or interrupted copy therefore leaves
+# the previous live file in place.
+function Publish-FileAtomically([string]$Source, [string]$Destination) {
+    if (-not (Test-Path -LiteralPath $Source -PathType Leaf)) {
+        throw "Source file is missing: $Source"
+    }
+    $sourceInfo = Get-Item -LiteralPath $Source
+    $destinationDirectory = Split-Path -Parent $Destination
+    New-Item -ItemType Directory -Force $destinationDirectory | Out-Null
+    $stage = Join-Path $destinationDirectory `
+        ('.' + [System.IO.Path]::GetFileName($Destination) + '.new.' +
+         [guid]::NewGuid().ToString('N'))
+    try {
+        Copy-Item -LiteralPath $Source -Destination $stage
+        if ((Get-Item -LiteralPath $stage).Length -ne $sourceInfo.Length) {
+            throw "Staged copy has the wrong size: $stage"
+        }
+        Move-Item -Force -LiteralPath $stage -Destination $Destination
+    } finally {
+        Remove-Item -Force -LiteralPath $stage -ErrorAction SilentlyContinue
     }
 }
 
@@ -194,21 +280,29 @@ $backup = $null
 $installError = $null
 $entryId = $null
 $driverError = $null
+$driverDest = $null
 $touchError = $null
 $touchDest = $null
 $espFiles = $null
+$workDir = $null
 try {
+    $workDir = New-InstallerStagingDirectory
     Write-Step 'Downloading rEFInd from SourceForge...'
-    $zip = Join-Path $env:TEMP "refind-bin-$RefindVer.zip"
+    $zip = Join-Path $workDir "refind-bin-$RefindVer.zip"
     $zipUrl = "https://sourceforge.net/projects/refind/files/$RefindVer/refind-bin-gnuefi-$RefindVer.zip/download"
     Invoke-WebRequest -Uri $zipUrl -OutFile $zip -UserAgent 'Wget' -MaximumRedirection 10
+    if (-not (Test-FileSignature $zip ([byte[]]@(0x50, 0x4B)))) {
+        throw 'The rEFInd download is not a ZIP archive.'
+    }
 
     Write-Step 'Extracting...'
-    $extract = Join-Path $env:TEMP 'refind-bin-extract'
-    Remove-Item -Recurse -Force $extract -ErrorAction SilentlyContinue
+    $extract = Join-Path $workDir 'extract'
     Expand-Archive -Path $zip -DestinationPath $extract -Force
     $bin = Join-Path $extract "refind-bin-$RefindVer"
-    if (-not (Test-Path $bin)) {
+    $extractedLoader = Join-Path $bin 'refind\refind_x64.efi'
+    if (-not (Test-Path -LiteralPath $bin -PathType Container) -or
+        -not (Test-Path -LiteralPath $extractedLoader -PathType Leaf) -or
+        (Get-Item -LiteralPath $extractedLoader).Length -le 0) {
         throw "Extraction did not produce the expected directory: $bin"
     }
 
@@ -216,7 +310,7 @@ try {
     $dest = Join-Path $esp.Root 'EFI\refind'
     Write-Step "Installing rEFInd files to $dest ..."
     New-Item -ItemType Directory -Force $dest | Out-Null
-    Copy-Item -Force (Join-Path $bin 'refind\refind_x64.efi') $dest
+    Publish-FileAtomically $extractedLoader (Join-Path $dest 'refind_x64.efi')
     foreach ($d in 'drivers_x64','tools_x64','icons') {
         Copy-Item -Recurse -Force (Join-Path $bin "refind\$d") $dest
     }
@@ -232,13 +326,13 @@ try {
     $driverDest = Join-Path $dest 'drivers_x64\UsbXbox360Dxe.efi'
     $driverUrl = 'https://github.com/jlobue10/UsbXbox360Dxe/releases/latest/download/UsbXbox360Dxe.efi'
     try {
-        Invoke-WebRequest -Uri $driverUrl -OutFile $driverDest -MaximumRedirection 10
-        $sig = [System.IO.File]::ReadAllBytes($driverDest)
-        if ($sig.Length -lt 2 -or $sig[0] -ne 0x4D -or $sig[1] -ne 0x5A) {
-            # A truncated or HTML error-page download must not reach the ESP.
-            Remove-Item -Force $driverDest -ErrorAction SilentlyContinue
+        $driverDownload = Join-Path $workDir 'UsbXbox360Dxe.efi'
+        Invoke-WebRequest -Uri $driverUrl -OutFile $driverDownload -MaximumRedirection 10
+        if (-not (Test-FileSignature $driverDownload ([byte[]]@(0x4D, 0x5A)))) {
+            # A truncated or HTML error-page must never replace the live copy.
             throw 'downloaded file is not a PE/EFI binary'
         }
+        Publish-FileAtomically $driverDownload $driverDest
     } catch {
         # Non-fatal, but remember why: the summary must not report plain
         # success when the driver never made it to the ESP (issue #23 -- the
@@ -258,13 +352,13 @@ try {
         $touchDest = Join-Path $dest 'drivers_x64\TouchI2cDxe.efi'
         $touchUrl = 'https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi'
         try {
-            Invoke-WebRequest -Uri $touchUrl -OutFile $touchDest -MaximumRedirection 10
-        $sig = [System.IO.File]::ReadAllBytes($touchDest)
-        if ($sig.Length -lt 2 -or $sig[0] -ne 0x4D -or $sig[1] -ne 0x5A) {
-            # A truncated or HTML error-page download must not reach the ESP.
-            Remove-Item -Force $touchDest -ErrorAction SilentlyContinue
-            throw 'downloaded file is not a PE/EFI binary'
-        }
+            $touchDownload = Join-Path $workDir 'TouchI2cDxe.efi'
+            Invoke-WebRequest -Uri $touchUrl -OutFile $touchDownload -MaximumRedirection 10
+            if (-not (Test-FileSignature $touchDownload ([byte[]]@(0x4D, 0x5A)))) {
+                # A truncated or HTML error-page must never replace the live copy.
+                throw 'downloaded file is not a PE/EFI binary'
+            }
+            Publish-FileAtomically $touchDownload $touchDest
         } catch {
             $touchError = "$($_.Exception.Message)"
             Write-Warning "Failed to download TouchI2cDxe.efi; skipping touchscreen driver. $_"
@@ -274,18 +368,31 @@ try {
     # Back up any existing config, then apply the GUI-generated one.
     Write-Step 'Applying the GUI-generated configuration...'
     $conf = Join-Path $dest 'refind.conf'
-    if (Test-Path $conf) {
-        Copy-Item -Force $conf (Join-Path $dest 'refind-bkp.conf')
-    }
     $src = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd\GUI'
-    foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
+    $sourceConf = Join-Path $src 'refind.conf'
+    if (-not (Test-Path -LiteralPath $sourceConf -PathType Leaf) -or
+        (Get-Item -LiteralPath $sourceConf).Length -le 0) {
+        throw "No non-empty GUI refind.conf was found in $src. Use Create Config first."
+    }
+    if (Test-Path -LiteralPath $conf -PathType Leaf) {
+        Publish-FileAtomically $conf (Join-Path $dest 'refind-bkp.conf')
+    }
+
+    # Publish optional images and asset directories first. The required config
+    # is renamed into place last, after every preceding copy has succeeded.
+    foreach ($f in 'background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
         $p = Join-Path $src $f
-        if (Test-Path $p) { Copy-Item -Force $p (Join-Path $dest $f) }
+        if (Test-Path -LiteralPath $p -PathType Leaf) {
+            Publish-FileAtomically $p (Join-Path $dest $f)
+        }
     }
     foreach ($d in 'backgrounds','icons') {
         $p = Join-Path $env:LOCALAPPDATA "SteamDeck_rEFInd\$d"
-        if (Test-Path $p) { Copy-Item -Recurse -Force $p $dest }
+        if (Test-Path -LiteralPath $p -PathType Container) {
+            Copy-Item -Recurse -Force -LiteralPath $p -Destination $dest
+        }
     }
+    Publish-FileAtomically $sourceConf $conf
 
     # Record what actually landed on the ESP while it is still mounted; the
     # summary prints this after the dismount. The timestamp exposes a stale
@@ -388,6 +495,9 @@ try {
     $installError = $_
 } finally {
     if ($esp) { Dismount-Esp $esp }
+    if ($workDir) {
+        Remove-Item -Recurse -Force -LiteralPath $workDir -ErrorAction SilentlyContinue
+    }
 }
 
 # Verify the result from live NVRAM rather than trusting the steps above --
