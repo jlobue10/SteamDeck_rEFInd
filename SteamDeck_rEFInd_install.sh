@@ -134,6 +134,9 @@ fi
 ESP_DISK="/dev/$ESP_PARENT"
 if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
 	echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
+	# Read-only mode was disabled at the top of this script; don't leave the
+	# system writable on the failure path.
+	sudo steamos-readonly enable
 	exit 1
 fi
 
