@@ -95,13 +95,18 @@ fi
 ESP_DEV="$(findmnt -no SOURCE /esp 2>/dev/null | grep -m1 "^/dev/")"
 ESP_PART="$(basename "$ESP_DEV")"
 ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)"
+ESP_PARTUUID="$(lsblk -rno PARTUUID "$ESP_DEV" 2>/dev/null | head -1)"
+if [ -z "$ESP_PARTUUID" ]; then
+	ESP_PARTUUID="$(blkid -s PARTUUID -o value "$ESP_DEV" 2>/dev/null)"
+fi
 ESP_PARENT="$(lsblk -no PKNAME "$ESP_DEV" 2>/dev/null | head -1)"
 if [ -z "$ESP_PARENT" ] && [ -n "$ESP_PART" ]; then
 	ESP_PARENT="$(basename "$(dirname "$(readlink -f "/sys/class/block/$ESP_PART")")")"
 fi
 ESP_DISK="/dev/$ESP_PARENT"
-if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ]; then
-	echo "ERROR: could not safely resolve the ESP's disk and partition from /esp; refusing to modify NVRAM." >&2
+if [ ! -b "$ESP_DISK" ] || [ -z "$ESP_PARTNUM" ] ||
+	! [[ "$ESP_PARTUUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+	echo "ERROR: could not safely resolve the ESP's disk, partition, and PARTUUID from /esp; refusing to modify NVRAM." >&2
 	# Read-only mode was disabled at the top of this script; don't leave the
 	# system writable on the failure path.
 	sudo steamos-readonly enable
@@ -116,24 +121,25 @@ if ! efibootmgr | grep -qE '^Boot[0-9A-Fa-f]{4}\*? +SteamOS'; then
 		|| echo "Warning: could not recreate the SteamOS boot entry." >&2
 fi
 
-# refind-install just created its own "rEFInd Boot Manager" entry; remove it
-# up front so the firmware list never carries it alongside our "rEFInd"
-# entry. Only that exact label is deleted pre-create -- plain "rEFInd"
-# entries from previous installs are kept until the new entry verifiably
-# exists (see below).
-while read -r _num; do
-	echo "Deleting refind-install's rEFInd Boot Manager entry Boot$_num..."
-	sudo efibootmgr -b "$_num" -B >/dev/null 2>&1 \
-		|| echo "Warning: could not delete Boot$_num." >&2
-done < <(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +rEFInd Boot Manager(\t.*)?$/\1/p')
-# Create the new entry BEFORE deleting old rEFInd entries, so a failed create
-# can never leave the Deck with no rEFInd entry at all.
+# Keep every existing rEFInd/Windows fallback until a new entry has been
+# matched to both the expected ESP PARTUUID and loader path.
 NEW_BOOTNUM=""
+REFIND_READY=0
+if ! sudo test -s /esp/efi/refind/refind_x64.efi ||
+	! sudo test -s /esp/efi/refind/refind.conf; then
+	echo "ERROR: the replacement rEFInd loader or configuration is missing/empty; existing boot entries were left active." >&2
+	sudo steamos-readonly enable
+	exit 1
+fi
 if CREATE_OUT="$(sudo efibootmgr -c -d "$ESP_DISK" -p "$ESP_PARTNUM" -L "rEFInd" -l '\EFI\refind\refind_x64.efi' 2>&1)"; then
 	# efibootmgr -c puts the new entry first in BootOrder; use that to
-	# identify it so the cleanup below never deletes it.
-	NEW_BOOTNUM="$(efibootmgr | sed -nE 's/^BootOrder: ([0-9A-Fa-f]{4}).*/\1/p')"
-	if [ -n "$NEW_BOOTNUM" ] && efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +rEFInd(\t.*)?$/\1/p' | grep -qx "$NEW_BOOTNUM"; then
+	# identify it, then verify the verbose firmware device path.
+	CANDIDATE_BOOTNUM="$(efibootmgr | sed -nE 's/^BootOrder: ([0-9A-Fa-f]{4}).*/\1/p')"
+	NVRAM_VERBOSE="$(efibootmgr -v 2>/dev/null)"
+	if [ -n "$CANDIDATE_BOOTNUM" ] && printf '%s\n' "$NVRAM_VERBOSE" | grep -qiE \
+		"^Boot${CANDIDATE_BOOTNUM}\\*?[[:space:]]+rEFInd[[:space:]]+HD\\([0-9]+,GPT,${ESP_PARTUUID},[^)]*\\)/(File\\()?\\\\EFI\\\\refind\\\\refind_x64\\.efi"; then
+		NEW_BOOTNUM="$CANDIDATE_BOOTNUM"
+		REFIND_READY=1
 		while read -r _num; do
 			[ "$_num" = "$NEW_BOOTNUM" ] && continue
 			echo "Deleting old rEFInd entry Boot$_num..."
@@ -141,18 +147,23 @@ if CREATE_OUT="$(sudo efibootmgr -c -d "$ESP_DISK" -p "$ESP_PARTNUM" -L "rEFInd"
 				|| echo "Warning: could not delete Boot$_num." >&2
 		done < <(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +rEFInd.*/\1/p')
 	else
-		NEW_BOOTNUM=""
-		echo "Warning: could not identify the new rEFInd entry; skipping cleanup of old entries." >&2
+		echo "ERROR: the new rEFInd entry could not be verified against the target ESP and loader path." >&2
+		echo "Existing rEFInd and Windows entries were left active." >&2
 	fi
 else
 	echo "ERROR: creating the rEFInd boot entry failed:" >&2
 	printf '%s\n' "$CREATE_OUT" >&2
-	echo "Existing rEFInd entries (if any) were left in place." >&2
+	echo "Existing rEFInd and Windows entries were left active." >&2
+fi
+
+if [ "$REFIND_READY" -ne 1 ]; then
+	sudo steamos-readonly enable
+	exit 1
 fi
 
 # Disable Windows EFI boot entry (rEFInd will chainload it instead)
-WINDOWS_BOOTNUM="$(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +Windows.*/\1/p' | head -1)"
-if [ -n "$WINDOWS_BOOTNUM" ]; then
+WINDOWS_BOOTNUM="$(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +Windows Boot Manager(\t.*)?$/\1/p' | head -1)"
+if [ -n "$WINDOWS_BOOTNUM" ] && [ -n "$NEW_BOOTNUM" ]; then
 	sudo efibootmgr -b "$WINDOWS_BOOTNUM" -A >/dev/null 2>&1 \
 		|| echo "Warning: could not deactivate the Windows boot entry." >&2
 fi
