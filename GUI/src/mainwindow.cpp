@@ -550,14 +550,55 @@ void MainWindow::on_Install_rEFInd_clicked()
 QString MainWindow::steamFirmwareBootNum()
 {
     bool ok = false;
-    const QString out = OSDetector::runCommand(QStringLiteral("efibootmgr"), {}, &ok);
+    const QString out = OSDetector::runCommand(
+        QStringLiteral("efibootmgr"), {QStringLiteral("-v")}, &ok);
     if (!ok)
         return {};
-    static const QRegularExpression re(QStringLiteral("^Boot([0-9A-Fa-f]{4})\\*?\\s+.*steam"),
-                                       QRegularExpression::CaseInsensitiveOption
-                                           | QRegularExpression::MultilineOption);
-    const QRegularExpressionMatch match = re.match(out);
-    return match.hasMatch() ? match.captured(1) : QString();
+
+    QStringList bootOrder;
+    static const QRegularExpression bootOrderRe(
+        QStringLiteral("^BootOrder:\\s*([0-9A-Fa-f]{4}(?:,[0-9A-Fa-f]{4})*)\\s*$"),
+        QRegularExpression::MultilineOption);
+    const QRegularExpressionMatch orderMatch = bootOrderRe.match(out);
+    if (orderMatch.hasMatch())
+        bootOrder = orderMatch.captured(1).toUpper().split(QLatin1Char(','));
+
+    QStringList loaderMatches;
+    QStringList labelMatches;
+    static const QRegularExpression entryRe(
+        QStringLiteral("^Boot([0-9A-Fa-f]{4})\\*?\\s+([^\\t\\r\\n]*)(?:\\t(.*))?$"));
+    static const QRegularExpression steamLoaderRe(
+        QStringLiteral("HD\\([^)]*\\)/(?:File\\()?\\\\EFI\\\\steamos\\\\steamcl\\.efi"
+                       "(?:\\)|[0-9A-Fa-f]{8}|$)"),
+        QRegularExpression::CaseInsensitiveOption);
+
+    const QStringList lines = out.split(QLatin1Char('\n'));
+    for (const QString &line : lines) {
+        const QRegularExpressionMatch entry = entryRe.match(line);
+        if (!entry.hasMatch())
+            continue;
+
+        const QString bootNum = entry.captured(1).toUpper();
+        const QString label = entry.captured(2).trimmed();
+        const QString devicePath = entry.captured(3).trimmed();
+        if (steamLoaderRe.match(devicePath).hasMatch())
+            loaderMatches.append(bootNum);
+        if (label.compare(QStringLiteral("SteamOS"), Qt::CaseInsensitive) == 0)
+            labelMatches.append(bootNum);
+    }
+
+    auto firstInBootOrder = [&bootOrder](const QStringList &candidates) {
+        for (const QString &bootNum : bootOrder) {
+            if (candidates.contains(bootNum))
+                return bootNum;
+        }
+        return candidates.value(0);
+    };
+
+    // The immutable loader path is authoritative. The exact label is only a
+    // compatibility fallback for firmware whose verbose path cannot be parsed.
+    const QString loaderMatch = firstInBootOrder(loaderMatches);
+    return loaderMatch.isEmpty() ? firstInBootOrder(labelMatches) : loaderMatch;
 }
 
 // These values are not user-typed: menuName/loaderPath come from ESP vendor
