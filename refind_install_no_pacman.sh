@@ -90,7 +90,7 @@ ESP_PART="$(basename "$ESP_DEV")"
 ESP_PARTNUM="$(cat "/sys/class/block/$ESP_PART/partition" 2>/dev/null)"
 ESP_PARTUUID="$(lsblk -rno PARTUUID "$ESP_DEV" 2>/dev/null | head -1)"
 if [ -z "$ESP_PARTUUID" ]; then
-	ESP_PARTUUID="$(blkid -s PARTUUID -o value "$ESP_DEV" 2>/dev/null)"
+	ESP_PARTUUID="$(blkid -s PARTUUID -o value "$ESP_DEV" 2>/dev/null)" || true
 fi
 ESP_PARENT="$(lsblk -no PKNAME "$ESP_DEV" 2>/dev/null | head -1)"
 if [ -z "$ESP_PARENT" ] && [ -n "$ESP_PART" ]; then
@@ -128,7 +128,7 @@ if CREATE_OUT="$(sudo efibootmgr -c -d "$ESP_DISK" -p "$ESP_PARTNUM" -L "rEFInd"
 	# efibootmgr -c puts the new entry first in BootOrder; use that to
 	# identify it, then verify the verbose firmware device path.
 	CANDIDATE_BOOTNUM="$(efibootmgr | sed -nE 's/^BootOrder: ([0-9A-Fa-f]{4}).*/\1/p')"
-	NVRAM_VERBOSE="$(efibootmgr -v 2>/dev/null)"
+	NVRAM_VERBOSE="$(efibootmgr -v 2>/dev/null)" || NVRAM_VERBOSE=""
 	if [ -n "$CANDIDATE_BOOTNUM" ] && printf '%s\n' "$NVRAM_VERBOSE" | grep -qiE \
 		"^Boot${CANDIDATE_BOOTNUM}\\*?[[:space:]]+rEFInd[[:space:]]+HD\\([0-9]+,GPT,${ESP_PARTUUID},[^)]*\\)/(File\\()?\\\\EFI\\\\refind\\\\refind_x64\\.efi"; then
 		NEW_BOOTNUM="$CANDIDATE_BOOTNUM"
