@@ -22,6 +22,7 @@
 #include <QProcess>
 #include <QPushButton>
 #include <QRegularExpression>
+#include <QSaveFile>
 #include <QSettings>
 #include <QTextStream>
 #include <QThread>
@@ -768,8 +769,20 @@ QString MainWindow::stockIconFor(const BootEntry &entry)
 void MainWindow::on_Create_Config_clicked()
 {
     QDir().mkpath(guiConfigDir);
-    QFile conf(guiConfigDir + "/refind.conf");
-    if (!conf.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+
+    // Publish the config last. If any selected image cannot be staged, keep
+    // the previous refind.conf rather than pointing it at a partial update.
+    if (!copyPng(ui->Background_lineEdit, guiConfigDir + "/background.png")
+        || !copyPng(ui->Boot_Option_01_Icon_lineEdit, guiConfigDir + "/os_icon1.png")
+        || !copyPng(ui->Boot_Option_02_Icon_lineEdit, guiConfigDir + "/os_icon2.png")
+        || !copyPng(ui->Boot_Option_03_Icon_lineEdit, guiConfigDir + "/os_icon3.png")
+        || !copyPng(ui->Boot_Option_04_Icon_lineEdit, guiConfigDir + "/os_icon4.png")) {
+        return;
+    }
+
+    QSaveFile conf(guiConfigDir + "/refind.conf");
+    conf.setDirectWriteFallback(false);
+    if (!conf.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QMessageBox::critical(this, tr("Create Config"),
                               tr("Could not write %1").arg(conf.fileName()));
         return;
@@ -779,21 +792,14 @@ void MainWindow::on_Create_Config_clicked()
     // boot menu missing entries.
     const QByteArray payload = generateConfigText(currentSelections()).toUtf8();
     const qint64 written = conf.write(payload);
-    const bool flushed = conf.flush();
-    conf.close();
-    if (written != payload.size() || !flushed || conf.error() != QFileDevice::NoError) {
+    if (written != payload.size() || !conf.commit()) {
+        conf.cancelWriting();
         QMessageBox::critical(this, tr("Create Config"),
                               tr("Could not write %1 completely — the disk may be full. "
                                  "The config was not updated.")
                                   .arg(conf.fileName()));
         return;
     }
-
-    copyPng(ui->Background_lineEdit, guiConfigDir + "/background.png");
-    copyPng(ui->Boot_Option_01_Icon_lineEdit, guiConfigDir + "/os_icon1.png");
-    copyPng(ui->Boot_Option_02_Icon_lineEdit, guiConfigDir + "/os_icon2.png");
-    copyPng(ui->Boot_Option_03_Icon_lineEdit, guiConfigDir + "/os_icon3.png");
-    copyPng(ui->Boot_Option_04_Icon_lineEdit, guiConfigDir + "/os_icon4.png");
 }
 
 void MainWindow::on_Preview_pushButton_clicked()
@@ -919,26 +925,36 @@ void MainWindow::on_Install_Config_clicked()
 
 bool MainWindow::copyPng(QLineEdit *edit, const QString &destPath)
 {
+    const bool hadSelection = !edit->text().isEmpty();
     checkPNGFile(edit);
     const QString source = edit->text();
+    if (hadSelection && source.isEmpty())
+        return false;
     if (source.isEmpty() || source == destPath)
         return true;
-    // Copy aside and rename over the target, so a failed copy leaves the
-    // previously staged image intact. Removing the destination first meant that
-    // choosing an image on since-unplugged external media destroyed the good
-    // staged copy while refind.conf still referenced it.
-    const QString tmpPath = destPath + QStringLiteral(".new");
-    QFile::remove(tmpPath);
-    if (!QFile::copy(source, tmpPath)) {
-        QFile::remove(tmpPath);
+
+    QFile input(source);
+    QSaveFile output(destPath);
+    output.setDirectWriteFallback(false);
+    if (!input.open(QIODevice::ReadOnly) || !output.open(QIODevice::WriteOnly)) {
+        output.cancelWriting();
         QMessageBox::warning(this, tr("Copy PNG"),
                              tr("Could not copy %1 to %2").arg(source, destPath));
         return false;
     }
-    if (QFile::exists(destPath))
-        QFile::remove(destPath);
-    if (!QFile::rename(tmpPath, destPath)) {
-        QFile::remove(tmpPath);
+
+    char buffer[64 * 1024];
+    qint64 bytesRead = 0;
+    while ((bytesRead = input.read(buffer, sizeof(buffer))) > 0) {
+        if (output.write(buffer, bytesRead) != bytesRead) {
+            output.cancelWriting();
+            QMessageBox::warning(this, tr("Copy PNG"),
+                                 tr("Could not copy %1 to %2").arg(source, destPath));
+            return false;
+        }
+    }
+    if (bytesRead < 0 || !output.commit()) {
+        output.cancelWriting();
         QMessageBox::warning(this, tr("Copy PNG"),
                              tr("Could not copy %1 to %2").arg(source, destPath));
         return false;
