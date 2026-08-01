@@ -1,4 +1,5 @@
 #include "osdetect.h"
+#include "platform.h"
 
 #include <QDir>
 #include <QJsonArray>
@@ -18,7 +19,14 @@ static QString runPowerShell(const QString &command, bool *ok = nullptr)
 {
     static const QString prologue =
         QStringLiteral("[Console]::OutputEncoding=[System.Text.Encoding]::UTF8;");
-    return OSDetector::runCommand(QStringLiteral("powershell.exe"),
+    const QString powershell = Platform::windowsSystemExecutable(
+        QStringLiteral("WindowsPowerShell/v1.0/powershell.exe"));
+    if (powershell.isEmpty()) {
+        if (ok)
+            *ok = false;
+        return {};
+    }
+    return OSDetector::runCommand(powershell,
                                   {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
                                    QStringLiteral("Bypass"), QStringLiteral("-Command"),
                                    prologue + command},
@@ -92,6 +100,11 @@ QList<OSDetector::Partition> OSDetector::listPartitions()
     return partitions;
 }
 
+static QString mountvolPath()
+{
+    return Platform::windowsSystemExecutable(QStringLiteral("mountvol.exe"));
+}
+
 QString OSDetector::espScanRoot(const Partition &p, bool &release)
 {
     release = false;
@@ -106,7 +119,7 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
             if (QDir(drive + "/").exists())
                 continue;
             bool ok = false;
-            runCommand(QStringLiteral("mountvol"), {drive, QStringLiteral("/S")}, &ok);
+            runCommand(mountvolPath(), {drive, QStringLiteral("/S")}, &ok);
             if (ok) {
                 release = true;
                 return drive;
@@ -123,7 +136,7 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
             QDir::tempPath() + QStringLiteral("/refind-esp-scan-") + p.path);
         if (QDir().mkpath(dir)) {
             bool ok = false;
-            runCommand(QStringLiteral("mountvol"), {dir, p.volumePath}, &ok);
+            runCommand(mountvolPath(), {dir, p.volumePath}, &ok);
             if (ok) {
                 release = true;
                 return dir;
@@ -136,7 +149,7 @@ QString OSDetector::espScanRoot(const Partition &p, bool &release)
 
 void OSDetector::releaseEspRoot(const QString &root)
 {
-    runCommand(QStringLiteral("mountvol"), {root, QStringLiteral("/D")});
+    runCommand(mountvolPath(), {root, QStringLiteral("/D")});
     // Directory mount points (anything longer than "Z:") were created by
     // espScanRoot and are removed once unmounted.
     if (root.length() > 2)
