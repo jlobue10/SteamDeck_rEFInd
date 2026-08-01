@@ -246,37 +246,37 @@
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>थीम</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>कॉन्फ़िग बनाएँ द्वारा लागू rEFInd थीम: कोई नहीं क्लासिक रूप रखता है, यादृच्छिक हर बार कॉन्फ़िग बनाते समय एक इंस्टॉल की गई थीम चुनता है</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>यादृच्छिक थीम सेवा सक्षम करें (हर बूट पर एक यादृच्छिक थीम चुनती है)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>यादृच्छिक थीम चालू</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>यादृच्छिक थीम सेवा अक्षम करें</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>यादृच्छिक थीम बंद</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>थीम फ़ोल्डर को EFI सिस्टम पार्टीशन पर कॉपी करें (इंस्टॉल की गई थीम दिखने से पहले एक बार आवश्यक)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -284,7 +284,7 @@
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>थीम इंस्टॉल करें</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="991"/>
@@ -428,7 +428,7 @@
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>यादृच्छिक</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="372"/>
@@ -473,12 +473,12 @@
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>कोई थीम नहीं मिली, इसलिए यादृच्छिक थीम नहीं चुनी जा सकी। दी गई थीमें बहाल करने के लिए GUI फिर से इंस्टॉल करें।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>चयनित थीम &quot;%1&quot; नहीं मिली (या उसका theme.conf खाली है)। कोई अन्य थीम चुनें, या दी गई थीमें बहाल करने के लिए GUI फिर से इंस्टॉल करें।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="984"/>
@@ -488,7 +488,7 @@
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 पूरी तरह नहीं लिखा जा सका — डिस्क भरी हो सकती है। कॉन्फ़िगरेशन अपडेट नहीं हुआ।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1087"/>
@@ -626,37 +626,47 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>थीम-इंस्टॉल स्क्रिप्ट नहीं चलाई गई:
+
+%1
+
+यह मौजूद नहीं है, या ऐप के इस संस्करण के साथ दी गई प्रति से मेल नहीं खाती। चूँकि यह root अधिकारों से चलती है, इसे केवल तभी चलाया जाता है जब यह दी गई प्रति से बाइट-दर-बाइट समान हो।
+
+इसे इंस्टॉल या बहाल करने के लिए GUI फिर से इंस्टॉल करें (SteamOS पर install-GUI.sh दोबारा चलाएँ), फिर पुनः प्रयास करें।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>थीमें सफलतापूर्वक इंस्टॉल हो गईं।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>थीमें सफलतापूर्वक इंस्टॉल हो गईं।
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>थीम इंस्टॉल विफल रहा (कोड %1)।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>थीम इंस्टॉल विफल रहा (कोड %1)।
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>यादृच्छिक थीम</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1591"/>
@@ -669,7 +679,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>विशेषाधिकार प्राप्त सहायक Program Files के अंतर्गत इंस्टॉल नहीं है।</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="183"/>

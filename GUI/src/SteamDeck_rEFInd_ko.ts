@@ -246,37 +246,37 @@
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>테마</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>구성 생성이 적용하는 rEFInd 테마: 없음은 클래식한 모습을 유지하고, 무작위는 구성을 만들 때마다 설치된 테마를 선택합니다</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 무작위 변경 서비스 활성화(부팅할 때마다 무작위 테마를 선택)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>무작위 테마 켬</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 무작위 변경 서비스 비활성화</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>무작위 테마 끔</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 폴더를 EFI 시스템 파티션으로 복사(설치된 테마가 표시되려면 한 번 필요)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -284,7 +284,7 @@
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 설치</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="991"/>
@@ -428,7 +428,7 @@
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>무작위</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="372"/>
@@ -473,12 +473,12 @@
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>테마를 찾을 수 없어 무작위 테마를 선택할 수 없었습니다. GUI를 다시 설치하여 제공된 테마를 복원하세요.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>선택한 테마 &quot;%1&quot;을(를) 찾을 수 없습니다(또는 해당 theme.conf가 비어 있습니다). 다른 테마를 선택하거나 GUI를 다시 설치하여 제공된 테마를 복원하세요.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="984"/>
@@ -488,7 +488,7 @@
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1을(를) 완전히 쓸 수 없습니다 — 디스크가 가득 찼을 수 있습니다. 구성은 업데이트되지 않았습니다.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1087"/>
@@ -626,37 +626,47 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 설치 스크립트가 실행되지 않았습니다:
+
+%1
+
+스크립트가 없거나 이 버전의 앱과 함께 제공된 사본과 일치하지 않습니다. 이 스크립트는 root 권한으로 실행되므로 제공된 버전과 바이트 단위로 동일할 때만 실행됩니다.
+
+GUI를 다시 설치(SteamOS에서는 install-GUI.sh 재실행)하여 스크립트를 설치하거나 복원한 후 다시 시도하세요.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>테마가 성공적으로 설치되었습니다.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>테마가 성공적으로 설치되었습니다.
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 설치에 실패했습니다(코드 %1).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 설치에 실패했습니다(코드 %1).
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>테마 무작위 변경</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1591"/>
@@ -669,7 +679,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>권한 있는 도우미가 Program Files 아래에 설치되어 있지 않습니다.</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="183"/>

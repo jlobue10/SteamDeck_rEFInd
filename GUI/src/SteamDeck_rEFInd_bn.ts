@@ -246,37 +246,37 @@
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>থিম</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>কনফিগ তৈরি যে rEFInd থিম প্রয়োগ করে: কোনোটি নয় ক্লাসিক চেহারা রাখে, এলোমেলো প্রতিবার কনফিগ তৈরির সময় একটি ইনস্টল করা থিম বেছে নেয়</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>এলোমেলো থিম পরিষেবা সক্রিয় করুন (প্রতিটি বুটে একটি এলোমেলো থিম বেছে নেয়)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>এলোমেলো থিম চালু</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>এলোমেলো থিম পরিষেবা নিষ্ক্রিয় করুন</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>এলোমেলো থিম বন্ধ</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>থিম ফোল্ডারটি EFI সিস্টেম পার্টিশনে কপি করুন (ইনস্টল করা থিম দেখানোর আগে একবার প্রয়োজন)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -284,7 +284,7 @@
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>থিম ইনস্টল</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="991"/>
@@ -428,7 +428,7 @@
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>এলোমেলো</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="372"/>
@@ -473,12 +473,12 @@
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>কোনো থিম পাওয়া যায়নি, তাই এলোমেলো থিম বেছে নেওয়া যায়নি। দেওয়া থিমগুলি ফিরিয়ে আনতে GUI আবার ইনস্টল করুন।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>নির্বাচিত থিম &quot;%1&quot; পাওয়া যায়নি (বা এর theme.conf খালি)। অন্য একটি থিম বেছে নিন, বা দেওয়া থিমগুলি ফিরিয়ে আনতে GUI আবার ইনস্টল করুন।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="984"/>
@@ -488,7 +488,7 @@
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 সম্পূর্ণ লেখা যায়নি — ডিস্ক পূর্ণ হয়ে থাকতে পারে। কনফিগারেশন আপডেট হয়নি।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1087"/>
@@ -626,37 +626,47 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>থিম-ইনস্টল স্ক্রিপ্টটি চালানো হয়নি:
+
+%1
+
+এটি নেই, বা অ্যাপের এই সংস্করণের সাথে দেওয়া কপির সাথে মেলে না। যেহেতু এটি root অনুমতি নিয়ে চলে, তাই এটি কেবল তখনই চালানো হয় যখন এটি দেওয়া সংস্করণের সাথে বাইটে-বাইটে একই হয়।
+
+এটি ইনস্টল বা পুনরুদ্ধার করতে GUI আবার ইনস্টল করুন (SteamOS-এ install-GUI.sh আবার চালান), তারপর আবার চেষ্টা করুন।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>থিমগুলি সফলভাবে ইনস্টল হয়েছে।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>থিমগুলি সফলভাবে ইনস্টল হয়েছে।
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>থিম ইনস্টল ব্যর্থ হয়েছে (কোড %1)।</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>থিম ইনস্টল ব্যর্থ হয়েছে (কোড %1)।
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>এলোমেলো থিম</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1591"/>
@@ -669,7 +679,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>বিশেষাধিকারপ্রাপ্ত সহায়কটি Program Files-এর অধীনে ইনস্টল করা নেই।</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="183"/>

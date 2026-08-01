@@ -246,37 +246,37 @@
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Тема</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>Тема rEFInd, применяемая при создании конфига: «Нет» сохраняет классический вид, «Случайная» выбирает установленную тему при каждом создании конфига</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить службу случайной темы (выбирает случайную тему при каждой загрузке)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>Случ. тема вкл.</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>Выключить службу случайной темы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Случ. тема выкл.</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>Скопировать папку тем на системный раздел EFI (нужно один раз, прежде чем установленная тема сможет отображаться)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -284,7 +284,7 @@
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Установить темы</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="991"/>
@@ -428,7 +428,7 @@
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>Случайная</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="372"/>
@@ -473,12 +473,12 @@
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Темы не найдены, поэтому случайную тему выбрать не удалось. Переустановите GUI, чтобы восстановить поставляемые темы.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбранная тема «%1» не найдена (или её theme.conf пуст). Выберите другую тему или переустановите GUI, чтобы восстановить поставляемые темы.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="984"/>
@@ -488,7 +488,7 @@
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось полностью записать %1 — возможно, диск заполнен. Конфигурация не была обновлена.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1087"/>
@@ -626,37 +626,47 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Скрипт установки тем НЕ был запущен:
+
+%1
+
+Он отсутствует или не совпадает с копией, поставляемой с этой версией приложения. Поскольку он выполняется с правами root, он запускается только тогда, когда байт в байт совпадает с поставляемой версией.
+
+Переустановите GUI (в SteamOS повторно запустите install-GUI.sh), чтобы установить или восстановить его, и попробуйте снова.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Темы успешно установлены.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Темы успешно установлены.
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось установить темы (код %1).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось установить темы (код %1).
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>Случайная тема</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1591"/>
@@ -669,7 +679,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>Привилегированный помощник не установлен в Program Files.</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="183"/>

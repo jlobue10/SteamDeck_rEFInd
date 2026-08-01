@@ -246,37 +246,37 @@
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema rEFInd yang diterapkan Buat konfigurasi: Tidak ada mempertahankan tampilan klasik, Acak memilih tema terpasang setiap kali konfigurasi dibuat</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktifkan layanan tema acak (memilih tema acak pada setiap boot)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema acak aktif</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>Nonaktifkan layanan tema acak</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema acak mati</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>Salin folder tema ke Partisi Sistem EFI (diperlukan sekali sebelum tema terpasang dapat ditampilkan)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -284,7 +284,7 @@
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Pasang tema</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="991"/>
@@ -428,7 +428,7 @@
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>Acak</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="372"/>
@@ -473,12 +473,12 @@
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidak ada tema yang ditemukan, sehingga tema acak tidak dapat dipilih. Pasang ulang GUI untuk memulihkan tema bawaan.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema terpilih &quot;%1&quot; tidak ditemukan (atau theme.conf-nya kosong). Pilih tema lain, atau pasang ulang GUI untuk memulihkan tema bawaan.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="984"/>
@@ -488,7 +488,7 @@
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tidak dapat menulis %1 sepenuhnya — disk mungkin penuh. Konfigurasi tidak diperbarui.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1087"/>
@@ -626,37 +626,47 @@ Latar belakang dan ikon OS harus berupa gambar PNG asli (bukan sekadar berkas be
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Skrip pemasangan tema TIDAK dijalankan:
+
+%1
+
+Skrip hilang, atau tidak cocok dengan salinan yang disertakan pada versi aplikasi ini. Karena berjalan dengan hak akses root, skrip hanya dijalankan bila identik byte demi byte dengan versi yang disertakan.
+
+Pasang ulang GUI (di SteamOS, jalankan lagi install-GUI.sh) untuk memasang atau memulihkannya, lalu coba lagi.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema berhasil dipasang.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema berhasil dipasang.
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>Pemasangan tema gagal (kode %1).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Pemasangan tema gagal (kode %1).
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema acak</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1591"/>
@@ -669,7 +679,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pembantu berhak istimewa tidak terpasang di Program Files.</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="183"/>

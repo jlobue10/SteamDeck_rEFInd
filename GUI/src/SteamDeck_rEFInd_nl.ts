@@ -242,37 +242,37 @@
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Thema</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>rEFInd-thema dat Config aanmaken toepast: Geen behoudt de klassieke look, Willekeurig kiest bij elke aanmaak van de config een geïnstalleerd thema</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>Themarandomizer-service inschakelen (kiest bij elke opstart een willekeurig thema)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>Wissel-thema aan</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>Themarandomizer-service uitschakelen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Wissel-thema uit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopieer de themamap naar de EFI-systeempartitie (eenmalig nodig voordat een geïnstalleerd thema kan worden getoond)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -280,7 +280,7 @@
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Thema&apos;s installeren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="991"/>
@@ -424,7 +424,7 @@
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>Willekeurig</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="372"/>
@@ -469,12 +469,12 @@
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Er zijn geen thema&apos;s gevonden, dus kon er geen willekeurig thema worden gekozen. Installeer de GUI opnieuw om de meegeleverde thema&apos;s te herstellen.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Het geselecteerde thema &quot;%1&quot; is niet gevonden (of zijn theme.conf is leeg). Kies een ander thema, of installeer de GUI opnieuw om de meegeleverde thema&apos;s te herstellen.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="984"/>
@@ -484,7 +484,7 @@
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kon %1 niet volledig wegschrijven — de schijf is mogelijk vol. De config is niet bijgewerkt.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1087"/>
@@ -622,37 +622,47 @@ Achtergronden en OS-pictogrammen moeten echte PNG-afbeeldingen zijn (niet slecht
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Het thema-installatiescript is NIET uitgevoerd:
+
+%1
+
+Het ontbreekt, of het komt niet overeen met de kopie die met deze versie van de app is meegeleverd. Omdat het met rootrechten draait, wordt het alleen uitgevoerd wanneer het byte voor byte de meegeleverde versie is.
+
+Installeer de GUI opnieuw (op SteamOS: voer install-GUI.sh opnieuw uit) om het te installeren of te herstellen en probeer het daarna nogmaals.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>De thema&apos;s zijn met succes geïnstalleerd.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>De thema&apos;s zijn met succes geïnstalleerd.
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>Het installeren van de thema&apos;s is mislukt (code %1).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Het installeren van de thema&apos;s is mislukt (code %1).
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>Themarandomizer</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1591"/>
@@ -665,7 +675,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>De geprivilegieerde helper is niet onder Program Files geïnstalleerd.</translation>
     </message>
     <message>
         <location filename="platform.cpp" line="183"/>

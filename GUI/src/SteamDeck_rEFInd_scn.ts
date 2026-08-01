@@ -543,37 +543,37 @@ Li sfunni e l'iconi di sistema hannu a èssiri veri immàggini PNG (no simprici 
     <message>
         <location filename="mainwindow.ui" line="864"/>
         <source>Theme</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="886"/>
         <source>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema di rEFInd applicatu di Crea config: Nuddu manteni l&apos;aspettu clàssicu, Casuali scegghi un tema nstallatu ogni vota ca si crea la cunfigurazzioni</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="905"/>
         <source>Enable theme randomizer service (picks a random theme on every boot)</source>
-        <translation type="unfinished"></translation>
+        <translation>Attiva lu sirvizzu di lu tema casuali (scegghi un tema a casu a ogni avviu)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="908"/>
         <source>Theme Rand On</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema cas. on</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="927"/>
         <source>Disable theme randomizer service</source>
-        <translation type="unfinished"></translation>
+        <translation>Disattiva lu sirvizzu di lu tema casuali</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="930"/>
         <source>Theme Rand Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema cas. off</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="962"/>
         <source>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</source>
-        <translation type="unfinished"></translation>
+        <translation>Copia la cartella di li temi supra la partizzioni di sistema EFI (servi na vota sula prima ca un tema nstallatu si pò vìdiri)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
@@ -581,27 +581,27 @@ Li sfunni e l'iconi di sistema hannu a èssiri veri immàggini PNG (no simprici 
         <location filename="mainwindow.cpp" line="1560"/>
         <location filename="mainwindow.cpp" line="1565"/>
         <source>Install Themes</source>
-        <translation type="unfinished"></translation>
+        <translation>Nstalla temi</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="264"/>
         <source>Random</source>
-        <translation type="unfinished"></translation>
+        <translation>Casuali</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="905"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nun fu attruvatu nuddu tema, perciò nun si potti scègghiri un tema a casu. Torna a nstallari la GUI pi ripristinari li temi furnuti.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="915"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lu tema sciglutu &quot;%1&quot; nun fu attruvatu (o lu sò theme.conf è vacanti). Scegghi n&apos;àutru tema, o torna a nstallari la GUI pi ripristinari li temi furnuti.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="995"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nun si potti scrìviri %1 cumpletamenti — lu discu putissi èssiri chinu. La cunfigurazzioni nun fu aggiurnata.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1546"/>
@@ -612,37 +612,51 @@ Li sfunni e l'iconi di sistema hannu a èssiri veri immàggini PNG (no simprici 
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lu script di nstallazzioni di li temi NUN fu esiquitu:
+
+%1
+
+Manca, o nun currispunni a la copia furnuta cu sta virsioni di l&apos;app. Vistu ca s&apos;esèquita cu privileggi di root, veni esiquitu sulu si è idènticu byte pi byte a la virsioni furnuta.
+
+Torna a nstallari la GUI (nta SteamOS, torna a esiquiri install-GUI.sh) pi lu nstallari o ripristinari, poi riprova.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1562"/>
         <source>The themes were installed successfully.</source>
-        <translation type="unfinished"></translation>
+        <translation>Li temi foru nstallati currettamenti.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1563"/>
         <source>The themes were installed successfully.
 
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Li temi foru nstallati currettamenti.
+
+%1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1567"/>
         <source>Installing the themes failed (code %1).</source>
-        <translation type="unfinished"></translation>
+        <translation>La nstallazzioni di li temi fallìu (còdici %1).</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1568"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>La nstallazzioni di li temi fallìu (còdici %1).
+
+%2</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1576"/>
         <location filename="mainwindow.cpp" line="1583"/>
         <source>Theme Randomizer</source>
-        <translation type="unfinished"></translation>
+        <translation>Tema casuali</translation>
+    </message>
+    <message>
+        <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots</source>
+        <translation>Scrivi macari stanzi d&apos;avviu pi li bootloader arrilivati ca nun sunnu nta unu di li quattru posti</translation>
     </message>
 </context>
 <context>
@@ -660,7 +674,7 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
     <message>
         <location filename="platform.cpp" line="155"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation type="unfinished"></translation>
+        <translation>L&apos;aiutanti privileggiatu nun è nstallatu sutta Program Files.</translation>
     </message>
 </context>
 <context>
