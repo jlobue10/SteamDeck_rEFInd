@@ -113,10 +113,12 @@ QPixmap renderMockScreen(const QString &backgroundPath, const QList<PreviewEntry
             p.drawText(iconRect, Qt::AlignCenter, entries.at(i).name.left(1));
             p.setFont(nameFont);
         }
-        p.setPen(Qt::white);
-        const QRect nameRect(x - spacing / 2, iconRect.bottom() + icon / 6,
-                             icon + spacing, icon / 3);
-        p.drawText(nameRect, Qt::AlignHCenter | Qt::AlignTop, entries.at(i).name);
+        if (!theme.hideLabel) {
+            p.setPen(Qt::white);
+            const QRect nameRect(x - spacing / 2, iconRect.bottom() + icon / 6,
+                                 icon + spacing, icon / 3);
+            p.drawText(nameRect, Qt::AlignHCenter | Qt::AlignTop, entries.at(i).name);
+        }
         x += icon + spacing;
     }
     return pix;
@@ -148,12 +150,22 @@ PreviewTheme PreviewTheme::load(const QString &themeConfPath, const QString &the
         if (value.size() >= 2 && value.startsWith(QLatin1Char('"'))
             && value.endsWith(QLatin1Char('"')))
             value = value.mid(1, value.size() - 2);
-        if (directive == QLatin1String("banner"))
+        if (directive == QLatin1String("banner")) {
             theme.bannerPath = resolveThemeAsset(value, themesRoot, confDir);
-        else if (directive == QLatin1String("selection_big"))
+        } else if (directive == QLatin1String("selection_big")) {
             theme.selectionPath = resolveThemeAsset(value, themesRoot, confDir);
-        else if (directive == QLatin1String("big_icon_size"))
+        } else if (directive == QLatin1String("big_icon_size")) {
             theme.bigIconSize = value.section(QLatin1Char(' '), 0, 0).toInt();
+        } else if (directive == QLatin1String("hideui")) {
+            // Flags are comma- and/or space-separated; like rEFInd's |=,
+            // repeated hideui lines accumulate (once hidden, stays hidden).
+            const QStringList flags = value.replace(QLatin1Char(','), QLatin1Char(' '))
+                                          .split(QLatin1Char(' '));
+            for (const QString &flag : flags) {
+                if (flag.compare(QLatin1String("label"), Qt::CaseInsensitive) == 0)
+                    theme.hideLabel = true;
+            }
+        }
     }
     return theme;
 }

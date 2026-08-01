@@ -23,6 +23,13 @@ struct PreviewTheme {
     QString bannerPath;      // resolved banner image; empty = user background
     QString selectionPath;   // resolved selection_big image; empty = builtin
     int bigIconSize = 0;     // theme's big_icon_size; 0 = the GUI's icon size
+    // True when the theme's own hideui line lists "label". rEFInd ORs
+    // hideui flags across the base config and the include (config.c:
+    // HideUIFlags |=), so a theme can only hide more, never re-show — and
+    // the GUI's base config already hides label. The mock keeps the names
+    // elsewhere as an identification aid, but a theme that itself asks for
+    // hideui label is drawn without them.
+    bool hideLabel = false;
 
     // Parses the visual directives out of themeConfPath. Asset paths in
     // theme.conf are ESP-relative ("themes/<name>/..."); themesRoot is the
