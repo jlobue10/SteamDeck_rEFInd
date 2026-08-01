@@ -68,6 +68,10 @@ CURRENT_WD=$(pwd)
 yes | sudo cp "$CURRENT_WD"/refind-GUI.conf /esp/efi/refind/refind.conf
 yes | sudo cp -rf "$CURRENT_WD"/backgrounds/ /esp/efi/refind
 yes | sudo cp -rf "$CURRENT_WD"/icons/ /esp/efi/refind
+# Themes are optional (only used when refind.conf includes
+# themes/active_theme.conf), so a failed copy warns instead of aborting.
+yes | sudo cp -rf "$CURRENT_WD"/themes/ /esp/efi/refind \
+	|| echo "Warning: could not copy themes/ to the ESP; theming will be unavailable." >&2
 
 # SkorionOS Xbox 360 USB controller UEFI driver: dropping it into rEFInd's
 # drivers_x64 folder makes wired/docked Xbox-style gamepads usable in the

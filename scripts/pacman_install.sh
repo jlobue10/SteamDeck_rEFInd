@@ -49,6 +49,10 @@
 	sudo cp -f "$HOME/.local/SteamDeck_rEFInd/GUI/refind.conf" /esp/efi/refind/refind.conf
 	sudo cp -rf "$HOME/.local/SteamDeck_rEFInd/backgrounds/" /esp/efi/refind
 	sudo cp -rf "$HOME/.local/SteamDeck_rEFInd/icons/" /esp/efi/refind
+	# Themes are optional (only used when refind.conf includes
+	# themes/active_theme.conf), so a failed copy warns instead of aborting.
+	sudo cp -rf "$HOME/.local/SteamDeck_rEFInd/themes/" /esp/efi/refind \
+		|| echo "# Warning: could not copy themes/ to the ESP; theming will be unavailable."
 	echo 65
 	echo "# Installing Xbox 360 controller driver..."
 	# SkorionOS Xbox 360 USB controller UEFI driver: dropping it into rEFInd's
