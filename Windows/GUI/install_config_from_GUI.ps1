@@ -110,13 +110,23 @@ try {
     $dest = Join-Path $mount.Root 'EFI\refind'
     New-Item -ItemType Directory -Force $dest | Out-Null
 
+    # active_theme.conf publishes into the themes\ subdirectory (the generated
+    # refind.conf's include line points at themes/active_theme.conf);
+    # everything else lands next to refind.conf. Like the images, it is
+    # optional: absent when the Theme combo is None.
+    $themesDest = Join-Path $dest 'themes'
+    function Get-DestDirFor([string]$name) {
+        if ($name -eq 'active_theme.conf') { return $themesDest }
+        return $dest
+    }
+
     # Best-effort sweep of staging files left behind by an earlier interrupted
     # run (the finally block cannot run across a kill or power loss, and every
     # run mints new random staging names, so leftovers would otherwise
     # accumulate on the small ESP). Only the exact ".<name>.new.<suffix>"
     # shapes created below are matched, so no live file can be touched.
-    foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png','refind.conf.prev') {
-        Get-ChildItem -LiteralPath $dest -Filter ".$f.new.*" -File -ErrorAction SilentlyContinue |
+    foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png','active_theme.conf','refind.conf.prev') {
+        Get-ChildItem -LiteralPath (Get-DestDirFor $f) -Filter ".$f.new.*" -File -ErrorAction SilentlyContinue |
             Remove-Item -Force -ErrorAction SilentlyContinue
     }
 
@@ -126,11 +136,13 @@ try {
         throw "No non-empty refind.conf was found in $src. Use Create Config in the GUI first."
     }
 
-    foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
+    foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png','active_theme.conf') {
         $source = Join-Path $src $f
         if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { continue }
 
-        $stage = Join-Path $dest ('.' + $f + '.new.' + [guid]::NewGuid().ToString('N'))
+        $stageDir = Get-DestDirFor $f
+        New-Item -ItemType Directory -Force $stageDir | Out-Null
+        $stage = Join-Path $stageDir ('.' + $f + '.new.' + [guid]::NewGuid().ToString('N'))
         $stagePaths += $stage
         Copy-Item -LiteralPath $source -Destination $stage
         if ($f -eq 'refind.conf' -and (Get-Item -LiteralPath $stage).Length -le 0) {
@@ -154,9 +166,9 @@ try {
     # Staged, publish-last: optional assets first and refind.conf last (an
     # overwriting Move-Item is delete-then-move, not an atomic swap, hence the
     # config is published last).
-    foreach ($f in 'background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
+    foreach ($f in 'background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png','active_theme.conf') {
         if (-not $staged.ContainsKey($f)) { continue }
-        Move-Item -Force -LiteralPath $staged[$f] -Destination (Join-Path $dest $f)
+        Move-Item -Force -LiteralPath $staged[$f] -Destination (Join-Path (Get-DestDirFor $f) $f)
         Write-Host "Installed $f"
     }
     Move-Item -Force -LiteralPath $staged['refind.conf'] -Destination $liveConf

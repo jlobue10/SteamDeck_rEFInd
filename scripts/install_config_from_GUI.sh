@@ -17,7 +17,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$HOME/.local/SteamDeck_rEFInd/GUI"
-FILES="refind.conf background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png"
+FILES="refind.conf background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png active_theme.conf"
 
 # Quoted heredoc: nothing below is expanded by this shell, only by root's.
 read -r -d '' PAYLOAD <<'EOS'
@@ -46,12 +46,24 @@ esp_make_writable "$TARGET"
 
 mkdir -p "$TARGET" 2>/dev/null || { echo "ERR_MKDIR $TARGET"; exit 4; }
 
+# active_theme.conf publishes into the themes/ subdirectory (the generated
+# refind.conf's include line points at themes/active_theme.conf); everything
+# else lands next to refind.conf. Like the images, it is optional: absent when
+# the Theme combo is None, and its absence must not fail the install.
+dest_dir_for() {
+    case "$1" in
+        active_theme.conf) printf '%s\n' "$TARGET/themes" ;;
+        *) printf '%s\n' "$TARGET" ;;
+    esac
+}
+
 # Best-effort sweep of staging leftovers from an earlier interrupted run (the
 # EXIT trap cannot run across SIGKILL or power loss, and random staging names
 # would accumulate on the small ESP). Only the ".<name>.new.<suffix>" shapes
 # created below are matched, so no live file can be touched.
 for f in $FILES refind.conf.prev; do
-    for stale in "$TARGET/.$f.new."*; do
+    d="$(dest_dir_for "$f")"
+    for stale in "$d/.$f.new."*; do
         [ -f "$stale" ] && rm -f -- "$stale" 2>/dev/null
     done
 done
@@ -63,7 +75,9 @@ COPIED=0
 declare -A STAGED
 for f in $FILES; do
     [ -f "$SRC/$f" ] || continue
-    stage="$(mktemp "$TARGET/.${f}.new.XXXXXX")" \
+    d="$(dest_dir_for "$f")"
+    mkdir -p "$d" 2>/dev/null || { echo "ERR_MKDIR $d"; exit 4; }
+    stage="$(mktemp "$d/.${f}.new.XXXXXX")" \
         || { echo "ERR_COPY $f"; exit 5; }
     STAGED["$f"]="$stage"
     STAGED_FILES+=("$stage")
@@ -91,7 +105,7 @@ fi
 for f in $FILES; do
     [ "$f" = refind.conf ] && continue
     [ -n "${STAGED[$f]:-}" ] || continue
-    mv -f -- "${STAGED[$f]}" "$TARGET/$f" 2>/dev/null \
+    mv -f -- "${STAGED[$f]}" "$(dest_dir_for "$f")/$f" 2>/dev/null \
         || { echo "ERR_COPY $f"; exit 5; }
 done
 mv -f -- "${STAGED[refind.conf]}" "$TARGET/refind.conf" 2>/dev/null \
