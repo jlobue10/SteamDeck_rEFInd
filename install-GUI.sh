@@ -176,6 +176,33 @@ sudo install -o root -g root -m 0644 \
     "$CURRENT_WD/scripts/lib_esp_target.sh" \
     /etc/SteamDeck_rEFInd/lib_esp_target.sh
 
+# The randomizer runs as root under systemd, where $HOME is /root. Record the
+# actual desktop user's backgrounds directory as data in a root-owned file on
+# SteamOS's persistent /etc overlay. The service validates and reads this file;
+# it never sources it as shell code.
+case "$HOME" in
+    /*) ;;
+    *)
+        echo "Error: HOME is not an absolute path; refusing to configure the background randomizer." >&2
+        exit 1
+        ;;
+esac
+case "$HOME" in
+    *$'\n'*)
+        echo "Error: HOME contains a newline; refusing to create a malformed randomizer configuration." >&2
+        exit 1
+        ;;
+esac
+BG_DIR_CONFIG_TMP="$(mktemp)" || exit 1
+if ! printf '%s\n' "$HOME/.local/SteamDeck_rEFInd/backgrounds" > "$BG_DIR_CONFIG_TMP" ||
+    ! sudo install -o root -g root -m 0644 "$BG_DIR_CONFIG_TMP" \
+        /etc/SteamDeck_rEFInd/background-dir; then
+    rm -f "$BG_DIR_CONFIG_TMP"
+    echo "Error: could not install the background randomizer path configuration." >&2
+    exit 1
+fi
+rm -f "$BG_DIR_CONFIG_TMP"
+
 INSTALL_USER="$(id -un)"
 sed "s/^USER /$INSTALL_USER /" "$CURRENT_WD/scripts/zz_SteamDeck_rEFInd_install_config" \
     > "$CURRENT_WD/sudoers_rule.tmp"
