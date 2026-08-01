@@ -208,6 +208,17 @@ mkdir -p "$TARGET" 2> /dev/null || {
     exit 4
 }
 
+# Best-effort sweep of staging files left behind by an earlier interrupted run
+# (the EXIT trap cannot run across SIGKILL or power loss, and every run mints
+# new random staging names, so leftovers would otherwise accumulate on the
+# small ESP). Only the exact ".<name>.new.<suffix>" shapes created below are
+# matched, so no live file can be touched.
+for f in $FILES refind.conf.prev; do
+    for stale in "$TARGET/.$f.new."*; do
+        [ -f "$stale" ] && rm -f -- "$stale" 2> /dev/null
+    done
+done
+
 # A config is mandatory. Images are optional, but images alone must not count
 # as a successful installation.
 if ! runuser -u "$RUN_USER" -- test -f "$SRC/refind.conf" 2> /dev/null \
@@ -262,9 +273,12 @@ if [ -f "$TARGET/refind.conf" ]; then
     fi
 fi
 
-# Publish assets first and refind.conf last. All renames remain on the ESP, so
-# failed source or destination writes cannot truncate existing live files.
-for f in background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png; do
+# Publish assets first and refind.conf last (staged, publish-last: the renames
+# remain on the ESP, so failed source or destination writes cannot truncate
+# existing live files). Everything staged from $FILES is published here, so the
+# two loops cannot drift apart.
+for f in $FILES; do
+    [ "$f" = refind.conf ] && continue
     [ -n "${STAGED[$f]:-}" ] || continue
     if ! mv -f -- "${STAGED[$f]}" "$TARGET/$f" 2> /dev/null; then
         echo "Failed while publishing $f; the live config was not changed."

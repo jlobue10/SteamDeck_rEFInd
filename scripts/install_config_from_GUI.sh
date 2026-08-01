@@ -46,6 +46,16 @@ esp_make_writable "$TARGET"
 
 mkdir -p "$TARGET" 2>/dev/null || { echo "ERR_MKDIR $TARGET"; exit 4; }
 
+# Best-effort sweep of staging leftovers from an earlier interrupted run (the
+# EXIT trap cannot run across SIGKILL or power loss, and random staging names
+# would accumulate on the small ESP). Only the ".<name>.new.<suffix>" shapes
+# created below are matched, so no live file can be touched.
+for f in $FILES refind.conf.prev; do
+    for stale in "$TARGET/.$f.new."*; do
+        [ -f "$stale" ] && rm -f -- "$stale" 2>/dev/null
+    done
+done
+
 [ -f "$SRC/refind.conf" ] && [ -s "$SRC/refind.conf" ] \
     || { echo "ERR_NOSRC"; exit 6; }
 
@@ -76,7 +86,10 @@ if [ -f "$TARGET/refind.conf" ]; then
         || { echo "ERR_COPY refind.conf.prev"; exit 5; }
 fi
 
-for f in background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png; do
+# Staged, publish-last: assets first, refind.conf last. Publishing walks the
+# same $FILES list as staging, so the two loops cannot drift apart.
+for f in $FILES; do
+    [ "$f" = refind.conf ] && continue
     [ -n "${STAGED[$f]:-}" ] || continue
     mv -f -- "${STAGED[$f]}" "$TARGET/$f" 2>/dev/null \
         || { echo "ERR_COPY $f"; exit 5; }

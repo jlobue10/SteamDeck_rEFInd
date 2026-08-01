@@ -110,6 +110,16 @@ try {
     $dest = Join-Path $mount.Root 'EFI\refind'
     New-Item -ItemType Directory -Force $dest | Out-Null
 
+    # Best-effort sweep of staging files left behind by an earlier interrupted
+    # run (the finally block cannot run across a kill or power loss, and every
+    # run mints new random staging names, so leftovers would otherwise
+    # accumulate on the small ESP). Only the exact ".<name>.new.<suffix>"
+    # shapes created below are matched, so no live file can be touched.
+    foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png','refind.conf.prev') {
+        Get-ChildItem -LiteralPath $dest -Filter ".$f.new.*" -File -ErrorAction SilentlyContinue |
+            Remove-Item -Force -ErrorAction SilentlyContinue
+    }
+
     $sourceConf = Join-Path $src 'refind.conf'
     if (-not (Test-Path -LiteralPath $sourceConf -PathType Leaf) -or
         (Get-Item -LiteralPath $sourceConf).Length -le 0) {
@@ -141,7 +151,9 @@ try {
         Move-Item -Force -LiteralPath $backupStage -Destination (Join-Path $dest 'refind.conf.prev')
     }
 
-    # Publish optional assets first and refind.conf last.
+    # Staged, publish-last: optional assets first and refind.conf last (an
+    # overwriting Move-Item is delete-then-move, not an atomic swap, hence the
+    # config is published last).
     foreach ($f in 'background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
         if (-not $staged.ContainsKey($f)) { continue }
         Move-Item -Force -LiteralPath $staged[$f] -Destination (Join-Path $dest $f)
