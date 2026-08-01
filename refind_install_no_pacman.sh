@@ -3,7 +3,9 @@
 # Please make sure that a password exists for the deck user before running
 
 READONLY_DISABLED=0
+# Bazzite and ChimeraOS have no steamos-readonly; both helpers are no-ops there.
 disable_readonly() {
+	command -v steamos-readonly >/dev/null 2>&1 || return 0
 	if [ "$READONLY_DISABLED" -eq 1 ]; then
 		return 0
 	fi
@@ -14,6 +16,7 @@ disable_readonly() {
 	READONLY_DISABLED=1
 }
 enable_readonly() {
+	command -v steamos-readonly >/dev/null 2>&1 || return 0
 	if [ "$READONLY_DISABLED" -eq 0 ]; then
 		return 0
 	fi
@@ -49,7 +52,11 @@ sudo mkdir -p /esp/efi/refind
 yes | sudo cp ~/Downloads/refind-bin-0.14.2/refind/refind_x64.efi /esp/efi/refind/
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/drivers_x64/ /esp/efi/refind
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/tools_x64/ /esp/efi/refind
-yes | sudo ./refind-bin-0.14.2/refind-install
+# This script stages the rEFInd files and creates the NVRAM entry itself, so a
+# refind-install failure must not abort the install under set -e.
+if ! yes | sudo ./refind-bin-0.14.2/refind-install; then
+	echo "Warning: refind-install reported an error; continuing with manual file installation." >&2
+fi
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/icons/ /esp/efi/refind
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/fonts/ /esp/efi/refind
 yes | sudo cp "$CURRENT_WD/refind.conf" /esp/efi/refind/refind.conf

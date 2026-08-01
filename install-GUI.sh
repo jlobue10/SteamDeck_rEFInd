@@ -6,7 +6,9 @@
 echo -e "Installing SteamDeck rEFInd...\n"
 
 READONLY_DISABLED=0
+# Bazzite and ChimeraOS have no steamos-readonly; both helpers are no-ops there.
 disable_readonly() {
+    command -v steamos-readonly >/dev/null 2>&1 || return 0
     if [ "$READONLY_DISABLED" -eq 1 ]; then
         return 0
     fi
@@ -17,6 +19,7 @@ disable_readonly() {
     READONLY_DISABLED=1
 }
 enable_readonly() {
+    command -v steamos-readonly >/dev/null 2>&1 || return 0
     if [ "$READONLY_DISABLED" -eq 0 ]; then
         return 0
     fi
