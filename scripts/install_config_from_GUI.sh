@@ -28,7 +28,15 @@ FILES="$3"
 
 # shellcheck source=/dev/null
 . "$LIB" || { echo "ERR_NOLIB $LIB"; exit 7; }
-trap esp_cleanup EXIT
+STAGED_FILES=()
+cleanup() {
+    local staged
+    for staged in "${STAGED_FILES[@]}"; do
+        [ -n "$staged" ] && rm -f -- "$staged" 2>/dev/null
+    done
+    esp_cleanup
+}
+trap cleanup EXIT
 
 RESOLVED="$(resolve_refind_dir)" || { echo "ERR_NOTARGET"; exit 3; }
 TARGET="${RESOLVED%%|*}"
@@ -38,16 +46,43 @@ esp_make_writable "$TARGET"
 
 mkdir -p "$TARGET" 2>/dev/null || { echo "ERR_MKDIR $TARGET"; exit 4; }
 
-# Keep one rollback copy of the live config before overwriting it.
-[ -f "$TARGET/refind.conf" ] && cp -f "$TARGET/refind.conf" "$TARGET/refind.conf.prev" 2>/dev/null
+[ -f "$SRC/refind.conf" ] && [ -s "$SRC/refind.conf" ] \
+    || { echo "ERR_NOSRC"; exit 6; }
 
 COPIED=0
+declare -A STAGED
 for f in $FILES; do
     [ -f "$SRC/$f" ] || continue
-    cp -f "$SRC/$f" "$TARGET/" 2>/dev/null || { echo "ERR_COPY $f"; exit 5; }
+    stage="$(mktemp "$TARGET/.${f}.new.XXXXXX")" \
+        || { echo "ERR_COPY $f"; exit 5; }
+    STAGED["$f"]="$stage"
+    STAGED_FILES+=("$stage")
+    cp -f -- "$SRC/$f" "$stage" 2>/dev/null \
+        || { echo "ERR_COPY $f"; exit 5; }
+    if [ "$f" = refind.conf ] && [ ! -s "$stage" ]; then
+        echo "ERR_COPY $f"
+        exit 5
+    fi
     COPIED=$((COPIED + 1))
 done
-[ "$COPIED" -gt 0 ] || { echo "ERR_NOSRC"; exit 6; }
+[ -n "${STAGED[refind.conf]:-}" ] || { echo "ERR_NOSRC"; exit 6; }
+
+if [ -f "$TARGET/refind.conf" ]; then
+    backup_stage="$(mktemp "$TARGET/.refind.conf.prev.new.XXXXXX")" \
+        || { echo "ERR_COPY refind.conf.prev"; exit 5; }
+    STAGED_FILES+=("$backup_stage")
+    cp -- "$TARGET/refind.conf" "$backup_stage" 2>/dev/null \
+        && mv -f -- "$backup_stage" "$TARGET/refind.conf.prev" 2>/dev/null \
+        || { echo "ERR_COPY refind.conf.prev"; exit 5; }
+fi
+
+for f in background.png os_icon1.png os_icon2.png os_icon3.png os_icon4.png; do
+    [ -n "${STAGED[$f]:-}" ] || continue
+    mv -f -- "${STAGED[$f]}" "$TARGET/$f" 2>/dev/null \
+        || { echo "ERR_COPY $f"; exit 5; }
+done
+mv -f -- "${STAGED[refind.conf]}" "$TARGET/refind.conf" 2>/dev/null \
+    || { echo "ERR_COPY refind.conf"; exit 5; }
 
 # Flush to the ESP before the temporary mount (if any) goes away.
 sync
@@ -74,7 +109,7 @@ else
         3) MSG="$(printf "No EFI System Partition with rEFInd on it could be found,\nand no system ESP is mounted.\n\nInstall rEFInd first, then install the config.")" ;;
         4) MSG="$(printf "Could not create the destination directory:\n%s\n\nThe EFI System Partition may be mounted read-only." "${RESULT#ERR_MKDIR }")" ;;
         5) MSG="$(printf "Failed while copying %s to the EFI System Partition.\n\nIt may be full or mounted read-only." "${RESULT#ERR_COPY }")" ;;
-        6) MSG="$(printf "None of the config files were found in:\n%s\n\nGenerate the config in the GUI first (Create Config)." "$SRC")" ;;
+        6) MSG="$(printf "No non-empty refind.conf was found in:\n%s\n\nGenerate the config in the GUI first (Create Config)." "$SRC")" ;;
         7) MSG="$(printf "Could not load the ESP resolution helper:\n%s\n\nRe-run the GUI installer to restore it." "${RESULT#ERR_NOLIB }")" ;;
         *) MSG="$(printf "Incorrect sudo password, or the prompt was cancelled.\n\nPlease try again providing the correct sudo password.")" ;;
     esac
