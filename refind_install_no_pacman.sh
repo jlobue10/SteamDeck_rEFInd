@@ -2,22 +2,61 @@
 # An alternate,  without pacman, rEFInd installation
 # Please make sure that a password exists for the deck user before running
 
+READONLY_DISABLED=0
+# Bazzite and ChimeraOS have no steamos-readonly; both helpers are no-ops there.
+disable_readonly() {
+	command -v steamos-readonly >/dev/null 2>&1 || return 0
+	if [ "$READONLY_DISABLED" -eq 1 ]; then
+		return 0
+	fi
+	if ! sudo steamos-readonly disable; then
+		echo "Error: could not disable SteamOS read-only mode." >&2
+		return 1
+	fi
+	READONLY_DISABLED=1
+}
+enable_readonly() {
+	command -v steamos-readonly >/dev/null 2>&1 || return 0
+	if [ "$READONLY_DISABLED" -eq 0 ]; then
+		return 0
+	fi
+	if ! sudo steamos-readonly enable; then
+		echo "CRITICAL: SteamOS read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." >&2
+		return 1
+	fi
+	READONLY_DISABLED=0
+}
+restore_readonly_on_exit() {
+	status=$?
+	trap - EXIT
+	if [ "$READONLY_DISABLED" -eq 1 ] && ! enable_readonly; then
+		status=70
+	fi
+	exit "$status"
+}
+trap restore_readonly_on_exit EXIT
+set -e
+
 CURRENT_WD=$(pwd)
 cd ~/Downloads || exit 1
-wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip
-if [ $? -ne 0 ] || [ ! -s refind-bin-gnuefi-0.14.2.zip ]; then
+if ! wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refind/files/0.14.2/refind-bin-gnuefi-0.14.2.zip ||
+	[ ! -s refind-bin-gnuefi-0.14.2.zip ]; then
     echo "Error: failed to download rEFInd from Sourceforge. Aborting." >&2
     exit 1
 fi
 unzip -t refind-bin-gnuefi-0.14.2.zip >/dev/null || { echo "Error: downloaded zip is corrupt. Aborting." >&2; exit 1; }
 unzip -a -o refind-bin-gnuefi-0.14.2.zip
 
-sudo steamos-readonly disable
+disable_readonly
 sudo mkdir -p /esp/efi/refind
 yes | sudo cp ~/Downloads/refind-bin-0.14.2/refind/refind_x64.efi /esp/efi/refind/
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/drivers_x64/ /esp/efi/refind
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/tools_x64/ /esp/efi/refind
-yes | sudo ./refind-bin-0.14.2/refind-install
+# This script stages the rEFInd files and creates the NVRAM entry itself, so a
+# refind-install failure must not abort the install under set -e.
+if ! yes | sudo ./refind-bin-0.14.2/refind-install; then
+	echo "Warning: refind-install reported an error; continuing with manual file installation." >&2
+fi
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/refind/icons/ /esp/efi/refind
 yes | sudo cp -rf ~/Downloads/refind-bin-0.14.2/fonts/ /esp/efi/refind
 yes | sudo cp "$CURRENT_WD/refind.conf" /esp/efi/refind/refind.conf
@@ -54,7 +93,7 @@ rm -f "$XBOX360_DRV_TMP"
 # this driver produces AbsolutePointer so the rEFInd menu is touch-usable,
 # including rotating the portrait touch matrix onto rEFInd's landscape mode.
 # Like the controller driver, download failure is non-fatal.
-DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)"
+DECK_PRODUCT="$(cat /sys/class/dmi/id/product_name 2>/dev/null)" || true
 if [ "$DECK_PRODUCT" = "Galileo" ] || [ "$DECK_PRODUCT" = "Jupiter" ]; then
 	TOUCH_DRV_URL="https://github.com/jlobue10/TouchI2cDxe/releases/latest/download/TouchI2cDxe.efi"
 	TOUCH_DRV_TMP="$(mktemp)"
@@ -76,7 +115,7 @@ echo "Updating EFI boot entries..."
 # disk makes manual recovery trivial if anything goes sideways.
 NVRAM_BK_DIR="$HOME/.local/SteamDeck_rEFInd/nvram-backups"
 if mkdir -p "$NVRAM_BK_DIR" 2>/dev/null; then
-	efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null
+	efibootmgr -v > "$NVRAM_BK_DIR/efibootmgr-$(date +%Y%m%d-%H%M%S).txt" 2>/dev/null || true
 	# Keep the ten most recent snapshots.
 	ls -1t "$NVRAM_BK_DIR"/efibootmgr-*.txt 2>/dev/null | tail -n +11 | xargs -r rm -f
 fi
@@ -180,7 +219,7 @@ if [ -n "$NEW_BOOTNUM" ]; then
 		|| echo "Warning: could not set rEFInd as the next boot." >&2
 fi
 
-sudo steamos-readonly enable
+enable_readonly || exit 70
 
 # Verify the result from live NVRAM rather than trusting the steps above.
 echo

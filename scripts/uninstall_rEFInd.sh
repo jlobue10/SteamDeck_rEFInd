@@ -36,6 +36,49 @@ for arg in "$@"; do
 	esac
 done
 
+READONLY_DISABLED=0
+# Bazzite and ChimeraOS have no steamos-readonly; both helpers are no-ops there.
+disable_readonly() {
+	command -v steamos-readonly >/dev/null 2>&1 || return 0
+	if [ "$READONLY_DISABLED" -eq 1 ]; then
+		return 0
+	fi
+	if ! sudo steamos-readonly disable; then
+		echo "Error: could not disable SteamOS read-only mode." >&2
+		return 1
+	fi
+	READONLY_DISABLED=1
+}
+enable_readonly() {
+	command -v steamos-readonly >/dev/null 2>&1 || return 0
+	if [ "$READONLY_DISABLED" -eq 0 ]; then
+		return 0
+	fi
+	if ! sudo steamos-readonly enable; then
+		echo "CRITICAL: SteamOS read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." >&2
+		return 1
+	fi
+	READONLY_DISABLED=0
+}
+restore_readonly_on_exit() {
+	status=$?
+	trap - EXIT
+	if [ "$READONLY_DISABLED" -eq 1 ] && ! enable_readonly; then
+		status=70
+	fi
+	exit "$status"
+}
+run_with_writable_root() {
+	disable_readonly || return 1
+	"$@"
+	command_status=$?
+	if ! enable_readonly; then
+		return 70
+	fi
+	return "$command_status"
+}
+trap restore_readonly_on_exit EXIT
+
 RefindLoaderRegex='\\refind\\refind[^\\]*\.efi'
 
 echo "Removing the Deck-side rEFInd install..."
@@ -130,9 +173,7 @@ if [ "$KEEP_ESP_FILES" -eq 0 ] && [ -n "$ESP_MP" ]; then
 		fi
 	done
 	if sudo test -f /boot/refind_linux.conf; then
-		sudo steamos-readonly disable
-		sudo rm -f /boot/refind_linux.conf
-		sudo steamos-readonly enable
+		run_with_writable_root sudo rm -f /boot/refind_linux.conf || exit $?
 		echo "Removed /boot/refind_linux.conf."
 	fi
 fi
@@ -140,19 +181,18 @@ fi
 # 6. Remove the pacman-installed refind package (the Sourceforge install path
 # leaves no package; its rootfs files are covered by the ESP cleanup above).
 if pacman -Qq refind >/dev/null 2>&1; then
-	sudo steamos-readonly disable
-	sudo pacman -R --noconfirm refind
-	sudo steamos-readonly enable
-	echo "Removed the refind pacman package."
+	if run_with_writable_root sudo pacman -R --noconfirm refind; then
+		echo "Removed the refind pacman package."
+	else
+		echo "Warning: could not remove the refind pacman package; continuing." >&2
+	fi
 fi
 
 # 7. Optionally remove the GUI app itself.
 if [ "$REMOVE_APP" -eq 1 ]; then
 	echo "Removing the SteamDeck_rEFInd app..."
 	if pacman -Qq SteamDeck_rEFInd >/dev/null 2>&1; then
-		sudo steamos-readonly disable
-		sudo pacman -R --noconfirm SteamDeck_rEFInd
-		sudo steamos-readonly enable
+		run_with_writable_root sudo pacman -R --noconfirm SteamDeck_rEFInd || exit $?
 	else
 		echo "No installed SteamDeck_rEFInd package found; removing files only."
 	fi
