@@ -103,27 +103,53 @@ if (-not $mount) {
     $mount = Mount-EspPartition $system
 }
 
+$staged = @{}
+$stagePaths = @()
 try {
     $src = Join-Path $env:LOCALAPPDATA 'SteamDeck_rEFInd\GUI'
     $dest = Join-Path $mount.Root 'EFI\refind'
     New-Item -ItemType Directory -Force $dest | Out-Null
-    # Keep one rollback copy of the live config before overwriting it.
-    $liveConf = Join-Path $dest 'refind.conf'
-    if (Test-Path $liveConf) {
-        Copy-Item -Force $liveConf (Join-Path $dest 'refind.conf.prev')
+
+    $sourceConf = Join-Path $src 'refind.conf'
+    if (-not (Test-Path -LiteralPath $sourceConf -PathType Leaf) -or
+        (Get-Item -LiteralPath $sourceConf).Length -le 0) {
+        throw "No non-empty refind.conf was found in $src. Use Create Config in the GUI first."
     }
-    $copied = 0
+
     foreach ($f in 'refind.conf','background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
-        $p = Join-Path $src $f
-        if (Test-Path $p) {
-            Copy-Item -Force $p (Join-Path $dest $f)
-            Write-Host "Installed $f"
-            $copied++
+        $source = Join-Path $src $f
+        if (-not (Test-Path -LiteralPath $source -PathType Leaf)) { continue }
+
+        $stage = Join-Path $dest ('.' + $f + '.new.' + [guid]::NewGuid().ToString('N'))
+        $stagePaths += $stage
+        Copy-Item -LiteralPath $source -Destination $stage
+        if ($f -eq 'refind.conf' -and (Get-Item -LiteralPath $stage).Length -le 0) {
+            throw 'The staged refind.conf is empty; the live config was not changed.'
         }
+        $staged[$f] = $stage
     }
-    if ($copied -eq 0) {
-        throw "No config files were found in $src. Use Create Config in the GUI first."
+    if (-not $staged.ContainsKey('refind.conf')) {
+        throw 'refind.conf disappeared while it was being staged; the live config was not changed.'
     }
+
+    # Keep one rollback copy of the live config through a same-directory stage.
+    $liveConf = Join-Path $dest 'refind.conf'
+    if (Test-Path -LiteralPath $liveConf -PathType Leaf) {
+        $backupStage = Join-Path $dest ('.refind.conf.prev.new.' + [guid]::NewGuid().ToString('N'))
+        $stagePaths += $backupStage
+        Copy-Item -LiteralPath $liveConf -Destination $backupStage
+        Move-Item -Force -LiteralPath $backupStage -Destination (Join-Path $dest 'refind.conf.prev')
+    }
+
+    # Publish optional assets first and refind.conf last.
+    foreach ($f in 'background.png','os_icon1.png','os_icon2.png','os_icon3.png','os_icon4.png') {
+        if (-not $staged.ContainsKey($f)) { continue }
+        Move-Item -Force -LiteralPath $staged[$f] -Destination (Join-Path $dest $f)
+        Write-Host "Installed $f"
+    }
+    Move-Item -Force -LiteralPath $staged['refind.conf'] -Destination $liveConf
+    Write-Host 'Installed refind.conf'
+
     # A temp access-path mount's directory name means nothing to the user, so
     # describe that ESP by disk/partition instead.
     $where = if ($mount.Kind -eq 'accesspath') {
@@ -133,5 +159,8 @@ try {
     }
     Write-Host "Config installed to $where"
 } finally {
+    foreach ($stage in $stagePaths) {
+        Remove-Item -Force -LiteralPath $stage -ErrorAction SilentlyContinue
+    }
     Dismount-Esp $mount
 }
