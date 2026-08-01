@@ -98,7 +98,7 @@ static QString trustedScriptPath(const QString &name)
     return {};
 }
 
-static QString systemPowerShell()
+QString windowsSystemExecutable(const QString &relativePath)
 {
     QString systemDirectory(MAX_PATH, Qt::Uninitialized);
     UINT length = GetSystemDirectoryW(
@@ -115,14 +115,15 @@ static QString systemPowerShell()
             return {};
     }
     systemDirectory.resize(static_cast<int>(length));
-    return QDir::toNativeSeparators(QDir::fromNativeSeparators(systemDirectory)
-                                    + "/WindowsPowerShell/v1.0/powershell.exe");
+    return QDir::toNativeSeparators(
+        QDir(QDir::fromNativeSeparators(systemDirectory)).filePath(relativePath));
 }
 
 static bool runScriptInWindow(const QString &scriptName, const QStringList &scriptArgs = {})
 {
     const QString scriptPath = trustedScriptPath(scriptName);
-    const QString powershell = systemPowerShell();
+    const QString powershell = windowsSystemExecutable(
+        QStringLiteral("WindowsPowerShell/v1.0/powershell.exe"));
     if (scriptPath.isEmpty() || powershell.isEmpty())
         return false;
     QStringList args = {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
@@ -149,7 +150,8 @@ int installConfig(QString *output)
         args->flags |= CREATE_NO_WINDOW;
     });
     const QString script = trustedScriptPath(QStringLiteral("install_config_from_GUI.ps1"));
-    const QString powershell = systemPowerShell();
+    const QString powershell = windowsSystemExecutable(
+        QStringLiteral("WindowsPowerShell/v1.0/powershell.exe"));
     if (script.isEmpty() || powershell.isEmpty()) {
         if (output)
             *output = QCoreApplication::translate(
