@@ -4,6 +4,38 @@
 # Designed to be piped from curl:
 #   curl -L https://github.com/jlobue10/SteamDeck_rEFInd/raw/main/install-GUI.sh | sh
 echo -e "Installing SteamDeck rEFInd...\n"
+
+READONLY_DISABLED=0
+disable_readonly() {
+    if [ "$READONLY_DISABLED" -eq 1 ]; then
+        return 0
+    fi
+    if ! sudo steamos-readonly disable; then
+        echo "Error: could not disable SteamOS read-only mode." >&2
+        return 1
+    fi
+    READONLY_DISABLED=1
+}
+enable_readonly() {
+    if [ "$READONLY_DISABLED" -eq 0 ]; then
+        return 0
+    fi
+    if ! sudo steamos-readonly enable; then
+        echo "CRITICAL: SteamOS read-only mode could not be restored. Run 'sudo steamos-readonly enable' before rebooting." >&2
+        return 1
+    fi
+    READONLY_DISABLED=0
+}
+restore_readonly_on_exit() {
+    status=$?
+    trap - EXIT
+    if [ "$READONLY_DISABLED" -eq 1 ] && ! enable_readonly; then
+        status=70
+    fi
+    exit "$status"
+}
+trap restore_readonly_on_exit EXIT
+
 cd "$HOME" || exit 1
 rm -rf "$HOME/SteamDeck_rEFInd"
 if ! git clone --depth 1 https://github.com/jlobue10/SteamDeck_rEFInd; then
@@ -40,9 +72,7 @@ if [ -n "$VERSION" ] && [ "$VERSION" != "null" ]; then
     fi
 fi
 
-sudo steamos-readonly disable
-# Make sure readonly gets re-enabled even if the script aborts partway through
-trap 'sudo steamos-readonly enable' EXIT
+disable_readonly || exit 1
 mkdir -p "$HOME/.local/SteamDeck_rEFInd/GUI"
 # Stage GUI/ file by file rather than with a blanket cp -rf: rEFInd_GUI.ini holds
 # every saved setting, and refind.conf / background.png / os_icon*.png are what
@@ -156,7 +186,7 @@ else
 fi
 rm -f "$CURRENT_WD/sudoers_rule.tmp"
 
-sudo steamos-readonly enable
+enable_readonly || exit 70
 
 # /usr is the immutable A/B rootfs: a SteamOS update replaces it wholesale and
 # takes the pacman-installed binary with it. The copy under $HOME/.local is on
