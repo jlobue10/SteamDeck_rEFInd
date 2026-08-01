@@ -1,8 +1,46 @@
 #!/bin/bash
-# Invoked only by systemd/rEFInd_bg_randomizer.service as root, so $HOME is not
-# reliably the deck user's home here -- keep this path hardcoded to match the
-# service's own hardcoded assumption (see systemd/rEFInd_bg_randomizer.service).
+# Invoked by systemd as root, so $HOME cannot identify the desktop user. The
+# GUI installer records the invoking user's background directory as one plain
+# line in a root-owned file on SteamOS's persistent /etc overlay. Never source
+# this file: even if its ownership were accidentally weakened, its contents
+# must remain data rather than shell code.
+BG_DIR_CONFIG=/etc/SteamDeck_rEFInd/background-dir
 BG_DIR=/home/deck/.local/SteamDeck_rEFInd/backgrounds
+
+load_background_dir() {
+    local owner mode configured extra
+
+    [ -f "$BG_DIR_CONFIG" ] && [ ! -L "$BG_DIR_CONFIG" ] || return 1
+    owner="$(stat -c '%u:%g' -- "$BG_DIR_CONFIG" 2>/dev/null)" || return 1
+    mode="$(stat -c '%a' -- "$BG_DIR_CONFIG" 2>/dev/null)" || return 1
+    [ "$owner" = "0:0" ] || return 1
+    # Owner may write; group and other must not. Reject special mode bits too.
+    case "$mode" in
+        [0-7][0145][0145]) ;;
+        *) return 1 ;;
+    esac
+
+    exec 3< "$BG_DIR_CONFIG" || return 1
+    IFS= read -r configured <&3 || {
+        exec 3<&-
+        return 1
+    }
+    if IFS= read -r extra <&3; then
+        exec 3<&-
+        return 1
+    fi
+    exec 3<&-
+    case "$configured" in
+        /*) printf '%s\n' "$configured" ;;
+        *) return 1 ;;
+    esac
+}
+
+if CONFIGURED_BG_DIR="$(load_background_dir)"; then
+    BG_DIR="$CONFIGURED_BG_DIR"
+elif [ -e "$BG_DIR_CONFIG" ] || [ -L "$BG_DIR_CONFIG" ]; then
+    echo "rEFInd_bg_randomizer: ignoring unsafe or malformed $BG_DIR_CONFIG" >&2
+fi
 
 # The destination used to be hardcoded to /esp/efi/refind/, which silently wrote
 # to the wrong place whenever rEFInd lives on another ESP (a Windows-side or
