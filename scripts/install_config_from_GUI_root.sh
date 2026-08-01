@@ -51,9 +51,13 @@ ESP_TYPE_GUID=c12a7328-f81f-11d2-ba4b-00a0c93ec93b
 # a subshell — an array assignment there would be lost to the parent and the
 # EXIT trap would unmount nothing, leaving removable ESPs mounted read-write.
 ESP_TMPMNT_LIST="$(mktemp)"
+STAGED_FILES=()
 
 esp_cleanup() {
-    local m
+    local m staged
+    for staged in "${STAGED_FILES[@]}"; do
+        [ -n "$staged" ] && rm -f -- "$staged" 2> /dev/null
+    done
     if [ -n "${ESP_TMPMNT_LIST:-}" ] && [ -f "$ESP_TMPMNT_LIST" ]; then
         while read -r m; do
             [ -n "$m" ] || continue
@@ -204,10 +208,28 @@ mkdir -p "$TARGET" 2> /dev/null || {
     exit 4
 }
 
-# Keep one rollback copy of the live config before overwriting it.
-[ -f "$TARGET/refind.conf" ] && cp -f "$TARGET/refind.conf" "$TARGET/refind.conf.prev" 2>/dev/null
+# Best-effort sweep of staging files left behind by an earlier interrupted run
+# (the EXIT trap cannot run across SIGKILL or power loss, and every run mints
+# new random staging names, so leftovers would otherwise accumulate on the
+# small ESP). Only the exact ".<name>.new.<suffix>" shapes created below are
+# matched, so no live file can be touched.
+for f in $FILES refind.conf.prev; do
+    for stale in "$TARGET/.$f.new."*; do
+        [ -f "$stale" ] && rm -f -- "$stale" 2> /dev/null
+    done
+done
+
+# A config is mandatory. Images are optional, but images alone must not count
+# as a successful installation.
+if ! runuser -u "$RUN_USER" -- test -f "$SRC/refind.conf" 2> /dev/null \
+    || ! runuser -u "$RUN_USER" -- test -s "$SRC/refind.conf" 2> /dev/null; then
+    echo "No non-empty refind.conf was found in $SRC."
+    echo "Use Create Config in the GUI first."
+    exit 6
+fi
 
 COPIED=0
+declare -A STAGED
 for f in $FILES; do
     # Existence check AND content read both run as the invoking user, never as
     # root: this script is reachable without a password, so reading the source
@@ -215,18 +237,57 @@ for f in $FILES; do
     # exfiltrate any root-readable file onto the (world-readable when
     # temp-mounted) ESP. runuser can only read what the user can.
     runuser -u "$RUN_USER" -- test -f "$SRC/$f" 2> /dev/null || continue
-    if ! runuser -u "$RUN_USER" -- cat -- "$SRC/$f" > "$TARGET/$f" 2> /dev/null; then
-        rm -f "$TARGET/$f" 2> /dev/null
+    stage="$(mktemp "$TARGET/.${f}.new.XXXXXX")" || {
+        echo "Could not create a staging file in $TARGET -- the ESP may be full or read-only."
+        exit 5
+    }
+    STAGED["$f"]="$stage"
+    STAGED_FILES+=("$stage")
+    if ! runuser -u "$RUN_USER" -- cat -- "$SRC/$f" > "$stage" 2> /dev/null; then
         echo "Failed while copying $f to $TARGET -- the ESP may be full or read-only."
+        exit 5
+    fi
+    if [ "$f" = refind.conf ] && [ ! -s "$stage" ]; then
+        echo "The staged refind.conf is empty; the live config was not changed."
         exit 5
     fi
     COPIED=$((COPIED + 1))
 done
 
-if [ "$COPIED" -eq 0 ]; then
-    echo "No config files were found in $SRC."
-    echo "Use Create Config in the GUI first."
+if [ -z "${STAGED[refind.conf]:-}" ]; then
+    echo "refind.conf disappeared while it was being staged; the live config was not changed."
     exit 6
+fi
+
+# Preserve the rollback config through its own same-directory staging file.
+if [ -f "$TARGET/refind.conf" ]; then
+    backup_stage="$(mktemp "$TARGET/.refind.conf.prev.new.XXXXXX")" || {
+        echo "Could not stage the rollback copy in $TARGET."
+        exit 5
+    }
+    STAGED_FILES+=("$backup_stage")
+    if ! cp -- "$TARGET/refind.conf" "$backup_stage" 2> /dev/null \
+        || ! mv -f -- "$backup_stage" "$TARGET/refind.conf.prev" 2> /dev/null; then
+        echo "Could not preserve the previous refind.conf; the live config was not changed."
+        exit 5
+    fi
+fi
+
+# Publish assets first and refind.conf last (staged, publish-last: the renames
+# remain on the ESP, so failed source or destination writes cannot truncate
+# existing live files). Everything staged from $FILES is published here, so the
+# two loops cannot drift apart.
+for f in $FILES; do
+    [ "$f" = refind.conf ] && continue
+    [ -n "${STAGED[$f]:-}" ] || continue
+    if ! mv -f -- "${STAGED[$f]}" "$TARGET/$f" 2> /dev/null; then
+        echo "Failed while publishing $f; the live config was not changed."
+        exit 5
+    fi
+done
+if ! mv -f -- "${STAGED[refind.conf]}" "$TARGET/refind.conf" 2> /dev/null; then
+    echo "Failed while publishing refind.conf; the previous config is still active."
+    exit 5
 fi
 
 # Flush to the ESP before any temporary mount goes away.
