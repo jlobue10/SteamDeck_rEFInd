@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.cpp" line="1590"/>
+        <location filename="mainwindow.cpp" line="1613"/>
         <source>Open Folder</source>
         <translation>Ouvrir le dossier</translation>
     </message>
@@ -280,9 +280,9 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
-        <location filename="mainwindow.cpp" line="1545"/>
-        <location filename="mainwindow.cpp" line="1560"/>
-        <location filename="mainwindow.cpp" line="1565"/>
+        <location filename="mainwindow.cpp" line="1568"/>
+        <location filename="mainwindow.cpp" line="1583"/>
+        <location filename="mainwindow.cpp" line="1588"/>
         <source>Install Themes</source>
         <translation>Installer thèmes</translation>
     </message>
@@ -325,10 +325,10 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1080"/>
-        <location filename="mainwindow.cpp" line="1086"/>
-        <location filename="mainwindow.cpp" line="1104"/>
-        <location filename="mainwindow.cpp" line="1110"/>
-        <location filename="mainwindow.cpp" line="1115"/>
+        <location filename="mainwindow.cpp" line="1109"/>
+        <location filename="mainwindow.cpp" line="1127"/>
+        <location filename="mainwindow.cpp" line="1133"/>
+        <location filename="mainwindow.cpp" line="1138"/>
         <source>Install Config</source>
         <translation>Installer config</translation>
     </message>
@@ -491,7 +491,7 @@
         <translation>Impossible d&apos;écrire %1 entièrement — le disque est peut-être plein. La configuration n&apos;a pas été mise à jour.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1087"/>
+        <location filename="mainwindow.cpp" line="1110"/>
         <source>The config-install script was NOT run:
 
 %1
@@ -508,18 +508,18 @@ Il ne correspond pas à la copie livrée avec cette version de l&apos;applicatio
 Réinstallez la GUI pour restaurer le script d&apos;origine, puis réessayez.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1105"/>
-        <location filename="mainwindow.cpp" line="1117"/>
+        <location filename="mainwindow.cpp" line="1128"/>
+        <location filename="mainwindow.cpp" line="1140"/>
         <source>Installing the config failed (code %1).</source>
         <translation>L&apos;installation de la configuration a échoué (code %1).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1112"/>
+        <location filename="mainwindow.cpp" line="1135"/>
         <source>The config was installed successfully.</source>
         <translation>La configuration a été installée avec succès.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1113"/>
+        <location filename="mainwindow.cpp" line="1136"/>
         <source>The config was installed successfully.
 
 %1</source>
@@ -528,7 +528,7 @@ Réinstallez la GUI pour restaurer le script d&apos;origine, puis réessayez.</t
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1118"/>
+        <location filename="mainwindow.cpp" line="1141"/>
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -537,28 +537,28 @@ Réinstallez la GUI pour restaurer le script d&apos;origine, puis réessayez.</t
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1138"/>
-        <location filename="mainwindow.cpp" line="1148"/>
-        <location filename="mainwindow.cpp" line="1155"/>
+        <location filename="mainwindow.cpp" line="1161"/>
+        <location filename="mainwindow.cpp" line="1171"/>
+        <location filename="mainwindow.cpp" line="1178"/>
         <source>Copy PNG</source>
         <translation>Copier le PNG</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="935"/>
         <location filename="mainwindow.cpp" line="944"/>
-        <location filename="mainwindow.cpp" line="1139"/>
-        <location filename="mainwindow.cpp" line="1149"/>
-        <location filename="mainwindow.cpp" line="1156"/>
+        <location filename="mainwindow.cpp" line="1162"/>
+        <location filename="mainwindow.cpp" line="1172"/>
+        <location filename="mainwindow.cpp" line="1179"/>
         <source>Could not copy %1 to %2</source>
         <translation>Impossible de copier %1 vers %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1181"/>
+        <location filename="mainwindow.cpp" line="1204"/>
         <source>Invalid PNG</source>
         <translation>PNG non valide</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1182"/>
+        <location filename="mainwindow.cpp" line="1205"/>
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -567,58 +567,58 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 Les arrière-plans et les icônes d&apos;OS doivent être de véritables images PNG (pas seulement des fichiers portant l&apos;extension .png).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1445"/>
+        <location filename="mainwindow.cpp" line="1468"/>
         <source>Check For Update</source>
         <translation>Vérifier les mises à jour</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1448"/>
+        <location filename="mainwindow.cpp" line="1471"/>
         <source>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Créateur original de la GUI : &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Remerciements particuliers à Deck Wizard pour les tests et l&apos;assurance qualité&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Tutoriel dual boot de Deck Wizard&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1497"/>
+        <location filename="mainwindow.cpp" line="1520"/>
         <source>&lt;p align=&apos;center&apos;&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;La vérification des mises à jour a échoué. Vérifiez votre connexion Internet et réessayez.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1500"/>
+        <location filename="mainwindow.cpp" line="1523"/>
         <source>&lt;p align=&apos;center&apos;&gt;An update is available &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;Une mise à jour est disponible &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;ici&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1504"/>
+        <location filename="mainwindow.cpp" line="1527"/>
         <source>&lt;p align=&apos;center&apos;&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;Aucune mise à jour trouvée. Vous utilisez la dernière version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1514"/>
-        <location filename="mainwindow.cpp" line="1521"/>
+        <location filename="mainwindow.cpp" line="1537"/>
+        <location filename="mainwindow.cpp" line="1544"/>
         <source>systemd service</source>
         <translation>Service systemd</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1515"/>
-        <location filename="mainwindow.cpp" line="1522"/>
+        <location filename="mainwindow.cpp" line="1538"/>
+        <location filename="mainwindow.cpp" line="1545"/>
         <source>Failed to launch the service toggle.</source>
         <translation>Impossible de lancer le basculement du service.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1528"/>
-        <location filename="mainwindow.cpp" line="1535"/>
+        <location filename="mainwindow.cpp" line="1551"/>
+        <location filename="mainwindow.cpp" line="1558"/>
         <source>Background Randomizer</source>
         <translation>Arrière-plan aléatoire</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1529"/>
-        <location filename="mainwindow.cpp" line="1536"/>
-        <location filename="mainwindow.cpp" line="1577"/>
-        <location filename="mainwindow.cpp" line="1584"/>
+        <location filename="mainwindow.cpp" line="1552"/>
+        <location filename="mainwindow.cpp" line="1559"/>
+        <location filename="mainwindow.cpp" line="1600"/>
+        <location filename="mainwindow.cpp" line="1607"/>
         <source>Failed to launch the randomizer setup.</source>
         <translation>Impossible de lancer la configuration de l&apos;arrière-plan aléatoire.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1546"/>
+        <location filename="mainwindow.cpp" line="1569"/>
         <source>The themes-install script was NOT run:
 
 %1
@@ -635,12 +635,12 @@ Il est manquant, ou il ne correspond pas à la copie livrée avec cette version 
 Réinstallez la GUI (sur SteamOS, relancez install-GUI.sh) pour l&apos;installer ou le restaurer, puis réessayez.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1562"/>
+        <location filename="mainwindow.cpp" line="1585"/>
         <source>The themes were installed successfully.</source>
         <translation>Les thèmes ont été installés avec succès.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1563"/>
+        <location filename="mainwindow.cpp" line="1586"/>
         <source>The themes were installed successfully.
 
 %1</source>
@@ -649,12 +649,12 @@ Réinstallez la GUI (sur SteamOS, relancez install-GUI.sh) pour l&apos;installer
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1567"/>
+        <location filename="mainwindow.cpp" line="1590"/>
         <source>Installing the themes failed (code %1).</source>
         <translation>L&apos;installation des thèmes a échoué (code %1).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1568"/>
+        <location filename="mainwindow.cpp" line="1591"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
@@ -663,13 +663,13 @@ Réinstallez la GUI (sur SteamOS, relancez install-GUI.sh) pour l&apos;installer
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1576"/>
-        <location filename="mainwindow.cpp" line="1583"/>
+        <location filename="mainwindow.cpp" line="1599"/>
+        <location filename="mainwindow.cpp" line="1606"/>
         <source>Theme Randomizer</source>
         <translation>Thème aléatoire</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1591"/>
+        <location filename="mainwindow.cpp" line="1614"/>
         <source>Failed to open %1 in the file manager.</source>
         <translation>Impossible d&apos;ouvrir %1 dans le gestionnaire de fichiers.</translation>
     </message>
@@ -696,22 +696,32 @@ Réinstallez la GUI (sur SteamOS, relancez install-GUI.sh) pour l&apos;installer
 <context>
     <name>PreviewDialog</name>
     <message>
-        <location filename="previewdialog.cpp" line="34"/>
+        <location filename="previewdialog.cpp" line="62"/>
         <source>No boot options selected.</source>
         <translation>Aucune option de démarrage sélectionnée.</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="89"/>
+        <location filename="previewdialog.cpp" line="166"/>
         <source>Preview</source>
         <translation>Aperçu</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="101"/>
+        <location filename="previewdialog.cpp" line="181"/>
         <source>Approximate preview — rEFInd&apos;s real rendering also depends on the firmware resolution and theme.</source>
         <translation>Aperçu approximatif — le rendu réel de rEFInd dépend aussi de la résolution du micrologiciel et du thème.</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="107"/>
+        <location filename="previewdialog.cpp" line="184"/>
+        <source>Approximate preview showing the randomly picked &quot;%1&quot; theme — Random picks a theme anew each time the config is created.</source>
+        <translation>Aperçu approximatif montrant le thème « %1 » choisi au hasard — « Aléatoire » choisit un nouveau thème à chaque création de la configuration.</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="188"/>
+        <source>Approximate preview with the &quot;%1&quot; theme applied — rEFInd&apos;s real rendering also depends on the firmware resolution and the theme&apos;s other settings.</source>
+        <translation>Aperçu approximatif avec le thème « %1 » appliqué — le rendu réel de rEFInd dépend aussi de la résolution du micrologiciel et des autres réglages du thème.</translation>
+    </message>
+    <message>
+        <location filename="previewdialog.cpp" line="197"/>
         <source>Boot screen</source>
         <translation>Écran de démarrage</translation>
     </message>
