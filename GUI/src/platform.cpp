@@ -29,19 +29,33 @@ QString dataDir()
 
 static bool copySeedDir(const QString &source, const QString &destination)
 {
-    if (QFileInfo::exists(destination))
-        return true;
     const QDir sourceDir(source);
-    if (!sourceDir.exists() || !QDir().mkpath(destination))
+    const QFileInfo destinationInfo(destination);
+    if (!sourceDir.exists()
+        || (destinationInfo.exists() && !destinationInfo.isDir())
+        || !QDir().mkpath(destination)) {
         return false;
+    }
+
     for (const QFileInfo &entry : sourceDir.entryInfoList(
              QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot)) {
         const QString target = destination + "/" + entry.fileName();
+        const QFileInfo targetInfo(target);
         if (entry.isDir()) {
+            if (targetInfo.exists() && !targetInfo.isDir())
+                return false;
             if (!copySeedDir(entry.filePath(), target))
                 return false;
-        } else if (!QFile::copy(entry.filePath(), target)) {
-            return false;
+        } else {
+            // Seed assets are defaults. Add files introduced by an update,
+            // but preserve every file the user already has.
+            if (targetInfo.exists()) {
+                if (!targetInfo.isFile())
+                    return false;
+                continue;
+            }
+            if (!QFile::copy(entry.filePath(), target))
+                return false;
         }
     }
     return true;
