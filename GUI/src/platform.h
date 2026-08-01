@@ -54,8 +54,32 @@ bool installConfigShowsOwnDialogs();
 // scripts must resolve beneath the Program Files installation directory.
 bool installConfigScriptTrusted(QString *detail = nullptr);
 
+// Installs the themes tree onto the ESP (EFI/refind/themes/). Returns 0 on
+// success. Linux: runs the root-owned /etc/SteamDeck_rEFInd themes helper
+// with `sudo -n` synchronously and captures its combined output into *output
+// for the caller to present (there is no zenity fallback for themes — when
+// the passwordless setup is missing, installThemesScriptTrusted() fails and
+// the caller directs the user to re-run install-GUI.sh). Windows: runs the
+// PowerShell installer synchronously with no console window and captures its
+// combined output into *output.
+int installThemes(QString *output = nullptr);
+
+// True when the themes-install script about to be used is present and
+// byte-identical (SHA-256) to the copy this build shipped, so it is safe to
+// run with root privileges — the themes counterpart of
+// installConfigScriptTrusted(). On failure (missing, stale, or tampered)
+// returns false with the offending path in *detail; the caller must refuse
+// to run it and suggest re-running the GUI installer. On Windows, the script
+// must resolve beneath the Program Files installation directory.
+bool installThemesScriptTrusted(QString *detail = nullptr);
+
 // Enables/disables the boot-background randomizer (systemd unit / scheduled task).
 bool setBackgroundRandomizer(bool enable);
+
+// Enables/disables the per-boot theme randomizer (systemd unit). Linux only —
+// there is no Windows scheduled-task counterpart; the Theme Rand buttons are
+// disabled there like the Sysd buttons.
+bool setThemeRandomizer(bool enable);
 
 // Enables/disables the Deck's bootnext-refind.service (keeps rEFInd first in the
 // boot order). Linux only.

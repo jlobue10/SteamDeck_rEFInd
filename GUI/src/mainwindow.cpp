@@ -21,6 +21,7 @@
 #include <QPointer>
 #include <QProcess>
 #include <QPushButton>
+#include <QRandomGenerator>
 #include <QRegularExpression>
 #include <QSaveFile>
 #include <QSettings>
@@ -42,6 +43,13 @@ static QString noneOption()
 {
     return MainWindow::tr("None");
 }
+
+// Theme combo item *data* keys (the visible texts for None/Random are
+// translated; theme names are folder-name identifiers and stay verbatim).
+// An empty data string means None; this sentinel means "pick one at Create
+// Config time". Settings store the data key, so a saved selection survives
+// UI language switches.
+static const char kRandomThemeKey[] = "*random*";
 
 static QSize effectivePanelResolution(); // defined above generateConfigText()
 
@@ -96,13 +104,16 @@ MainWindow::MainWindow(QWidget *parent)
     if (!Platform::firmwareBootnumSupported())
         ui->Firmware_bootnum_CheckBox->setEnabled(false);
     if (!Platform::systemdFeaturesAvailable()) {
-        // The bootnext-refind.service toggles are systemd-only.
+        // The bootnext-refind.service and randomizer toggles are systemd-only.
         ui->Enable_sysd_pushButton->setEnabled(false);
         ui->Disable_sysd_pushButton->setEnabled(false);
+        ui->Theme_Rand_On_pushButton->setEnabled(false);
+        ui->Theme_Rand_Off_pushButton->setEnabled(false);
     }
     ui->Install_Source_comboBox->clear();
     ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
     applyDynamicTexts();
+    populateThemeCombo();
     populateLanguageCombo();
     equalizeActionButtonWidths();
 
@@ -139,6 +150,8 @@ void MainWindow::applyDynamicTexts()
     if (!Platform::systemdFeaturesAvailable()) {
         ui->Enable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
         ui->Disable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
+        ui->Theme_Rand_On_pushButton->setToolTip(tr("systemd service (Linux only)"));
+        ui->Theme_Rand_Off_pushButton->setToolTip(tr("systemd service (Linux only)"));
     }
     if (!Platform::espDeepScanUseful()) {
         // Every ESP is readable already (or this is the elevated Windows
@@ -156,7 +169,8 @@ void MainWindow::equalizeActionButtonWidths()
 {
     const QList<QList<QPushButton *>> columns = {
         { ui->Rescan_pushButton, ui->Create_Config },
-        { ui->Deep_Scan_pushButton, ui->Install_Config, ui->Preview_pushButton },
+        { ui->Deep_Scan_pushButton, ui->Install_Config, ui->Preview_pushButton,
+          ui->Install_Themes_pushButton },
     };
     for (const auto &column : columns) {
         int width = 140; // the designed shared minimum
@@ -191,6 +205,68 @@ void MainWindow::populateLanguageCombo()
     populating = wasPopulating;
 }
 
+// First directory whose themes/<name>/theme.conf entries are usable: the
+// per-user data dir (staged by install-GUI.sh / prepareDataDir), then the
+// application bundle dir (the shipped defaults on Windows).
+QString MainWindow::themesRootDir() const
+{
+    const QStringList roots = {
+        guiDataDir + QStringLiteral("/themes"),
+        QCoreApplication::applicationDirPath() + QStringLiteral("/themes"),
+    };
+    for (const QString &root : roots) {
+        const QDir dir(root);
+        if (!dir.exists())
+            continue;
+        const QFileInfoList entries =
+            dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+        for (const QFileInfo &entry : entries) {
+            const QFileInfo conf(entry.filePath() + QStringLiteral("/theme.conf"));
+            if (conf.isFile() && conf.size() > 0)
+                return root;
+        }
+    }
+    return {};
+}
+
+// Valid theme names under themesRootDir(): a theme is a directory holding a
+// non-empty theme.conf. Names are folder-name identifiers (they appear in
+// the theme.conf's own asset paths), never translated.
+QStringList MainWindow::availableThemes() const
+{
+    QStringList names;
+    const QString root = themesRootDir();
+    if (root.isEmpty())
+        return names;
+    const QFileInfoList entries =
+        QDir(root).entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot, QDir::Name);
+    for (const QFileInfo &entry : entries) {
+        const QFileInfo conf(entry.filePath() + QStringLiteral("/theme.conf"));
+        if (conf.isFile() && conf.size() > 0)
+            names << entry.fileName();
+    }
+    return names;
+}
+
+void MainWindow::populateThemeCombo()
+{
+    const bool wasPopulating = populating;
+    populating = true;
+    // Selection is keyed by item data, so a rebuild (or a UI language switch,
+    // which renames None/Random) preserves the user's choice.
+    const QString previous = ui->Theme_comboBox->currentData().toString();
+    ui->Theme_comboBox->clear();
+    ui->Theme_comboBox->addItem(noneOption(), QString());
+    const QStringList names = availableThemes();
+    for (const QString &name : names)
+        ui->Theme_comboBox->addItem(name, name);
+    if (!names.isEmpty())
+        ui->Theme_comboBox->addItem(tr("Random"), QLatin1String(kRandomThemeKey));
+    const int idx = ui->Theme_comboBox->findData(previous);
+    ui->Theme_comboBox->setCurrentIndex(idx >= 0 ? idx : 0);
+    populating = wasPopulating;
+}
+
 void MainWindow::on_Language_comboBox_currentIndexChanged(int index)
 {
     if (populating || index < 0)
@@ -209,6 +285,7 @@ void MainWindow::changeEvent(QEvent *event)
         ui->retranslateUi(this);
         applyDynamicTexts();
         populateLanguageCombo();
+        populateThemeCombo();
         // Refresh the translated "None" entries; selections are preserved by
         // key/text where they still match, and fall back to None otherwise.
         // While a scan is in flight, only re-apply the translated placeholder:
@@ -773,6 +850,14 @@ QString MainWindow::generateConfigText(const QList<Selection> &selections)
         for (const BootEntry &extra : extraEntries(selections))
             out << createBootStanza(extra, stockIconFor(extra));
     }
+    if (!ui->Theme_comboBox->currentData().toString().isEmpty()) {
+        // One stable line, always last: which theme is active is decided
+        // solely by the themes/active_theme.conf copy on the ESP (staged by
+        // Create Config, swapped by the theme randomizer), so switching or
+        // randomizing themes never rewrites refind.conf itself.
+        out << "\n# Theme include — theme settings intentionally supersede the settings above\n";
+        out << "include themes/active_theme.conf\n";
+    }
     return text;
 }
 
@@ -807,6 +892,62 @@ QString MainWindow::stockIconFor(const BootEntry &entry)
     return QStringLiteral("/EFI/refind/icons/os_linux.png");
 }
 
+// Turns the Theme combo's data key into a concrete theme name: Random picks
+// one of the currently valid themes now (Create Config time), a named theme
+// is re-validated in case it was deleted since the combo was filled. Returns
+// an empty string (after its own dialog) when no usable theme exists.
+QString MainWindow::resolveThemeChoice(const QString &choice)
+{
+    const QStringList names = availableThemes();
+    if (choice == QLatin1String(kRandomThemeKey)) {
+        if (names.isEmpty()) {
+            QMessageBox::warning(this, tr("Create Config"),
+                                 tr("No themes were found, so a random theme could not be "
+                                    "picked. Reinstall the GUI to restore the shipped themes."));
+            return {};
+        }
+        const QString pick = names.at(QRandomGenerator::global()->bounded(names.size()));
+        appendLog(QStringLiteral("create config: random theme -> %1").arg(pick));
+        return pick;
+    }
+    if (!names.contains(choice)) {
+        QMessageBox::warning(this, tr("Create Config"),
+                             tr("The selected theme \"%1\" was not found (or its theme.conf "
+                                "is empty). Pick another theme, or reinstall the GUI to "
+                                "restore the shipped themes.").arg(choice));
+        return {};
+    }
+    return choice;
+}
+
+// Stages GUI/active_theme.conf as a copy of the chosen theme's theme.conf,
+// with the same QSaveFile publish-on-commit pattern as the generated config
+// (a partial copy must never replace a previously staged good one).
+bool MainWindow::stageActiveThemeConf(const QString &themeName)
+{
+    QFile input(themesRootDir() + QLatin1Char('/') + themeName
+                + QStringLiteral("/theme.conf"));
+    QSaveFile output(guiConfigDir + QStringLiteral("/active_theme.conf"));
+    output.setDirectWriteFallback(false);
+    if (!input.open(QIODevice::ReadOnly) || !output.open(QIODevice::WriteOnly)) {
+        output.cancelWriting();
+        QMessageBox::warning(this, tr("Create Config"),
+                             tr("Could not copy %1 to %2").arg(input.fileName(),
+                                                               output.fileName()));
+        return false;
+    }
+    const QByteArray payload = input.readAll();
+    const qint64 written = output.write(payload);
+    if (payload.isEmpty() || written != payload.size() || !output.commit()) {
+        output.cancelWriting();
+        QMessageBox::warning(this, tr("Create Config"),
+                             tr("Could not copy %1 to %2").arg(input.fileName(),
+                                                               output.fileName()));
+        return false;
+    }
+    return true;
+}
+
 void MainWindow::on_Create_Config_clicked()
 {
     QDir().mkpath(guiConfigDir);
@@ -819,6 +960,21 @@ void MainWindow::on_Create_Config_clicked()
         || !copyPng(ui->Boot_Option_03_Icon_lineEdit, guiConfigDir + "/os_icon3.png")
         || !copyPng(ui->Boot_Option_04_Icon_lineEdit, guiConfigDir + "/os_icon4.png")) {
         return;
+    }
+
+    // Theme staging follows the same publish-last rule: active_theme.conf is
+    // staged before the config that includes it, and a staging failure keeps
+    // the previous refind.conf.
+    const QString themeChoice = ui->Theme_comboBox->currentData().toString();
+    if (themeChoice.isEmpty()) {
+        // Theming off: drop any previously staged copy so Install Config does
+        // not publish a stale active_theme.conf alongside a config that no
+        // longer includes it.
+        QFile::remove(guiConfigDir + QStringLiteral("/active_theme.conf"));
+    } else {
+        const QString themeName = resolveThemeChoice(themeChoice);
+        if (themeName.isEmpty() || !stageActiveThemeConf(themeName))
+            return;
     }
 
     QSaveFile conf(guiConfigDir + "/refind.conf");
@@ -1077,8 +1233,14 @@ void MainWindow::readEarlySettings()
     settings.beginGroup(QStringLiteral("ComboBoxes"));
     const int installSource = settings.value(QStringLiteral("InstallSourceComboBox")).toInt();
     const int iconSize = settings.value(QStringLiteral("IconSize")).toInt();
+    const QString themeKey = settings.value(QStringLiteral("ThemeSelection")).toString();
     settings.endGroup();
     ui->Install_Source_comboBox->setCurrentIndex(installSource);
+    // Stored as the item data key (folder name / random sentinel), not the
+    // translated text; an unset or no-longer-valid key falls back to None.
+    const int themeIdx = ui->Theme_comboBox->findData(themeKey);
+    if (themeIdx >= 0)
+        ui->Theme_comboBox->setCurrentIndex(themeIdx);
     // Stored as the pixel value, not the index/text, so saved settings survive
     // relabeling; an unset key (0) keeps the constructor's 128 default.
     const int iconIdx = ui->Icon_Size_comboBox->findData(iconSize);
@@ -1138,6 +1300,14 @@ void MainWindow::initSettingsPersistence()
         if (index >= 0)
             persistSetting(QStringLiteral("ComboBoxes"), QStringLiteral("IconSize"),
                            ui->Icon_Size_comboBox->currentData().toInt());
+    });
+    connect(ui->Theme_comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+        // Gate on populating: populateThemeCombo() rebuilds the items (e.g.
+        // on a language switch) and must not clobber the stored key.
+        if (index >= 0 && !populating)
+            persistSetting(QStringLiteral("ComboBoxes"), QStringLiteral("ThemeSelection"),
+                           ui->Theme_comboBox->currentData().toString());
     });
     connect(ui->TimeOut_lineEdit, &QLineEdit::textEdited, this, [this](const QString &text) {
         persistSetting(QStringLiteral("Timeout"), QStringLiteral("Timeout"), text);
@@ -1247,6 +1417,7 @@ void MainWindow::writeSettings()
     settings.beginGroup(QStringLiteral("ComboBoxes"));
     settings.setValue(QStringLiteral("InstallSourceComboBox"), ui->Install_Source_comboBox->currentIndex());
     settings.setValue(QStringLiteral("IconSize"), ui->Icon_Size_comboBox->currentData().toInt());
+    settings.setValue(QStringLiteral("ThemeSelection"), ui->Theme_comboBox->currentData().toString());
     settings.remove(QStringLiteral("LinuxComboBox"));
     settings.endGroup();
     settings.beginGroup(QStringLiteral("CheckBoxes"));
@@ -1362,6 +1533,54 @@ void MainWindow::on_Rand_BG_Off_pushButton_clicked()
 {
     if (!Platform::setBackgroundRandomizer(false))
         QMessageBox::warning(this, tr("Background Randomizer"),
+                             tr("Failed to launch the randomizer setup."));
+}
+
+void MainWindow::on_Install_Themes_pushButton_clicked()
+{
+    QString badScript;
+    if (!Platform::installThemesScriptTrusted(&badScript)) {
+        appendLog(QStringLiteral("install themes: refused, missing or untrusted script"),
+                  badScript);
+        QMessageBox::warning(this, tr("Install Themes"),
+                             tr("The themes-install script was NOT run:\n\n%1\n\n"
+                                "It is missing, or it does not match the copy shipped with "
+                                "this version of the app. Because it runs with root "
+                                "privileges, it is only ever run when it is byte-for-byte "
+                                "the shipped version.\n\n"
+                                "Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to "
+                                "install or restore it, then try again.").arg(badScript));
+        return;
+    }
+    QString output;
+    const int rc = Platform::installThemes(&output);
+    appendLog(QStringLiteral("install themes: rc %1").arg(rc), output);
+    const QString details = outputTail(output);
+    if (rc == 0) {
+        QMessageBox::information(this, tr("Install Themes"),
+                                 details.isEmpty()
+                                     ? tr("The themes were installed successfully.")
+                                     : tr("The themes were installed successfully.\n\n%1").arg(details));
+    } else {
+        QMessageBox::critical(this, tr("Install Themes"),
+                              details.isEmpty()
+                                  ? tr("Installing the themes failed (code %1).").arg(rc)
+                                  : tr("Installing the themes failed (code %1).\n\n%2")
+                                        .arg(rc).arg(details));
+    }
+}
+
+void MainWindow::on_Theme_Rand_On_pushButton_clicked()
+{
+    if (!Platform::setThemeRandomizer(true))
+        QMessageBox::warning(this, tr("Theme Randomizer"),
+                             tr("Failed to launch the randomizer setup."));
+}
+
+void MainWindow::on_Theme_Rand_Off_pushButton_clicked()
+{
+    if (!Platform::setThemeRandomizer(false))
+        QMessageBox::warning(this, tr("Theme Randomizer"),
                              tr("Failed to launch the randomizer setup."));
 }
 

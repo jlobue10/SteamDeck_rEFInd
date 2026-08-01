@@ -72,6 +72,7 @@ void prepareDataDir()
         QFile::copy(seedConfig, userConfig);
     copySeedDir(shipped + "/icons", root + "/icons");
     copySeedDir(shipped + "/backgrounds", root + "/backgrounds");
+    copySeedDir(shipped + "/themes", root + "/themes");
 }
 
 static bool isBelow(const QString &path, const QString &root)
@@ -153,17 +154,18 @@ bool runInstallerScript(const QString &installSource)
     return runScriptInWindow(QStringLiteral("install_rEFInd.ps1"));
 }
 
-int installConfig(QString *output)
+// Synchronous, window-less run of a trusted helper script with the output
+// captured: the scripts' consoles used to flash open and vanish, leaving no
+// trace of whether the install worked. The caller shows the result dialog
+// from *output.
+static int runTrustedScriptCaptured(const QString &scriptName, QString *output)
 {
-    // Synchronous, window-less run with the output captured: the script's
-    // console used to flash open and vanish, leaving no trace of whether the
-    // install worked. The caller shows the result dialog from *output.
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args) {
         args->flags |= CREATE_NO_WINDOW;
     });
-    const QString script = trustedScriptPath(QStringLiteral("install_config_from_GUI.ps1"));
+    const QString script = trustedScriptPath(scriptName);
     const QString powershell = windowsSystemExecutable(
         QStringLiteral("WindowsPowerShell/v1.0/powershell.exe"));
     if (script.isEmpty() || powershell.isEmpty()) {
@@ -188,6 +190,16 @@ int installConfig(QString *output)
     return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
 }
 
+int installConfig(QString *output)
+{
+    return runTrustedScriptCaptured(QStringLiteral("install_config_from_GUI.ps1"), output);
+}
+
+int installThemes(QString *output)
+{
+    return runTrustedScriptCaptured(QStringLiteral("install_themes_from_GUI.ps1"), output);
+}
+
 bool installConfigShowsOwnDialogs()
 {
     return false;
@@ -203,10 +215,28 @@ bool installConfigScriptTrusted(QString *detail)
     return !script.isEmpty();
 }
 
+bool installThemesScriptTrusted(QString *detail)
+{
+    // Same trust rule as the config installer: the script must resolve under
+    // the protected Program Files installation (Authenticode signing rewrites
+    // the .ps1 files, so a build-time hash can't be used on Windows).
+    const QString script = trustedScriptPath(QStringLiteral("install_themes_from_GUI.ps1"));
+    if (detail)
+        *detail = script.isEmpty()
+            ? QCoreApplication::applicationDirPath() + "/windows/install_themes_from_GUI.ps1"
+            : script;
+    return !script.isEmpty();
+}
+
 bool setBackgroundRandomizer(bool enable)
 {
     return runScriptInWindow(QStringLiteral("rEFInd_bg_randomizer_task.ps1"),
                              {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
+}
+
+bool setThemeRandomizer(bool)
+{
+    return false; // no systemd on Windows; the Theme Rand buttons are disabled there
 }
 
 bool setBootnextService(bool)
@@ -265,22 +295,28 @@ bool runInstallerScript(const QString &installSource)
 }
 
 static const char kRootConfigScript[] = "/etc/SteamDeck_rEFInd/install_config_from_GUI.sh";
+static const char kRootThemesScript[] = "/etc/SteamDeck_rEFInd/install_themes_from_GUI.sh";
 
-// True when install-GUI.sh has set up the passwordless path: the root-owned
-// script exists and the sudoers rule in /etc/sudoers.d lets this user run it
-// without a password (`sudo -n -l <cmd>` exits 0 exactly then, without ever
-// prompting).
-static bool passwordlessConfigInstallReady()
+// True when install-GUI.sh has set up the passwordless path for the given
+// root-owned helper: the script exists and the sudoers rule in
+// /etc/sudoers.d lets this user run it without a password (`sudo -n -l
+// <cmd>` exits 0 exactly then, without ever prompting).
+static bool passwordlessHelperReady(const char *rootScript)
 {
-    if (!QFile::exists(QLatin1String(kRootConfigScript)))
+    if (!QFile::exists(QLatin1String(rootScript)))
         return false;
     QProcess proc;
     proc.start(QStringLiteral("sudo"),
-               {QStringLiteral("-n"), QStringLiteral("-l"), QLatin1String(kRootConfigScript)});
+               {QStringLiteral("-n"), QStringLiteral("-l"), QLatin1String(rootScript)});
     if (!proc.waitForStarted())
         return false;
     proc.waitForFinished(-1);
     return proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0;
+}
+
+static bool passwordlessConfigInstallReady()
+{
+    return passwordlessHelperReady(kRootConfigScript);
 }
 
 int installConfig(QString *output)
@@ -321,6 +357,29 @@ bool installConfigShowsOwnDialogs()
     // Only the zenity fallback owns its dialogs; on the passwordless path the
     // GUI shows the captured output itself.
     return !passwordlessConfigInstallReady();
+}
+
+int installThemes(QString *output)
+{
+    // Passwordless only — themes have no zenity fallback script. The caller
+    // gates on installThemesScriptTrusted(), which fails when the helper (or
+    // its sudoers rule) is missing; -n keeps the GUI from hanging on a prompt
+    // if the rule vanished since the check. Run synchronously with the output
+    // captured — the caller presents the result dialog from *output.
+    QProcess proc;
+    proc.setProcessChannelMode(QProcess::MergedChannels);
+    proc.start(QStringLiteral("sudo"),
+               {QStringLiteral("-n"), QLatin1String(kRootThemesScript)});
+    if (!proc.waitForStarted()) {
+        if (output)
+            *output = QCoreApplication::translate("Platform",
+                                              "sudo could not be started.");
+        return -1;
+    }
+    proc.waitForFinished(-1);
+    if (output)
+        *output = QString::fromLocal8Bit(proc.readAll());
+    return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
 }
 
 static bool matchesShippedScript(const QString &diskPath, const QString &resourcePath)
@@ -375,6 +434,27 @@ bool installConfigScriptTrusted(QString *detail)
     return true;
 }
 
+bool installThemesScriptTrusted(QString *detail)
+{
+    // The themes helper only exists on the passwordless path (no zenity
+    // fallback): it must be installed root-owned in /etc with its sudoers
+    // rule, and hash-match the copy embedded in this binary at build time —
+    // the same tamper rule as the config helper's passwordless path. A
+    // missing helper (an install-GUI.sh run predating themes support) fails
+    // this check too; the caller suggests re-running the GUI installer for
+    // both cases.
+    if (detail)
+        *detail = QLatin1String(kRootThemesScript);
+    if (!passwordlessHelperReady(kRootThemesScript))
+        return false;
+    if (!matchesShippedScript(QLatin1String(kRootThemesScript),
+                              QStringLiteral(":/install_themes_from_GUI_root.sh")))
+        return false;
+    if (detail)
+        detail->clear();
+    return true;
+}
+
 static bool systemctlInXterm(const QString &command)
 {
     return QProcess::startDetached(QStringLiteral("xterm"),
@@ -388,6 +468,14 @@ bool setBackgroundRandomizer(bool enable)
     return systemctlInXterm(QStringLiteral(
         "sudo systemctl %1 --now rEFInd_bg_randomizer.service && "
         "sudo systemctl status rEFInd_bg_randomizer.service; exec bash").arg(action));
+}
+
+bool setThemeRandomizer(bool enable)
+{
+    const QString action = enable ? QStringLiteral("enable") : QStringLiteral("disable");
+    return systemctlInXterm(QStringLiteral(
+        "sudo systemctl %1 --now rEFInd_theme_randomizer.service && "
+        "sudo systemctl status rEFInd_theme_randomizer.service; exec bash").arg(action));
 }
 
 bool setBootnextService(bool enable)

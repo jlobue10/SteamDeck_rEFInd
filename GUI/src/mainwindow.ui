@@ -856,6 +856,118 @@
        </item>
       </layout>
      </item>
+     <item row="14" column="0" colspan="6">
+      <layout class="QHBoxLayout" name="themeRowLayout">
+       <item>
+        <widget class="QLabel" name="Theme_label">
+         <property name="text">
+          <string>Theme</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="Theme_comboBox">
+         <property name="minimumSize">
+          <size>
+           <width>134</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="sizeAdjustPolicy">
+          <enum>QComboBox::AdjustToContents</enum>
+         </property>
+         <property name="toolTip">
+          <string>rEFInd theme applied by Create Config: None keeps the classic look, Random picks an installed theme each time the config is created</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Theme_Rand_On_pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>92</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Enable theme randomizer service (picks a random theme on every boot)</string>
+         </property>
+         <property name="text">
+          <string>Theme Rand On</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Theme_Rand_Off_pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>92</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Disable theme randomizer service</string>
+         </property>
+         <property name="text">
+          <string>Theme Rand Off</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="themeRowSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="Install_Themes_pushButton">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>32</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Copy the themes folder to the EFI System Partition (needed once before an installed theme can render)</string>
+         </property>
+         <property name="text">
+          <string>Install Themes</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
      <item row="12" column="0" colspan="6">
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
