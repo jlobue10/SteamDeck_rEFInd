@@ -253,8 +253,12 @@ if ($esp -and $esp.Part) {
     }
 }
 
-# 4. Remove the background randomizer scheduled task, if enabled.
-foreach ($taskName in 'SteamDeck_rEFInd_bg_randomizer','rEFInd_bg_randomizer') {
+# 4. Remove the app's scheduled tasks, if enabled: background and theme
+# randomizers, the bootnext task (Windows counterpart of
+# bootnext-refind.service), and the legacy names their predecessors used.
+foreach ($taskName in 'SteamDeck_rEFInd_bg_randomizer','rEFInd_bg_randomizer',
+        'SteamDeck_rEFInd_theme_randomizer',
+        'SteamDeck_rEFInd_bootnext','rEFInd Boot Sequence') {
     if (Get-ScheduledTask -TaskName $taskName -ErrorAction SilentlyContinue) {
         Unregister-ScheduledTask -TaskName $taskName -Confirm:$false
         Write-Host "Removed the $taskName scheduled task."

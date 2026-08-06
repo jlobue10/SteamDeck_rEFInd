@@ -28,8 +28,8 @@ The installer stages everything into `~/.local/SteamDeck_rEFInd/`, installs the 
 
 Additional buttons and options:
 
-- **Sysd On / Sysd Off** — enable or disable the `bootnext-refind` systemd service, which keeps rEFInd at the front of the EFI boot order on every boot (SteamOS updates can otherwise reorder or drop it). These pop up an xterm that asks for the `sudo` password and shows the service status when done.
-- **Rand BG On / Rand BG Off** — background randomizer: on each SteamOS boot, picks a random PNG from `~/.local/SteamDeck_rEFInd/backgrounds/` and installs it as the rEFInd background. Add or remove PNGs in that folder as you like. If you turn it off and want a fixed background again, redo Create Config + Install Config.
+- **Sysd On / Sysd Off** — keep rEFInd first on every reboot. On SteamOS this toggles the `bootnext-refind` systemd service (SteamOS updates can otherwise reorder or drop the rEFInd entry); the buttons pop up an xterm that asks for the `sudo` password and shows the service status when done. In the Windows app they toggle the equivalent scheduled task (`SteamDeck_rEFInd_bootnext`), which sets rEFInd as the next boot at each Windows logon — replacing the old "Dual Boot Fix" zip.
+- **Rand BG On / Rand BG Off** — background randomizer: on each SteamOS boot (or at each Windows logon, via a scheduled task in the Windows app), picks a random PNG from `~/.local/SteamDeck_rEFInd/backgrounds/` and installs it as the rEFInd background. Add or remove PNGs in that folder as you like. If you turn it off and want a fixed background again, redo Create Config + Install Config.
 - **Use Firmware_bootnum** — SteamOS-only option that keeps the SteamOS icon visible during the rEFInd → SteamOS handoff (otherwise the screen is blank for a moment). It requires the SteamOS EFI entry to exist when the config is created.
 - **Ventoy** boot option — boots whichever micro SD card or USB drive it finds first with the `VTOYEFI` partition label (not both concurrently).
 
@@ -64,7 +64,7 @@ Using themes from the GUI:
 
 1. **Theme** dropdown — pick a theme (or `Random` to have one picked for you at Create Config time; `None` keeps the classic look). Then **Create Config** and **Install Config** as usual.
 2. **Install Themes** — copies the whole `themes/` tree to the ESP (`EFI/refind/themes/`, about 12 MB). Needed once before an installed config's theme can render, and again only if the shipped themes change.
-3. **Theme Rand On / Theme Rand Off** (SteamOS/Linux only) — enable or disable the per-boot theme randomizer service (`rEFInd_theme_randomizer`): on each SteamOS boot it copies a random theme's `theme.conf` over `themes/active_theme.conf` on the ESP. It only acts when the live `refind.conf` contains the theme include line, so it is inert while the Theme dropdown is `None`.
+3. **Theme Rand On / Theme Rand Off** — enable or disable the per-boot theme randomizer (the `rEFInd_theme_randomizer` systemd service on SteamOS, a scheduled task running at each Windows logon in the Windows app): it copies a random theme's `theme.conf` over `themes/active_theme.conf` on the ESP. It only acts when the live `refind.conf` contains the theme include line, so it is inert while the Theme dropdown is `None`.
 
 Note: if both the background randomizer and the theme randomizer are enabled, the theme's banner wins — a theme's `theme.conf` sets its own `banner`, which supersedes the randomized `background.png`.
 
@@ -92,6 +92,8 @@ More themes to explore (installable manually the same way — drop a folder unde
 ## Windows app (new in 2.0.0)
 
 The GUI also builds and runs on Windows (Qt6), so you can configure and install rEFInd from the Windows side of a dual-boot Deck. Download `SteamDeck_rEFInd-<version>-setup.exe` from the [Releases](https://github.com/jlobue10/SteamDeck_rEFInd/releases) page. The installer requests Administrator access so executable code and privileged helpers can be protected under Program Files; mutable configuration stays in `%LOCALAPPDATA%\SteamDeck_rEFInd`. Release builds are code-signed via SignPath Foundation — see `Windows/GUI/SIGNING.md`.
+
+The **Sysd On/Off**, **Rand BG On/Off**, and **Theme Rand On/Off** buttons work in the Windows app too: each toggles a Windows scheduled task that runs at logon and does what the matching systemd service does on SteamOS (set rEFInd as the next boot, randomize the background, randomize the theme). The installer also offers an optional checkbox — off by default — to enable the "keep rEFInd first" bootnext task right away.
 
 ## Script-only installation (no GUI)
 
@@ -123,22 +125,34 @@ The supplied config uses manual boot stanzas on purpose, to control the icon ord
 
 ***This is one of the most commonly missed steps.*** Without it, Windows re-inserts itself at the top of the boot order and you never see the rEFInd menu. Two ways to fix it:
 
-**Option 1 — disable the Windows EFI entry** (requires booting the SteamOS recovery USB or another live Linux):
+**Option 1 — disable the Windows EFI entry** (from SteamOS desktop mode; the installers also do this automatically):
 
 ```
 1. Open "Konsole"
 2. type: efibootmgr
-## Take note of the Windows EFI four digit number and replace the XXXX in the following command with that number.
+## Take note of the Windows EFI four digit number and replace the XXXX in the following commands with that number.
+## An active entry shows a '*' after BootXXXX; disabling removes the '*'.
 3. type: sudo efibootmgr -b XXXX -A
 ```
 
-**Option 2 — run the Windows-side "Dual Boot Fix"** (use this especially if option 1 gives a `Boot entry not found` error). While booted into Windows, download and unzip [Dual Boot Fix](https://www.mediafire.com/file/w7jswsuctvnnd7k/Dual+Boot+Fix.zip/file), then run `Setup_rEFInd_Windows_RunAsAdmin` as administrator. Instead of disabling the Windows entry, it creates a scheduled task that moves rEFInd back to the top of the boot list whenever Windows runs. There's a [video from Deck Wizard](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077) showing this step (time code 17:57).
+> **Current SteamOS (3.9) note:** `efibootmgr` on SteamOS 3.9 cannot rewrite an *existing* boot entry in place, so step 3 fails even with `sudo` (creating and deleting entries still works — only the active/inactive toggle is affected). Temporarily loosening the permissions of the entry's NVRAM file works around it:
+>
+> ```
+> sudo chmod 666 /sys/firmware/efi/efivars/BootXXXX-8be4df61-93ca-11d2-aa0d-00e098032b8c
+> sudo efibootmgr -b XXXX -A
+> sudo chmod 644 /sys/firmware/efi/efivars/BootXXXX-8be4df61-93ca-11d2-aa0d-00e098032b8c
+> ```
+>
+> The install/uninstall scripts and the `bootnext-refind` service apply this workaround automatically (and no longer touch entries that are already in the requested state). Booting the SteamOS recovery USB or another live Linux also still works if you prefer not to do this on the installed system.
+
+**Option 2 — enable the Windows-side bootnext task** (use this especially if option 1 gives a `Boot entry not found` error). Instead of disabling the Windows entry, a scheduled task sets rEFInd as the next boot every time Windows runs. If you use the Windows app, just click **Sysd On** there (or tick the "keep rEFInd first" checkbox when installing it) — that registers the task with no extra downloads. The legacy standalone route still works too: while booted into Windows, download and unzip [Dual Boot Fix](https://www.mediafire.com/file/w7jswsuctvnnd7k/Dual+Boot+Fix.zip/file), then run `Setup_rEFInd_Windows_RunAsAdmin` as administrator ([video from Deck Wizard](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077), time code 17:57); the app's Sysd On/Off supersedes and replaces that task if you later install the GUI.
 
 ## Notes
 
 - **Missing EFI entries after a BIOS update** — restoring them is automated by the systemd service. If the SteamOS and rEFInd entries were deleted, manually boot into SteamOS once via 'Boot from file' in BIOS and they'll be recreated.
 - **systemd service health** — SteamOS's redundant A/B root partitions can occasionally leave the service missing after a branch change or update. Check with `sudo systemctl status bootnext-refind.service`; if it isn't active/enabled, recopy `systemd/bootnext-refind.service` to `/etc/systemd/system/` and run `sudo systemctl enable --now bootnext-refind.service`. (The GUI's Sysd On/Off buttons also handle this.)
-- **Reinstalling Windows** — re-enable the Windows EFI boot entry first so the installation can complete: `sudo efibootmgr -b YYYY -a` (YYYY = the Windows entry number). Disable it again afterwards (see the dual boot fix above).
+- **Reinstalling Windows** — re-enable the Windows EFI boot entry first so the installation can complete: `sudo efibootmgr -b YYYY -a` (YYYY = the Windows entry number; on SteamOS 3.9 use the `chmod` workaround from the dual boot fix above if the command fails). Disable it again afterwards (see the dual boot fix above).
+- **`bootnext-refind.service` shows "failed ... could not activate ... entry"** — older versions of `restore_EFI_entries.sh` ran `efibootmgr -b XXXX -a` on every boot, which always fails on SteamOS 3.9 (see the note in the dual boot fix section) even when the entries are healthy and already active. Fixed in the current script: update by re-running the GUI install command from this README, then `sudo systemctl restart bootnext-refind.service` to clear the failed state.
 - **Corrupted display when booting into Windows** — run this once from an admin command prompt on a new Windows install: `bcdedit.exe -set {globalsettings} highestmode on` (PowerShell: `bcdedit /set "{globalsettings}" highestmode on`). It prevents the issue entirely.
 - **Browse dialog shows no PNG previews / "view as icons" option (KDE)** — the picker requests the desktop's native file dialog, which only appears (with thumbnails and view options) when the Qt platform-integration plugin matching the GUI's Qt version is installed; otherwise Qt falls back to a bare dialog with neither. Since v2.3.4 the package builds against **Qt6**, whose KDE integration ships with Plasma 6 desktops (SteamOS 3.7+ included), so this works out of the box — if you still see the bare dialog, update to v2.3.4 or newer. On an older Qt5 build (`ldd $(command -v SteamDeck_rEFInd)` shows `libQt5Widgets`), install the Qt5 integration (`plasma5-integration`, where the distro still ships it) — or just update.
 

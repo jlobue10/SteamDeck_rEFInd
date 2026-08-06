@@ -37,6 +37,34 @@ refresh_nvram() {
 		| head -1 | tr 'a-f' 'A-F')"
 }
 
+# SteamOS 3.9's stack (efibootmgr 18 / efivar 39 / kernel 6.16) can no longer
+# rewrite an EXISTING Boot#### variable in place: `efibootmgr -b NNNN -a/-A`
+# fails even as root, while creates (-c), deletes (-B) and new variables (-n)
+# keep working. Two consequences here: an entry that is already active must
+# not be rewritten at all (the old unconditional -a is exactly what failed
+# this unit on healthy entries), and when a write is genuinely needed it only
+# goes through after loosening the efivars file's mode (0644 is restored
+# immediately afterwards; verified on real hardware).
+EFIVARS_DIR="/sys/firmware/efi/efivars"
+EFI_GLOBAL_GUID="8be4df61-93ca-11d2-aa0d-00e098032b8c"
+
+entry_is_active() {
+	printf '%s\n' "$NVRAM_VERBOSE" | grep -qiE "^Boot${1}\*"
+}
+
+activate_entry() {
+	local bootnum="$1" var="$EFIVARS_DIR/Boot${bootnum}-$EFI_GLOBAL_GUID" rc=0
+	entry_is_active "$bootnum" && return 0
+	if ! sudo efibootmgr -b "$bootnum" -a >/dev/null 2>&1; then
+		sudo chmod 666 "$var" 2>/dev/null || return 1
+		sudo efibootmgr -b "$bootnum" -a >/dev/null 2>&1 || rc=1
+		sudo chmod 644 "$var" 2>/dev/null
+		[ "$rc" -eq 0 ] || return 1
+	fi
+	refresh_nvram || return 1
+	entry_is_active "$bootnum"
+}
+
 # Return every Boot#### ID whose actual device path targets this Deck ESP and
 # the requested loader. Labels are deliberately ignored: they are editable,
 # and a foreign/stale entry called rEFInd or SteamOS must not shadow this ESP.
@@ -142,7 +170,7 @@ ensure_loader_entry() {
 			return 1
 		fi
 	fi
-	if ! sudo efibootmgr -b "$bootnum" -a >/dev/null 2>&1; then
+	if ! activate_entry "$bootnum"; then
 		echo "ERROR: could not activate $label entry Boot$bootnum." >&2
 		return 1
 	fi

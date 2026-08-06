@@ -152,9 +152,21 @@ fi
 
 # 4. Re-activate the Windows boot entry the installers deactivated (inactive
 # entries print without the '*' after Boot####).
+# SteamOS 3.9's efibootmgr (18) cannot rewrite an existing Boot#### variable
+# in place, so a plain -a fails even as root; loosening the efivars file's
+# mode first lets the write through (0644 is restored right after).
+activate_entry() {
+	local num="$1" rc=0
+	local var="/sys/firmware/efi/efivars/Boot${num}-8be4df61-93ca-11d2-aa0d-00e098032b8c"
+	sudo efibootmgr -b "$num" -a >/dev/null 2>&1 && return 0
+	sudo chmod 666 "$var" 2>/dev/null || return 1
+	sudo efibootmgr -b "$num" -a >/dev/null 2>&1 || rc=1
+	sudo chmod 644 "$var" 2>/dev/null
+	return "$rc"
+}
 if command -v efibootmgr >/dev/null 2>&1; then
 	while read -r _num; do
-		if sudo efibootmgr -b "$_num" -a >/dev/null 2>&1; then
+		if activate_entry "$_num"; then
 			echo "Re-activated the Windows boot entry Boot$_num."
 		else
 			echo "Warning: could not re-activate the Windows boot entry Boot$_num." >&2

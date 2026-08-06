@@ -174,15 +174,34 @@
 	if [ "$REFIND_READY" -ne 1 ]; then
 		exit 1
 	fi
+	# SteamOS 3.9's efibootmgr (18) cannot rewrite an existing Boot#### variable
+	# in place, so a plain -A/-a fails even as root; loosening the efivars
+	# file's mode first lets the write through (0644 is restored right after).
+	# Entries already in the requested state are left untouched.
+	toggle_entry_active() {
+		local num="$1" flag="$2" active=0 rc=0
+		local var="/sys/firmware/efi/efivars/Boot${num}-8be4df61-93ca-11d2-aa0d-00e098032b8c"
+		efibootmgr | grep -qE "^Boot${num}\*" && active=1
+		if [ "$flag" = "-a" ] && [ "$active" -eq 1 ]; then return 0; fi
+		if [ "$flag" = "-A" ] && [ "$active" -eq 0 ]; then return 0; fi
+		sudo efibootmgr -b "$num" "$flag" >/dev/null 2>&1 && return 0
+		sudo chmod 666 "$var" 2>/dev/null || return 1
+		sudo efibootmgr -b "$num" "$flag" >/dev/null 2>&1 || rc=1
+		sudo chmod 644 "$var" 2>/dev/null
+		return "$rc"
+	}
 	WINDOWS_BOOTNUM="$(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +Windows Boot Manager(\t.*)?$/\1/p' | head -1)"
 	if [ -n "$WINDOWS_BOOTNUM" ] && [ -n "$NEW_BOOTNUM" ]; then
-		sudo efibootmgr -b "$WINDOWS_BOOTNUM" -A >/dev/null 2>&1 \
+		toggle_entry_active "$WINDOWS_BOOTNUM" -A \
 			|| echo "Warning: could not deactivate the Windows boot entry." >&2
 	fi
 	echo 90
 	echo "# Enabling bootnext-refind service..."
 	sudo systemctl daemon-reload
-	sudo systemctl enable --now bootnext-refind.service
+	# Guarded: under set -e an ExecStart failure here would abort an otherwise
+	# complete install (rEFInd is already first in BootOrder at this point).
+	sudo systemctl enable --now bootnext-refind.service \
+		|| echo "Warning: bootnext-refind.service did not start; check 'sudo systemctl status bootnext-refind.service' after the install." >&2
 	if [ -n "$NEW_BOOTNUM" ]; then
 		sudo efibootmgr -n "$NEW_BOOTNUM" >/dev/null 2>&1 \
 			|| echo "Warning: could not set rEFInd as the next boot." >&2

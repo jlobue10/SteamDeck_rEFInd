@@ -193,6 +193,16 @@ sudo install -o root -g root -m 0644 \
     "$CURRENT_WD/scripts/lib_esp_target.sh" \
     /etc/SteamDeck_rEFInd/lib_esp_target.sh
 
+# The package's post_install started bootnext-refind.service BEFORE the fresh
+# restore_EFI_entries.sh above replaced the release's copy; if the release
+# still carried the pre-SteamOS-3.9 script (which failed on healthy, already
+# active entries), the unit is now sitting in "failed". Re-run it with the
+# staged copy so the install ends with the service healthy.
+if [ "$(systemctl is-active bootnext-refind.service 2>/dev/null)" = "failed" ]; then
+    sudo systemctl restart bootnext-refind.service \
+        || echo "Warning: bootnext-refind.service did not start; check 'sudo systemctl status bootnext-refind.service'." >&2
+fi
+
 # The theme randomizer unit ships in the release package like the two units
 # above, but the installed release may predate it. Stage the unit file
 # directly when the package didn't provide it, so the GUI's Theme Rand
