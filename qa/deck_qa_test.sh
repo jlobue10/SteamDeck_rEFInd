@@ -1,9 +1,9 @@
 #!/bin/bash
-# deck_qa_test.sh — staged on-Deck QA for the claude/steamdeck-refind-i18n-audit-ntdqnt
-# branch of SteamDeck_rEFInd (lives in that branch's qa/ directory; see
-# qa/DECK_QA_CHECKLIST.md for the manual items). Run in desktop mode from Konsole:
+# deck_qa_test.sh — staged on-Deck QA for SteamDeck_rEFInd (lives in qa/; see
+# qa/DECK_QA_CHECKLIST.md for the manual items). Tests main by default; set
+# QA_BRANCH to test a feature branch. Run in desktop mode from Konsole:
 #
-#     bash deck_qa_test.sh              # stages 0-5 (build .. Install Config)
+#     bash deck_qa_test.sh              # stages 0-5 (build .. Install Config/Themes)
 #     bash deck_qa_test.sh --full       # also stage 6 (rEFInd installer, touches NVRAM)
 #
 # Everything is logged to ~/deck_qa_<timestamp>.log — paste that file (plus
@@ -14,7 +14,7 @@
 set -u
 
 APP=SteamDeck_rEFInd
-BRANCH=claude/steamdeck-refind-i18n-audit-ntdqnt
+BRANCH="${QA_BRANCH:-main}"
 REPO_URL=https://github.com/jlobue10/SteamDeck_rEFInd.git
 QA_DIR="${QA_DIR:-$HOME/${APP}_qa}"
 DATA_DIR="$HOME/.local/$APP"
@@ -85,43 +85,78 @@ timeout 5 env QT_QPA_PLATFORM=offscreen "$BIN" >/dev/null 2>&1
 # ---------------------------------------------------------------- Stage 3
 stage 3 "Interactive GUI checks (manual — see DECK_QA_CHECKLIST.md)"
 cat <<'EOT'
-  The GUI will open. Work through checklist items G1-G8:
-    G1 window appears immediately; combos briefly show "Scanning…"
-    G2 detected OSes fill the slots; hover a boot combo entry -> loader/volume tooltip
-    G3 Language combo: switch to Espanol, then 日本語, then العربية
-       (Arabic must mirror the whole layout right-to-left), then back
-    G4 standard dialog buttons (e.g. About box) follow the language
-    G5 Preview with "Include all OSes" UNCHECKED - slots only
-    G6 Preview with it CHECKED - extra detected entries appear after the slots
-    G7 Create Config with the box UNCHECKED, then close the preview
-    G8 leave the GUI OPEN and return to this terminal
+  The GUI will open. Work through checklist items G1-G10:
+    G1  window appears immediately; combos briefly show "Scanning…"
+    G2  detected OSes fill the slots; hover a boot combo entry -> loader/volume tooltip
+    G3  Language combo: switch to Espanol, then 日本語, then العربية
+        (Arabic must mirror the whole layout right-to-left), then back
+    G4  standard dialog buttons (e.g. About box) follow the language
+    G5  Preview with "Include all OSes" UNCHECKED - slots only
+    G6  Preview with it CHECKED - extra detected entries appear after the slots
+    G7  Theme combo lists None, the seven bundled themes, and Random;
+        pick Matrix-rEFInd -> Preview uses its background + selection highlight
+        and HIDES the entry names (its hideui asks for that)
+    G8  pick Random -> Preview shows a concrete pick and says Random re-picks
+        at Create Config time
+    G9  set Theme to a FIXED theme (not Random), UNCHECK "Include all OSes",
+        click Create Config, then close the preview
+    G10 leave the GUI OPEN and return to this terminal
 EOT
 pause "Launching the GUI now"
 "$BIN" & GUI_PID=$!
-pause "Did G1-G7 pass? (record any failures; GUI still open)"
+pause "Did G1-G9 pass? (record any failures; GUI still open)"
 
 # ---------------------------------------------------------------- Stage 4
-stage 4 "Create Config + extras diff (writes only ~/.local)"
+stage 4 "Create Config + theme staging + extras diff (writes only ~/.local)"
 CONF="$DATA_DIR/GUI/refind.conf"
+ACTIVE="$DATA_DIR/GUI/active_theme.conf"
 [ -f "$CONF" ] && ok "refind.conf generated" || bad "refind.conf missing after Create Config"
+grep -q "scanfor manual" "$CONF" && ok "config keeps scanfor manual" || bad "scanfor manual missing"
+# G9 asked for a fixed theme, so the include line and the staged copy must exist.
+grep -q "include themes/active_theme.conf" "$CONF" \
+    && ok "themed config ends with the include line" \
+    || bad "include themes/active_theme.conf missing from a themed config"
+[ -s "$ACTIVE" ] && ok "active_theme.conf staged in ~/.local" \
+    || bad "GUI/active_theme.conf missing/empty after themed Create Config"
 cp -f "$CONF" /tmp/qa_conf_noextras.conf 2>/dev/null
-pause "In the GUI: CHECK 'Include all OSes', click Create Config again"
+
+pause "In the GUI: set Theme to NONE, click Create Config again"
+grep -q "include themes/active_theme.conf" "$CONF" \
+    && bad "Theme=None config still contains the include line" \
+    || ok "Theme=None removes the include line"
+[ -f "$ACTIVE" ] && bad "Theme=None left a stale GUI/active_theme.conf behind" \
+    || ok "Theme=None removed the staged active_theme.conf"
+
+pause "In the GUI: re-select your theme, CHECK 'Include all OSes', click Create Config again"
 if ! cmp -s /tmp/qa_conf_noextras.conf "$CONF"; then
-    echo "  --- stanzas added by 'Include all OSes': ---"
+    echo "  --- differences vs the extras-off themed config: ---"
     diff /tmp/qa_conf_noextras.conf "$CONF" | sed 's/^/    /'
     ok "extras changed the generated config (verify the diff above is sane)"
 else
     skip "no extra stanzas (fine if all detected OSes already occupy slots)"
 fi
-grep -q "scanfor manual" "$CONF" && ok "config keeps scanfor manual" || bad "scanfor manual missing"
 
 # ---------------------------------------------------------------- Stage 5
-stage 5 "Install Config (writes the ESP; .prev backup check)"
-pause "In the GUI: click Install Config, complete its dialogs, then come back"
+stage 5 "Install Themes + Install Config (writes the ESP; .prev backup check)"
+pause "In the GUI: click Install Themes, wait for its result dialog, then come back"
 ESP_REFIND=""
 for d in /esp/efi/refind /esp/EFI/refind /efi/EFI/refind; do
     sudo test -f "$d/refind.conf" 2>/dev/null && { ESP_REFIND="$d"; break; }
 done
+if [ -n "$ESP_REFIND" ]; then
+    THEME_COUNT=$(sudo sh -c "ls -1 '$ESP_REFIND'/themes/*/theme.conf 2>/dev/null | wc -l")
+    if [ "${THEME_COUNT:-0}" -ge 7 ]; then
+        ok "Install Themes put $THEME_COUNT themes on the ESP"
+    elif [ "${THEME_COUNT:-0}" -ge 1 ]; then
+        skip "only $THEME_COUNT themes on the ESP (7 ship — fine if you pruned the staged dir)"
+    else
+        bad "no themes on the ESP after Install Themes"
+    fi
+else
+    skip "no rEFInd dir found on /esp or /efi — is rEFInd installed? (theme checks skipped)"
+fi
+
+pause "In the GUI: click Install Config, complete its dialogs, then come back"
 if [ -n "$ESP_REFIND" ]; then
     sudo cmp -s "$CONF" "$ESP_REFIND/refind.conf" \
         && ok "ESP refind.conf matches the generated one ($ESP_REFIND)" \
@@ -129,8 +164,9 @@ if [ -n "$ESP_REFIND" ]; then
     sudo test -f "$ESP_REFIND/refind.conf.prev" \
         && ok "rollback copy refind.conf.prev present" \
         || bad "refind.conf.prev missing (expected after overwrite of an existing config)"
-else
-    skip "no rEFInd dir found on /esp or /efi — is rEFInd installed?"
+    sudo cmp -s "$ACTIVE" "$ESP_REFIND/themes/active_theme.conf" \
+        && ok "ESP themes/active_theme.conf matches the staged theme" \
+        || bad "ESP themes/active_theme.conf missing or differs from the staged copy"
 fi
 kill "$GUI_PID" 2>/dev/null
 
@@ -152,8 +188,24 @@ for drv in UsbXbox360Dxe.efi TouchI2cDxe.efi; do
         skip "$drv not on ESP (download may have been skipped)"
     fi
 done
+# SteamOS 3.9 regression check (issue #215): the bootnext service must not be
+# failed after enable --now — the toggle helper skips already-active entries
+# and falls back to the efivars chmod workaround.
+if systemctl list-unit-files bootnext-refind.service >/dev/null 2>&1; then
+    EN_STATE=$(systemctl is-enabled bootnext-refind.service 2>/dev/null)
+    UNIT_RESULT=$(systemctl show -p Result --value bootnext-refind.service 2>/dev/null)
+    [ "$EN_STATE" = "enabled" ] && ok "bootnext-refind.service is enabled" \
+        || bad "bootnext-refind.service not enabled after install ($EN_STATE)"
+    if [ "$UNIT_RESULT" = "success" ]; then
+        ok "bootnext-refind.service ran cleanly (no SteamOS 3.9 efibootmgr failure)"
+    else
+        bad "bootnext-refind.service Result=$UNIT_RESULT — check journalctl -u bootnext-refind"
+    fi
+else
+    skip "bootnext-refind.service not installed"
+fi
 efibootmgr | head -4 | sed 's/^/  /'
-echo "  ^ verify rEFInd leads BootOrder, then REBOOT to confirm the menu (checklist B1-B3)."
+echo "  ^ verify rEFInd leads BootOrder, then REBOOT to confirm the menu (checklist B1-B4)."
 else
 stage 6 "rEFInd installer — skipped (rerun with --full to include it)"
 fi
@@ -167,4 +219,4 @@ for f in "${FAIL[@]:-}"; do [ -n "$f" ] && echo "  FAILED: $f"; done
 echo
 echo "Send back: $LOG"
 echo "      and: $DATA_DIR/GUI/logs/$APP.log"
-echo "Manual results: note any G1-G8 / B1-B3 items that failed."
+echo "Manual results: note any G1-G10 / B1-B4 items that failed."
