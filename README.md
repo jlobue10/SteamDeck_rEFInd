@@ -93,7 +93,7 @@ More themes to explore (installable manually the same way — drop a folder unde
 
 The GUI also builds and runs on Windows (Qt6), so you can configure and install rEFInd from the Windows side of a dual-boot Deck. Download `SteamDeck_rEFInd-<version>-setup.exe` from the [Releases](https://github.com/jlobue10/SteamDeck_rEFInd/releases) page. The installer requests Administrator access so executable code and privileged helpers can be protected under Program Files; mutable configuration stays in `%LOCALAPPDATA%\SteamDeck_rEFInd`. Release builds are code-signed via SignPath Foundation — see `Windows/GUI/SIGNING.md`.
 
-## Script-only installation (no GUI)
+## Script-only installation (deprecated... no GUI)
 
 The script method assumes valid EFI boot files exist at `/esp/efi/steamos/steamcl.efi` (SteamOS) and `/esp/efi/Microsoft/Boot/bootmgfw.efi` (Windows) — which is the case after a typical dual boot setup. You can verify by holding Volume Up + Power, choosing "Boot from file", and selecting each manually; if either doesn't boot correctly, don't proceed unless you know how to point the `refind.conf` boot stanzas at your correct EFI files.
 
