@@ -132,7 +132,7 @@ The supplied config uses manual boot stanzas on purpose, to control the icon ord
 3. type: sudo efibootmgr -b XXXX -A
 ```
 
-**Option 2 — run the Windows-side "Dual Boot Fix"** (use this especially if option 1 gives a `Boot entry not found` error). While booted into Windows, download and unzip [Dual Boot Fix](https://www.mediafire.com/file/w7jswsuctvnnd7k/Dual+Boot+Fix.zip/file), then run `Setup_rEFInd_Windows_RunAsAdmin` as administrator. Instead of disabling the Windows entry, it creates a scheduled task that moves rEFInd back to the top of the boot list whenever Windows runs. There's a [video from Deck Wizard](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077) showing this step (time code 17:57).
+**Option 2 — run the Windows-side "Dual Boot Fix"** (use this especially if option 1 gives a `Boot entry not found` error). Instead of disabling the Windows entry, this creates a scheduled task that moves rEFInd back to the top of the boot list whenever Windows runs. There's a [video from Deck Wizard](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077) showing this step (time code 17:57).
 
 ## Notes
 
