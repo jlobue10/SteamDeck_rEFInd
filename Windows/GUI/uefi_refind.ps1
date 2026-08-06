@@ -8,6 +8,8 @@ if (-not ('RefindFirmware.Native' -as [type])) {
     Add-Type -Namespace RefindFirmware -Name Native -MemberDefinition @'
 [DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
 public static extern uint GetFirmwareEnvironmentVariableW(string name, string guid, byte[] value, uint size);
+[DllImport("kernel32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
+public static extern bool SetFirmwareEnvironmentVariableW(string name, string guid, byte[] value, uint size);
 [DllImport("advapi32.dll", SetLastError=true)]
 public static extern bool OpenProcessToken(IntPtr process, uint access, out IntPtr token);
 [DllImport("advapi32.dll", CharSet=CharSet.Unicode, SetLastError=true)]
@@ -78,7 +80,18 @@ function Get-RefindBootOrderIds {
     })
 }
 
-function Get-RefindBootPartitionGuid {
+# Empty/absent $Value deletes the variable. Enable-RefindFirmwarePrivilege
+# must have been called first. Returns $false on failure (use GetLastWin32Error
+# for the cause).
+function Set-RefindFirmwareVariable([string]$Name, [byte[]]$Value) {
+    $length = if ($Value) { $Value.Length } else { 0 }
+    return [RefindFirmware.Native]::SetFirmwareEnvironmentVariableW(
+        $Name, $script:EfiGlobalGuid, $Value, $length)
+}
+
+# The rEFInd firmware boot entry as @{ Id = 'XXXX'; PartitionGuid = [guid] },
+# or $null when none exists.
+function Get-RefindBootEntry {
     Enable-RefindFirmwarePrivilege
     # BootOrder first (firmware priority decides among several matches), then
     # the conventional Boot0000-Boot00FF range so an entry dropped from
@@ -122,8 +135,14 @@ function Get-RefindBootPartitionGuid {
         }
         if ($partitionGuid -and
             $loaderPath -match '^\\EFI\\refind\\refind[^\\]*\.efi$') {
-            return $partitionGuid
+            return @{ Id = $id; PartitionGuid = $partitionGuid }
         }
     }
+    return $null
+}
+
+function Get-RefindBootPartitionGuid {
+    $entry = Get-RefindBootEntry
+    if ($entry) { return $entry.PartitionGuid }
     return $null
 }

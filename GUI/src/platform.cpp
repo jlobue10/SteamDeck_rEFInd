@@ -234,19 +234,18 @@ bool setBackgroundRandomizer(bool enable)
                              {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
 }
 
-bool setThemeRandomizer(bool)
+bool setThemeRandomizer(bool enable)
 {
-    return false; // no systemd on Windows; the Theme Rand buttons are disabled there
+    return runScriptInWindow(QStringLiteral("rEFInd_theme_randomizer_task.ps1"),
+                             {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
 }
 
-bool setBootnextService(bool)
+bool setBootnextService(bool enable)
 {
-    return false; // no systemd on Windows; the Sysd buttons are disabled there
-}
-
-bool systemdFeaturesAvailable()
-{
-    return false;
+    // The Windows counterpart of bootnext-refind.service: a scheduled task
+    // that sets UEFI BootNext to the rEFInd entry at each logon.
+    return runScriptInWindow(QStringLiteral("bootnext_refind_task.ps1"),
+                             {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
 }
 
 int runEspDeepScan()
@@ -485,14 +484,13 @@ bool setBootnextService(bool enable)
             "sudo systemctl enable --now bootnext-refind.service && "
             "sudo systemctl status bootnext-refind.service; exec bash"));
     }
+    // efibootmgr -N fails when BootNext is not set (nothing to delete) --
+    // normal whenever the unit was already disabled or had been failing --
+    // so it must not short-circuit the status display.
     return systemctlInXterm(QStringLiteral(
-        "sudo systemctl disable --now bootnext-refind.service && sudo efibootmgr -N && "
+        "sudo systemctl disable --now bootnext-refind.service && "
+        "{ sudo efibootmgr -N || echo 'BootNext was not set; nothing to clear.'; } && "
         "sudo systemctl status bootnext-refind.service; exec bash"));
-}
-
-bool systemdFeaturesAvailable()
-{
-    return true;
 }
 
 int runEspDeepScan()

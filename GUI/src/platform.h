@@ -81,12 +81,9 @@ bool setBackgroundRandomizer(bool enable);
 // disabled there like the Sysd buttons.
 bool setThemeRandomizer(bool enable);
 
-// Enables/disables the Deck's bootnext-refind.service (keeps rEFInd first in the
-// boot order). Linux only.
+// Enables/disables keeping rEFInd first on reboot: the Deck's
+// bootnext-refind.service on Linux, the bootnext scheduled task on Windows.
 bool setBootnextService(bool enable);
-
-// systemd-based features (Sysd + Rand BG buttons) exist on Linux only.
-bool systemdFeaturesAvailable();
 
 // Runs the elevated ESP scan (scripts/scan_esp.sh), caching the EFI/ tree for
 // detection to read. Blocks while the script prompts for a password and shows

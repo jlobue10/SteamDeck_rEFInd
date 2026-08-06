@@ -103,13 +103,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (!Platform::firmwareBootnumSupported())
         ui->Firmware_bootnum_CheckBox->setEnabled(false);
-    if (!Platform::systemdFeaturesAvailable()) {
-        // The bootnext-refind.service and randomizer toggles are systemd-only.
-        ui->Enable_sysd_pushButton->setEnabled(false);
-        ui->Disable_sysd_pushButton->setEnabled(false);
-        ui->Theme_Rand_On_pushButton->setEnabled(false);
-        ui->Theme_Rand_Off_pushButton->setEnabled(false);
-    }
     ui->Install_Source_comboBox->clear();
     ui->Install_Source_comboBox->addItems(Platform::installSourceOptions());
     applyDynamicTexts();
@@ -147,12 +140,6 @@ void MainWindow::applyDynamicTexts()
     ui->Icon_Size_comboBox->setItemText(ui->Icon_Size_comboBox->findData(512), tr("XXL (512)"));
     if (!Platform::firmwareBootnumSupported())
         ui->Firmware_bootnum_CheckBox->setToolTip(tr("Requires efibootmgr (Linux only)"));
-    if (!Platform::systemdFeaturesAvailable()) {
-        ui->Enable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
-        ui->Disable_sysd_pushButton->setToolTip(tr("systemd service (Linux only)"));
-        ui->Theme_Rand_On_pushButton->setToolTip(tr("systemd service (Linux only)"));
-        ui->Theme_Rand_Off_pushButton->setToolTip(tr("systemd service (Linux only)"));
-    }
     if (!Platform::espDeepScanUseful()) {
         // Every ESP is readable already (or this is the elevated Windows
         // build), so a privileged scan would find nothing extra.

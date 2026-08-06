@@ -46,6 +46,10 @@ Name: "japanese"; MessagesFile: "compiler:Languages\Japanese.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Additional icons:"
+; Opt-in (unchecked): registers the scheduled task that sets rEFInd as the
+; next boot at each Windows logon -- the counterpart of the Deck-side
+; bootnext-refind.service. The GUI's Sysd On/Off buttons toggle it later.
+Name: "bootnexttask"; Description: "Keep rEFInd first: set rEFInd as the &next boot at each Windows logon (scheduled task)"; GroupDescription: "Boot behavior:"; Flags: unchecked
 
 [Files]
 ; deploy\ holds the final runtime layout: exe + Qt/MinGW DLLs + plugin dirs,
@@ -91,12 +95,20 @@ Name: "{localappdata}\SteamDeck_rEFInd\GUI\backgrounds"; Filename: "{localappdat
 ; Preserve an enabled legacy task while moving its elevated action out of the
 ; user-writable data directory.
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\rEFInd_bg_randomizer_task.ps1"" -Migrate"; Flags: runhidden waituntilterminated
+; Opt-in bootnext task (see [Tasks] above).
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\bootnext_refind_task.ps1"" -Enable"; Tasks: bootnexttask; Flags: runhidden waituntilterminated
 ; unchecked: don't launch the GUI by default when the installer finishes.
 Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent runascurrentuser unchecked
 
 [UninstallRun]
 ; Undo the rEFInd boot entry and ESP files before the app files disappear.
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\uninstall_rEFInd.ps1"""; Flags: shellexec waituntilterminated; Verb: runas; RunOnceId: "UninstallRefind"; Check: ShouldRemoveRefind
+; Unconditional: the scheduled tasks execute scripts under {app}\windows, which
+; this uninstall removes, so they must be unregistered even when rEFInd itself
+; is kept bootable (uninstall_rEFInd.ps1 above only runs on a full removal).
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\bootnext_refind_task.ps1"" -Disable"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveBootnextTask"
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\rEFInd_theme_randomizer_task.ps1"" -Disable"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveThemeRandTask"
+Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\rEFInd_bg_randomizer_task.ps1"" -Disable"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveBgRandTask"
 
 [UninstallDelete]
 ; The app generates data the uninstaller's manifest doesn't cover (the
