@@ -132,7 +132,7 @@ The supplied config uses manual boot stanzas on purpose, to control the icon ord
 3. type: sudo efibootmgr -b XXXX -A
 ```
 
-**Option 2 — run the Windows-side "Dual Boot Fix"** (use this especially if option 1 gives a `Boot entry not found` error). Instead of disabling the Windows entry, [this](https://github.com/jlobue10/SteamDeck_rEFInd/blob/main/Windows/Install%20rEFInd/Setup_rEFInd_Windows_RunAsAdmin.bat) creates a scheduled task that moves rEFInd back to the top of the boot list whenever Windows runs. There's a [video from Deck Wizard](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077) showing this step (time code 17:57).
+**Option 2 — run the Windows-side "Dual Boot Fix"** (use this especially if option 1 gives a `Boot entry not found` error). Instead of disabling the Windows entry, [this folder's batch file](https://github.com/jlobue10/SteamDeck_rEFInd/tree/main/Windows/Install%20rEFInd) creates a scheduled task that moves rEFInd back to the top of the boot list whenever Windows runs. Download the whole folder and run the batch script as an administrator. There's a [video from Deck Wizard](https://youtu.be/ubWPIf2DbvE?si=22PPs0SAVu1cvmOL&t=1077) showing this step (time code 17:57).
 
 ## Notes
 
