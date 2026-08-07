@@ -658,6 +658,31 @@ Torna a nstallari la GUI (nta SteamOS, torna a esiquiri install-GUI.sh) pi lu ns
         <source>Also write boot stanzas for detected bootloaders that are not in one of the four slots</source>
         <translation>Scrivi macari stanzi d&apos;avviu pi li bootloader arrilivati ca nun sunnu nta unu di li quattru posti</translation>
     </message>
+    <message>
+        <location filename="mainwindow.ui" line="979"/>
+        <source>Tools offered on the second row of the rEFInd boot menu (the showtools setting)</source>
+        <translation>Strumenti ufferti ntâ secunna riga dû menù d'avviu di rEFInd (a mpustazzioni showtools)</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="998"/>
+        <source>Comma-separated list of tools to offer on the second row of the rEFInd boot menu. Leave blank to show no tools. Valid entries: shell, memtest, gdisk, gptsync, install, bootorder, apple_recovery, csr_rotate, mok_tool, fwupdate, netboot, about, hidden_tags, exit, shutdown, reboot, firmware</source>
+        <translation>Elencu di strumenti spartutu cu vìrguli p'òffriri ntâ secunna riga dû menù d'avviu di rEFInd. Lassari vacanti pi nun ammustrari nuddu strumentu. Vuci vàlidi: shell, memtest, gdisk, gptsync, install, bootorder, apple_recovery, csr_rotate, mok_tool, fwupdate, netboot, about, hidden_tags, exit, shutdown, reboot, firmware</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1012"/>
+        <source>These showtools entries are not recognized: %1
+
+Valid entries: %2</source>
+        <translation>Sti vuci di showtools nun foru arricanusciuti: %1
+
+Vuci vàlidi: %2</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.ui" line="976"/>
+        <location filename="mainwindow.cpp" line="1011"/>
+        <source>Showtools</source>
+        <translation>Showtools</translation>
+    </message>
 </context>
 <context>
     <name>Platform</name>
