@@ -86,6 +86,9 @@ private:
     QList<Selection> currentSelections();
     QString generateConfigText(const QList<Selection> &selections);
     QSize resolutionOverride() const;
+    QStringList showtoolsTokens() const;
+    QStringList invalidShowtoolsTokens() const;
+    void updateShowtoolsValidity();
     void onUpdateReply(bool ok, const QString &remoteRaw, const QString &errorString);
     void startDetection(bool resetToDefaults);
     void detectionFinished(const QList<BootEntry> &result, bool resetToDefaults);

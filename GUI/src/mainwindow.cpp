@@ -68,6 +68,8 @@ MainWindow::MainWindow(QWidget *parent)
             ui->Res_Width_lineEdit, &QWidget::setEnabled);
     connect(ui->Res_Override_checkBox, &QCheckBox::toggled,
             ui->Res_Height_lineEdit, &QWidget::setEnabled);
+    connect(ui->Showtools_lineEdit, &QLineEdit::textChanged,
+            this, [this] { updateShowtoolsValidity(); });
 
     // OS icon size on the boot screen (rEFInd's big_icon_size). 128 is both
     // rEFInd's default and the shipped PNGs' native size, so it emits no
@@ -764,6 +766,60 @@ QSize MainWindow::resolutionOverride() const
     return QSize(w, h);
 }
 
+// Valid arguments to rEFInd's showtools directive.
+static const QStringList &validShowtoolsTokens()
+{
+    static const QStringList tokens = {
+        QStringLiteral("shell"),          QStringLiteral("memtest"),
+        QStringLiteral("gdisk"),          QStringLiteral("gptsync"),
+        QStringLiteral("install"),        QStringLiteral("bootorder"),
+        QStringLiteral("apple_recovery"), QStringLiteral("csr_rotate"),
+        QStringLiteral("mok_tool"),       QStringLiteral("fwupdate"),
+        QStringLiteral("netboot"),        QStringLiteral("about"),
+        QStringLiteral("hidden_tags"),    QStringLiteral("exit"),
+        QStringLiteral("shutdown"),       QStringLiteral("reboot"),
+        QStringLiteral("firmware")};
+    return tokens;
+}
+
+// The Showtools box tokenized: split on commas (stray whitespace tolerated),
+// lowercased, deduplicated in order. setText() from the INI bypasses any
+// widget-level validation, so consumers re-check against the valid set.
+QStringList MainWindow::showtoolsTokens() const
+{
+    static const QRegularExpression separators(QStringLiteral("[,\\s]+"));
+    const QStringList raw =
+        ui->Showtools_lineEdit->text().split(separators, Qt::SkipEmptyParts);
+    QStringList tokens;
+    for (const QString &t : raw) {
+        const QString token = t.toLower();
+        if (!tokens.contains(token))
+            tokens << token;
+    }
+    return tokens;
+}
+
+QStringList MainWindow::invalidShowtoolsTokens() const
+{
+    QStringList bad;
+    const QStringList tokens = showtoolsTokens();
+    for (const QString &t : tokens)
+        if (!validShowtoolsTokens().contains(t))
+            bad << t;
+    return bad;
+}
+
+// Live feedback while typing: unrecognized tools tint the box red. Never
+// blocks typing (partial tokens are wrong until finished) — Create Config is
+// where an invalid list becomes a hard stop.
+void MainWindow::updateShowtoolsValidity()
+{
+    ui->Showtools_lineEdit->setStyleSheet(
+        invalidShowtoolsTokens().isEmpty()
+            ? QString()
+            : QStringLiteral("QLineEdit { background-color: rgba(200, 60, 60, 0.35); }"));
+}
+
 // Renders the full refind.conf as text — shared by Create Config (which
 // writes it) and the Preview dialog (which only displays it).
 QString MainWindow::generateConfigText(const QList<Selection> &selections)
@@ -804,7 +860,18 @@ QString MainWindow::generateConfigText(const QList<Selection> &selections)
     out << "enable_touch\n";
     out << (ui->Enable_Mouse_checkBox->isChecked() ? "" : "#") << "enable_mouse\n";
     out << "log_level 0\n";
-    out << "showtools\n";
+    // The user's tool list for the menu's second row. Unknown tokens are
+    // dropped here rather than passed through (Create Config refuses them
+    // with an explanation, but Preview and a hand-edited INI still reach
+    // this path); blank keeps the bare directive, which shows no tools.
+    QStringList tools = showtoolsTokens();
+    const QStringList badTools = invalidShowtoolsTokens();
+    for (const QString &bad : badTools)
+        tools.removeAll(bad);
+    out << "showtools";
+    if (!tools.isEmpty())
+        out << " " << tools.join(QLatin1Char(','));
+    out << "\n";
     out << "scanfor manual\n";
 
     // default_selection: position of the chosen default among generated
@@ -937,6 +1004,17 @@ bool MainWindow::stageActiveThemeConf(const QString &themeName)
 
 void MainWindow::on_Create_Config_clicked()
 {
+    // Refuse rather than silently drop: a typo'd tool would otherwise just
+    // vanish from the boot menu with no hint why.
+    const QStringList badTools = invalidShowtoolsTokens();
+    if (!badTools.isEmpty()) {
+        QMessageBox::warning(this, tr("Showtools"),
+            tr("These showtools entries are not recognized: %1\n\nValid entries: %2")
+                .arg(badTools.join(QStringLiteral(", ")),
+                     validShowtoolsTokens().join(QStringLiteral(", "))));
+        return;
+    }
+
     QDir().mkpath(guiConfigDir);
 
     // Publish the config last. If any selected image cannot be staged, keep
@@ -1263,6 +1341,10 @@ void MainWindow::readEarlySettings()
     if (!timeout.isEmpty())
         ui->TimeOut_lineEdit->setText(timeout);
 
+    settings.beginGroup(QStringLiteral("ShowTools"));
+    ui->Showtools_lineEdit->setText(settings.value(QStringLiteral("ShowTools")).toString());
+    settings.endGroup();
+
     settings.beginGroup(QStringLiteral("Resolution"));
     ui->Res_Width_lineEdit->setText(settings.value(QStringLiteral("ResOverrideWidth")).toString());
     ui->Res_Height_lineEdit->setText(settings.value(QStringLiteral("ResOverrideHeight")).toString());
@@ -1321,6 +1403,9 @@ void MainWindow::initSettingsPersistence()
     });
     connect(ui->TimeOut_lineEdit, &QLineEdit::textEdited, this, [this](const QString &text) {
         persistSetting(QStringLiteral("Timeout"), QStringLiteral("Timeout"), text);
+    });
+    connect(ui->Showtools_lineEdit, &QLineEdit::textEdited, this, [this](const QString &text) {
+        persistSetting(QStringLiteral("ShowTools"), QStringLiteral("ShowTools"), text);
     });
     connect(ui->Res_Override_checkBox, &QCheckBox::toggled, this, [this](bool on) {
         persistSetting(QStringLiteral("Resolution"), QStringLiteral("ResOverrideEnabled"), on);
@@ -1438,6 +1523,9 @@ void MainWindow::writeSettings()
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Timeout"));
     settings.setValue(QStringLiteral("Timeout"), ui->TimeOut_lineEdit->text());
+    settings.endGroup();
+    settings.beginGroup(QStringLiteral("ShowTools"));
+    settings.setValue(QStringLiteral("ShowTools"), ui->Showtools_lineEdit->text());
     settings.endGroup();
     settings.beginGroup(QStringLiteral("Resolution"));
     settings.setValue(QStringLiteral("ResOverrideEnabled"), ui->Res_Override_checkBox->isChecked());
