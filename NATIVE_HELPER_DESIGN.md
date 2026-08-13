@@ -9,11 +9,15 @@ port and the in-process Install Config / Install Themes switchover are
 written (espresolve_win.cpp: native NVRAM walk + volume enumeration +
 letterless-volume directory mounts) but are **compile- and
 hardware-unverified** — build on MSYS2 UCRT64 and exercise before trusting.
-Still to do: the Windows Scheduled-Task migration (helper as the task
-action + COM registration, §2.7) and the .ps1 deletions that depend on it,
-the Windows `bootnext` subcommand, CLAUDE.md/README rewrites, and the
-on-hardware QA pass (§6 step 4). The randomizer/bootnext Scheduled Tasks
-keep their .ps1 paths untouched until then.
+The Scheduled-Task migration is
+also written (wintasks.cpp: native COM registration with the battery
+settings preserved, unchanged task names; helper gains the Windows
+`bootnext` subcommand) — same unverified status. Still to do once Windows
+is verified on hardware: delete the superseded .ps1 files and update
+assemble-deploy/Inno/signing accordingly, ship the helper exe in deploy/,
+CLAUDE.md/README rewrites, and the on-hardware QA pass (§6 step 4). Until
+then the .ps1 files remain shipped and the installers/uninstallers keep
+their existing flows.
 Scope decisions made with the project owner (2026-08):
 
 1. **Full consolidation** — Install Config, Install Themes, both randomizers,

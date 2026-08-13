@@ -59,7 +59,7 @@ add_library(espops STATIC
     espops/userio.h
 )
 if(WIN32)
-    target_sources(espops PRIVATE espops/espresolve_win.cpp)
+    target_sources(espops PRIVATE espops/espresolve_win.cpp espops/wintasks.cpp)
 else()
     target_sources(espops PRIVATE espops/espresolve_linux.cpp)
 endif()
@@ -152,7 +152,9 @@ target_link_libraries(espops PUBLIC Qt${QT_VERSION_MAJOR}::Core)
 if(WIN32)
     # advapi32: OpenProcessToken/AdjustTokenPrivileges for the
     # SeSystemEnvironmentPrivilege enable in espresolve_win.cpp.
-    target_link_libraries(espops PUBLIC advapi32)
+    # ole32/oleaut32/uuid: Task Scheduler COM in wintasks.cpp (uuid carries
+    # CLSID_TaskScheduler/IID_* for MinGW builds).
+    target_link_libraries(espops PUBLIC advapi32 ole32 oleaut32 uuid)
 endif()
 target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network espops)
 

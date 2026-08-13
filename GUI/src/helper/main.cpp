@@ -29,6 +29,7 @@
 #include "espops/randomize.h"
 #include "espops/themesinstall.h"
 #include "espops/userio.h"
+#include "espops/wintasks.h"
 
 #include <QCoreApplication>
 
@@ -153,17 +154,21 @@ int runInstallThemes()
         });
 }
 
-// Cosmetic boot-time services (systemd units): content and environment
-// problems — including "no ESP found" — warn on stderr and exit 0; a red
-// failed unit would be worse than the symptom. Nonzero is reserved for
-// internal errors inside the payload.
+#endif // Q_OS_UNIX
+
+// Cosmetic boot/logon services (systemd units on Linux, Scheduled Tasks on
+// Windows): content and environment problems — including "no ESP found" —
+// warn on stderr and exit 0; a red failed unit would be worse than the
+// symptom. Nonzero is reserved for internal errors inside the payload.
 int runRandomize(int (*payload)(const QString &refindDir, QStringList *))
 {
     const char *tag = EspOps::kProductName;
+#ifdef Q_OS_UNIX
     if (geteuid() != 0) {
         std::fprintf(stderr, "%s: the randomizer must run as root; nothing to do.\n", tag);
         return 0;
     }
+#endif
     EspOps::EspResolver resolver;
     EspOps::RefindTarget target;
     if (!resolver.resolve(&target)) {
@@ -175,12 +180,12 @@ int runRandomize(int (*payload)(const QString &refindDir, QStringList *))
     const int code = payload(target.refindDir, &warnings);
     for (const QString &w : warnings)
         std::fprintf(stderr, "%s: %s\n", tag, w.toLocal8Bit().constData());
+#ifdef Q_OS_UNIX
     // Flush to the ESP before the resolver's temporary mounts go away.
     ::sync();
+#endif
     return code;
 }
-
-#endif // Q_OS_UNIX
 
 } // namespace
 
@@ -225,23 +230,20 @@ int main(int argc, char *argv[])
         return notPorted(sub);
 #endif
     }
-    if (std::strcmp(sub, "randomize-background") == 0) {
-#ifdef Q_OS_UNIX
+    if (std::strcmp(sub, "randomize-background") == 0)
         return runRandomize(EspOps::randomizeBackground);
-#else
-        return notPorted(sub);
-#endif
-    }
-    if (std::strcmp(sub, "randomize-theme") == 0) {
-#ifdef Q_OS_UNIX
+    if (std::strcmp(sub, "randomize-theme") == 0)
         return runRandomize(EspOps::randomizeTheme);
-#else
-        return notPorted(sub);
-#endif
-    }
 #ifdef Q_OS_WIN
-    if (std::strcmp(sub, "bootnext") == 0)
-        return notPorted(sub);
+    if (std::strcmp(sub, "bootnext") == 0) {
+        // At-logon Scheduled Task payload; cosmetic-service semantics.
+        QStringList warnings;
+        const int code = EspOps::bootNextToRefind(&warnings);
+        for (const QString &w : warnings)
+            std::fprintf(stderr, "%s: %s\n", EspOps::kProductName,
+                         w.toLocal8Bit().constData());
+        return code;
+    }
 #endif
 
     return usage(stderr);

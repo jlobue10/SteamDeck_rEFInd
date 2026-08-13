@@ -4,6 +4,7 @@
 #include "espops/espresolve.h"
 #include "espops/themesinstall.h"
 #include "espops/userio.h"
+#include "espops/wintasks.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -223,24 +224,37 @@ bool installThemesScriptTrusted(QString *detail)
     return true;
 }
 
+// The at-logon Scheduled Tasks now run the helper exe directly, registered
+// natively via the Task Scheduler COM API (NATIVE_HELPER_DESIGN.md §2.7);
+// task names are unchanged so existing uninstall flows keep matching.
+static bool setHelperTask(const char *taskSuffix, const char *subcommand,
+                          bool enable)
+{
+    const QString exe = QCoreApplication::applicationDirPath()
+        + QLatin1Char('/') + QLatin1String(EspOps::kProductName)
+        + QLatin1String("_helper.exe");
+    if (enable && !QFileInfo::exists(exe))
+        return false;
+    return EspOps::setLogonTask(QLatin1String(EspOps::kProductName)
+                                    + QLatin1String(taskSuffix),
+                                exe, QLatin1String(subcommand), enable);
+}
+
 bool setBackgroundRandomizer(bool enable)
 {
-    return runScriptInWindow(QStringLiteral("rEFInd_bg_randomizer_task.ps1"),
-                             {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
+    return setHelperTask("_bg_randomizer", "randomize-background", enable);
 }
 
 bool setThemeRandomizer(bool enable)
 {
-    return runScriptInWindow(QStringLiteral("rEFInd_theme_randomizer_task.ps1"),
-                             {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
+    return setHelperTask("_theme_randomizer", "randomize-theme", enable);
 }
 
 bool setBootnextService(bool enable)
 {
     // The Windows counterpart of bootnext-refind.service: a scheduled task
     // that sets UEFI BootNext to the rEFInd entry at each logon.
-    return runScriptInWindow(QStringLiteral("bootnext_refind_task.ps1"),
-                             {enable ? QStringLiteral("-Enable") : QStringLiteral("-Disable")});
+    return setHelperTask("_bootnext", "bootnext", enable);
 }
 
 int runEspDeepScan()

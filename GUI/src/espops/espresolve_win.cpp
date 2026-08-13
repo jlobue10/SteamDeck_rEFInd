@@ -53,7 +53,10 @@ bool enableSystemEnvironmentPrivilege()
     return ok;
 }
 
-QByteArray readEfiVar(const QString &name)
+} // namespace
+
+// Shared NVRAM plumbing, also used by wintasks.cpp (bootnext).
+QByteArray winReadEfiVar(const QString &name)
 {
     static const bool privileged = enableSystemEnvironmentPrivilege();
     if (!privileged)
@@ -67,6 +70,21 @@ QByteArray readEfiVar(const QString &name)
     buf.truncate(int(got));
     return buf;
 }
+
+// BootNext-style writes only: espops never rewrites or deletes a Boot####
+// entry (the installers own that, with the WINDOWS-blob rule).
+bool winWriteEfiVar(const QString &name, const QByteArray &value)
+{
+    static const bool privileged = enableSystemEnvironmentPrivilege();
+    if (!privileged)
+        return false;
+    return SetFirmwareEnvironmentVariableW(
+               reinterpret_cast<const wchar_t *>(name.utf16()), kGlobalGuidW,
+               const_cast<char *>(value.constData()), DWORD(value.size()))
+        != 0;
+}
+
+namespace {
 
 QString guidToString(const GUID &g)
 {
@@ -183,14 +201,14 @@ QString refindEspGuidFromNvram()
     // BootOrder-listed entries first, then the conventional Boot0000–00FF
     // sweep (an entry dropped from BootOrder is still found) — the same
     // order as uefi_refind.ps1.
-    QList<quint16> ids = parseBootOrder(readEfiVar(QStringLiteral("BootOrder")));
+    QList<quint16> ids = parseBootOrder(winReadEfiVar(QStringLiteral("BootOrder")));
     for (quint16 i = 0; i <= 0xFF; ++i) {
         if (!ids.contains(i))
             ids << i;
     }
     for (int tier = 0; tier < 2; ++tier) {
         for (quint16 id : ids) {
-            const QByteArray raw = readEfiVar(formatBootNum(id));
+            const QByteArray raw = winReadEfiVar(formatBootNum(id));
             if (raw.isEmpty())
                 continue;
             const LoadOption o = parseLoadOption(raw);
