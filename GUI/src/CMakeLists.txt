@@ -45,10 +45,18 @@ set(TS_FILES
 # espops/*.cpp/.h and helper/main.cpp are parity-locked byte-identical with
 # the sibling rEFInd_GUI repo; espconstants.h is the per-repo file.
 add_library(espops STATIC
+    espops/configinstall.cpp
+    espops/configinstall.h
     espops/espconstants.h
+    espops/espresolve.h
     espops/loadoption.cpp
     espops/loadoption.h
+    espops/userio.cpp
+    espops/userio.h
 )
+if(NOT WIN32)
+    target_sources(espops PRIVATE espops/espresolve_linux.cpp)
+endif()
 target_include_directories(espops PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(espops PUBLIC ESPOPS_APP_VERSION="${PROJECT_VERSION}")
 
@@ -186,6 +194,10 @@ if(BUILD_GUI_TESTS AND NOT WIN32)
     add_executable(tst_loadoption tests/tst_loadoption.cpp)
     target_link_libraries(tst_loadoption PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME loadoption COMMAND tst_loadoption)
+
+    add_executable(tst_configinstall tests/tst_configinstall.cpp)
+    target_link_libraries(tst_configinstall PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME configinstall COMMAND tst_configinstall)
 endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)
