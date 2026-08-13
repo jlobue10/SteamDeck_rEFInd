@@ -58,7 +58,9 @@ add_library(espops STATIC
     espops/userio.cpp
     espops/userio.h
 )
-if(NOT WIN32)
+if(WIN32)
+    target_sources(espops PRIVATE espops/espresolve_win.cpp)
+else()
     target_sources(espops PRIVATE espops/espresolve_linux.cpp)
 endif()
 target_include_directories(espops PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -147,6 +149,11 @@ else()
 endif()
 
 target_link_libraries(espops PUBLIC Qt${QT_VERSION_MAJOR}::Core)
+if(WIN32)
+    # advapi32: OpenProcessToken/AdjustTokenPrivileges for the
+    # SeSystemEnvironmentPrivilege enable in espresolve_win.cpp.
+    target_link_libraries(espops PUBLIC advapi32)
+endif()
 target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network espops)
 
 # The privileged helper (console app on both platforms — deliberately not

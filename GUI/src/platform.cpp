@@ -1,5 +1,9 @@
 #include "platform.h"
+#include "espops/configinstall.h"
 #include "espops/espconstants.h"
+#include "espops/espresolve.h"
+#include "espops/themesinstall.h"
+#include "espops/userio.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -154,50 +158,48 @@ bool runInstallerScript(const QString &installSource)
     return runScriptInWindow(QStringLiteral("install_rEFInd.ps1"));
 }
 
-// Synchronous, window-less run of a trusted helper script with the output
-// captured: the scripts' consoles used to flash open and vanish, leaving no
-// trace of whether the install worked. The caller shows the result dialog
-// from *output.
-static int runTrustedScriptCaptured(const QString &scriptName, QString *output)
+// The GUI itself runs elevated (requireAdministrator manifest), so the
+// install actions call the shared espops logic IN-PROCESS: no PowerShell,
+// no location-trust check, no OEM-codepage capture pitfalls
+// (NATIVE_HELPER_DESIGN.md §2.2). The data dir belongs to the same user
+// the elevated process runs as, so DirectUserFiles reads it directly.
+static int runEspInstallInProcess(QString *output, const char *noun,
+                                  EspOps::InstallOutcome (*action)(
+                                      EspOps::UserFiles &, const QString &,
+                                      const QString &))
 {
-    QProcess proc;
-    proc.setProcessChannelMode(QProcess::MergedChannels);
-    proc.setCreateProcessArgumentsModifier([](QProcess::CreateProcessArguments *args) {
-        args->flags |= CREATE_NO_WINDOW;
-    });
-    const QString script = trustedScriptPath(scriptName);
-    const QString powershell = windowsSystemExecutable(
-        QStringLiteral("WindowsPowerShell/v1.0/powershell.exe"));
-    if (script.isEmpty() || powershell.isEmpty()) {
+    EspOps::EspResolver resolver;
+    EspOps::RefindTarget target;
+    if (!resolver.resolve(&target)) {
         if (output)
             *output = QCoreApplication::translate(
-                "Platform", "The privileged helper is not installed under Program Files.");
-        return -1;
+                          "Platform",
+                          "No EFI System Partition with rEFInd on it could be "
+                          "found.\nInstall rEFInd first, then install the %1.")
+                          .arg(QLatin1String(noun));
+        return 3;
     }
-    proc.start(powershell,
-               {QStringLiteral("-NoProfile"), QStringLiteral("-ExecutionPolicy"),
-                QStringLiteral("Bypass"), QStringLiteral("-File"),
-                QDir::toNativeSeparators(script)});
-    if (!proc.waitForStarted()) {
-        if (output)
-            *output = QCoreApplication::translate("Platform",
-                                                  "powershell.exe could not be started.");
-        return -1;
+    EspOps::DirectUserFiles files;
+    const QString srcDir = dataDir()
+        + (qstrcmp(noun, "config") == 0 ? QLatin1String("/GUI")
+                                        : QLatin1String("/themes"));
+    const EspOps::InstallOutcome o = action(files, srcDir, target.refindDir);
+    if (output) {
+        *output = o.lines.join(QLatin1Char('\n'));
+        if (o.exitCode == 0)
+            *output += QStringLiteral("\n(chosen as %1)").arg(target.how);
     }
-    proc.waitForFinished(-1);
-    if (output)
-        *output = QString::fromLocal8Bit(proc.readAll());
-    return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
+    return o.exitCode;
 }
 
 int installConfig(QString *output)
 {
-    return runTrustedScriptCaptured(QStringLiteral("install_config_from_GUI.ps1"), output);
+    return runEspInstallInProcess(output, "config", EspOps::installConfigSet);
 }
 
 int installThemes(QString *output)
 {
-    return runTrustedScriptCaptured(QStringLiteral("install_themes_from_GUI.ps1"), output);
+    return runEspInstallInProcess(output, "themes", EspOps::installThemeSet);
 }
 
 bool installConfigShowsOwnDialogs()
@@ -207,25 +209,18 @@ bool installConfigShowsOwnDialogs()
 
 bool installConfigScriptTrusted(QString *detail)
 {
-    const QString script = trustedScriptPath(QStringLiteral("install_config_from_GUI.ps1"));
+    // Nothing external is launched anymore — the logic is compiled into
+    // this (elevated, Program Files-protected) executable.
     if (detail)
-        *detail = script.isEmpty()
-            ? QCoreApplication::applicationDirPath() + "/windows/install_config_from_GUI.ps1"
-            : script;
-    return !script.isEmpty();
+        detail->clear();
+    return true;
 }
 
 bool installThemesScriptTrusted(QString *detail)
 {
-    // Same trust rule as the config installer: the script must resolve under
-    // the protected Program Files installation (Authenticode signing rewrites
-    // the .ps1 files, so a build-time hash can't be used on Windows).
-    const QString script = trustedScriptPath(QStringLiteral("install_themes_from_GUI.ps1"));
     if (detail)
-        *detail = script.isEmpty()
-            ? QCoreApplication::applicationDirPath() + "/windows/install_themes_from_GUI.ps1"
-            : script;
-    return !script.isEmpty();
+        detail->clear();
+    return true;
 }
 
 bool setBackgroundRandomizer(bool enable)

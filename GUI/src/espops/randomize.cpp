@@ -272,14 +272,77 @@ int randomizeBackground(const QString &refindDir, QStringList *warnings)
     return 0;
 }
 
-#else // !Q_OS_UNIX — the Windows Scheduled Task path lands with the Windows
-      // espresolve port; keep the symbol so the helper links.
+#else // Windows: the Scheduled Task runs elevated IN the logged-on user's
+      // session, so the backgrounds live in that user's own %LOCALAPPDATA%
+      // and are read directly — no pointer file, no privilege drop (the
+      // same trust model as rEFInd_bg_randomizer.ps1, which this replaces).
 
 int randomizeBackground(const QString &refindDir, QStringList *warnings)
 {
-    Q_UNUSED(refindDir);
-    warn(warnings, QStringLiteral("randomize-background is not available in "
-                                  "this build yet"));
+    QString base = QString::fromLocal8Bit(qgetenv("LOCALAPPDATA"));
+    if (base.isEmpty())
+        base = QDir::homePath() + QLatin1String("/AppData/Local");
+    const QString bgDir = QDir::fromNativeSeparators(base) + QLatin1Char('/')
+        + QLatin1String(kDataDirName) + QLatin1String("/backgrounds");
+    if (!QFileInfo(bgDir).isDir())
+        return 0;
+
+    DirectUserFiles user;
+    QList<UserFileEntry> entries;
+    if (!user.listFilesRecursive(bgDir, &entries)) {
+        warn(warnings,
+             QStringLiteral("could not enumerate background images; keeping "
+                            "the current background"));
+        return 0;
+    }
+    QStringList candidates;
+    for (const UserFileEntry &e : entries) {
+        if (!e.relPath.contains(QLatin1Char('/'))
+            && e.relPath.endsWith(QLatin1String(".png"), Qt::CaseInsensitive))
+            candidates << e.relPath;
+    }
+    if (candidates.isEmpty())
+        return 0;
+
+    std::shuffle(candidates.begin(), candidates.end(),
+                 std::mt19937(QRandomGenerator::global()->generate()));
+
+    QByteArray staged;
+    const int attempts = qMin(kMaxBackgroundAttempts, int(candidates.size()));
+    for (int i = 0; i < attempts; ++i) {
+        const QString candidate = bgDir + QLatin1Char('/') + candidates.at(i);
+        QBuffer buf(&staged);
+        staged.clear();
+        buf.open(QIODevice::WriteOnly);
+        qint64 written = 0;
+        if (!user.read(candidate, &buf, kMaxBackgroundBytes, &written)
+            || written >= kMaxBackgroundBytes) {
+            warn(warnings,
+                 QStringLiteral("could not read '%1'; trying another")
+                     .arg(candidate));
+            staged.clear();
+            continue;
+        }
+        if (!staged.startsWith(QByteArray(kPngSignature, 8))) {
+            warn(warnings,
+                 QStringLiteral("'%1' is not a valid PNG file; trying another")
+                     .arg(candidate));
+            staged.clear();
+            continue;
+        }
+        break;
+    }
+    if (staged.isEmpty()) {
+        warn(warnings,
+             QStringLiteral("no usable background image found; keeping the "
+                            "current background"));
+        return 0;
+    }
+
+    if (!QFileInfo(refindDir).isDir())
+        return 0;
+    if (!publishStaged(refindDir, QStringLiteral("background.png"), staged))
+        return 1;
     return 0;
 }
 
