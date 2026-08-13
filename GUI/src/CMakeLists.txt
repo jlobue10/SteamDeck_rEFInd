@@ -51,6 +51,8 @@ add_library(espops STATIC
     espops/espresolve.h
     espops/loadoption.cpp
     espops/loadoption.h
+    espops/themesinstall.cpp
+    espops/themesinstall.h
     espops/userio.cpp
     espops/userio.h
 )
@@ -198,6 +200,10 @@ if(BUILD_GUI_TESTS AND NOT WIN32)
     add_executable(tst_configinstall tests/tst_configinstall.cpp)
     target_link_libraries(tst_configinstall PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME configinstall COMMAND tst_configinstall)
+
+    add_executable(tst_themesinstall tests/tst_themesinstall.cpp)
+    target_link_libraries(tst_themesinstall PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME themesinstall COMMAND tst_themesinstall)
 endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)

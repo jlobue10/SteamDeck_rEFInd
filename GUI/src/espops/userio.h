@@ -15,9 +15,17 @@
 #define ESPOPS_USERIO_H
 
 #include <QIODevice>
+#include <QList>
 #include <QString>
+#include <QStringList>
 
 namespace EspOps {
+
+struct UserFileEntry
+{
+    QString relPath; // relative to the listed directory, '/'-separated
+    qint64 size = 0;
+};
 
 class UserFiles
 {
@@ -34,6 +42,18 @@ public:
     // byte count on success.
     virtual bool read(const QString &path, QIODevice *dest, qint64 maxBytes,
                       qint64 *written) = 0;
+
+    // First-level subdirectory names of `path` (user context). Symlinks are
+    // NOT followed (a symlinked "theme dir" could pull arbitrary readable
+    // trees into an install); names with control characters are skipped.
+    virtual QStringList listSubdirs(const QString &path) = 0;
+
+    // All REGULAR files under `dir` (user context), recursive, as relative
+    // paths. Symlinks are skipped — vfat cannot hold them anyway, and the
+    // scripts' tar pipe failed the whole install on one; skipping is the
+    // strictly safer port. Names with control characters are skipped.
+    virtual bool listFilesRecursive(const QString &dir,
+                                    QList<UserFileEntry> *out) = 0;
 };
 
 // Direct implementation for contexts that already run AS the user (unit
@@ -44,6 +64,9 @@ public:
     bool statRegular(const QString &path, qint64 *size) override;
     bool read(const QString &path, QIODevice *dest, qint64 maxBytes,
               qint64 *written) override;
+    QStringList listSubdirs(const QString &path) override;
+    bool listFilesRecursive(const QString &dir,
+                            QList<UserFileEntry> *out) override;
 };
 
 #ifdef Q_OS_UNIX
@@ -71,6 +94,9 @@ public:
     bool statRegular(const QString &path, qint64 *size) override;
     bool read(const QString &path, QIODevice *dest, qint64 maxBytes,
               qint64 *written) override;
+    QStringList listSubdirs(const QString &path) override;
+    bool listFilesRecursive(const QString &dir,
+                            QList<UserFileEntry> *out) override;
 
 private:
     SudoUser user_;

@@ -26,6 +26,7 @@
 #include "espops/configinstall.h"
 #include "espops/espconstants.h"
 #include "espops/espresolve.h"
+#include "espops/themesinstall.h"
 #include "espops/userio.h"
 
 #include <QCoreApplication>
@@ -77,10 +78,15 @@ void printLines(const QStringList &lines)
 
 #ifdef Q_OS_UNIX
 
-int runInstallConfig()
+// Shared prologue of the two sudo-gated install subcommands: require root
+// (the sources to install live in the invoking user's home; sudo sets
+// SUDO_USER, and the sudoers rule only exists for regular users), resolve
+// the ESP that actually boots rEFInd, and make it writable. `finalNoun` is
+// "config" or "themes" for the resolution-failure hint.
+int runEspInstall(const char *finalNoun,
+                  int (*action)(EspOps::UserFiles &, const EspOps::SudoUser &,
+                                const QString &refindDir, QStringList *lines))
 {
-    // The config to install lives in the invoking user's home (sudo sets
-    // SUDO_USER; the sudoers rule only exists for regular users).
     if (geteuid() != 0) {
         std::printf("This helper must run as root (the %s GUI launches it via sudo).\n",
                     EspOps::kProductName);
@@ -98,24 +104,52 @@ int runInstallConfig()
     if (!resolver.resolve(&target)) {
         std::printf("No EFI System Partition with rEFInd on it could be found, "
                     "and no system ESP is mounted.\n"
-                    "Install rEFInd first, then install the config.\n");
+                    "Install rEFInd first, then install the %s.\n",
+                    finalNoun);
         return 3;
     }
     resolver.makeWritable(target.refindDir);
 
     EspOps::ForkUserFiles files(user);
-    const QString srcDir = user.home + QLatin1String("/.local/")
-        + QLatin1String(EspOps::kDataDirName) + QLatin1String("/GUI");
-    const EspOps::InstallOutcome outcome =
-        EspOps::installConfigSet(files, srcDir, target.refindDir);
-
-    printLines(outcome.lines);
-    if (outcome.exitCode == 0) {
+    QStringList lines;
+    const int code = action(files, user, target.refindDir, &lines);
+    printLines(lines);
+    if (code == 0) {
         std::printf("(chosen as %s)\n", target.how.toLocal8Bit().constData());
         // Flush to the ESP before the resolver's temporary mounts go away.
         ::sync();
     }
-    return outcome.exitCode;
+    return code;
+}
+
+int runInstallConfig()
+{
+    return runEspInstall(
+        "config",
+        [](EspOps::UserFiles &files, const EspOps::SudoUser &user,
+           const QString &refindDir, QStringList *lines) -> int {
+            const QString srcDir = user.home + QLatin1String("/.local/")
+                + QLatin1String(EspOps::kDataDirName) + QLatin1String("/GUI");
+            const EspOps::InstallOutcome o =
+                EspOps::installConfigSet(files, srcDir, refindDir);
+            *lines = o.lines;
+            return o.exitCode;
+        });
+}
+
+int runInstallThemes()
+{
+    return runEspInstall(
+        "themes",
+        [](EspOps::UserFiles &files, const EspOps::SudoUser &user,
+           const QString &refindDir, QStringList *lines) -> int {
+            const QString srcDir = user.home + QLatin1String("/.local/")
+                + QLatin1String(EspOps::kDataDirName) + QLatin1String("/themes");
+            const EspOps::InstallOutcome o =
+                EspOps::installThemeSet(files, srcDir, refindDir);
+            *lines = o.lines;
+            return o.exitCode;
+        });
 }
 
 #endif // Q_OS_UNIX
@@ -154,8 +188,15 @@ int main(int argc, char *argv[])
         return notPorted(sub);
 #endif
     }
-    if (std::strcmp(sub, "install-themes") == 0)
+    if (std::strcmp(sub, "install-themes") == 0) {
+#ifdef Q_OS_UNIX
+        return runInstallThemes();
+#else
+        // Windows never routes install-themes through the helper: the GUI
+        // is already elevated and runs espops in-process.
         return notPorted(sub);
+#endif
+    }
     if (std::strcmp(sub, "randomize-background") == 0)
         return notPorted(sub);
     if (std::strcmp(sub, "randomize-theme") == 0)

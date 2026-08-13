@@ -20,6 +20,10 @@ constexpr const char kDataDirName[] = "SteamDeck_rEFInd";
 // /usr/bin, which the A/B rootfs swap replaces wholesale).
 constexpr const char kHelperEtcPath[] = "/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper";
 
+// The user-facing installer script, named in "re-run the installer"
+// diagnostics.
+constexpr const char kInstallerName[] = "install-GUI.sh";
+
 // "Running system's ESP" fallback mountpoints, in preference order, for
 // when NVRAM resolution finds nothing (first install, not yet booted
 // through rEFInd). /esp first on the Deck. Null-terminated.
