@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **MIGRATION IN PROGRESS (branch `claude/refind-gui-config-helper-2defin`):**
+> the privileged Linux shell scripts (`install_config_from_GUI.sh` incl. the
+> zenity fallback, both `_root.sh` helpers, `lib_esp_target.sh`, both
+> randomizers) have been replaced by the `SteamDeck_rEFInd_helper` binary
+> (built from `GUI/src/helper/` + `GUI/src/espops/`, parity-locked with the
+> sibling repo like `osdetect_*`), installed by the package onto the
+> persistent /etc overlay. The four-script SHA-256 tamper hash-check and its
+> `resources.qrc` embeds are gone — replaced by a `helper --version`
+> handshake plus a sudoers probe; the sudoers file whitelists the exact
+> `helper install-config` / `install-themes` argument vectors; the randomizer
+> units ExecStart helper subcommands (`bootnext-refind.service` /
+> `restore_EFI_entries.sh` deliberately stay bash); the pinned build and
+> release workflow build the helper and assert its Qt ABI too. **The Windows
+> `.ps1` paths are NOT yet migrated.** Sections of this file describing the
+> old script/trust machinery are stale until this note is removed — see
+> `NATIVE_HELPER_DESIGN.md` for the authoritative design and remaining work.
+
 ## What this is
 
 SteamDeck_rEFInd installs and configures the [rEFInd](https://www.rodsbooks.com/refind/) boot manager for dual/multi-booting a Steam Deck (SteamOS + Windows/Linux/Batocera/etc). It ships two ways to use it:

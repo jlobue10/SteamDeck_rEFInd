@@ -1,6 +1,14 @@
 # Native helper consolidation — design
 
-Status: **proposed** (design doc only; no code has moved yet).
+Status: **Linux implemented on this branch; Windows port pending.**
+Phases 1-3 are done for Linux: the espops library, the helper binary, both
+sudo-gated installs, both randomizers, the version handshake, the
+exact-argument sudoers rules, unit repointing, installer/packaging updates,
+and deletion of the superseded Linux scripts. Still to do: the Windows
+espresolve port (in-process GUI calls + helper as the Scheduled Task action
++ COM task registration + .ps1 deletion, §2.7), CLAUDE.md/README rewrites,
+and the on-hardware QA pass (§6 step 4). The Windows GUI keeps its .ps1
+paths untouched until then.
 Scope decisions made with the project owner (2026-08):
 
 1. **Full consolidation** — Install Config, Install Themes, both randomizers,
