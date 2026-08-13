@@ -215,6 +215,10 @@ if(BUILD_GUI_TESTS AND NOT WIN32)
     add_executable(tst_themesinstall tests/tst_themesinstall.cpp)
     target_link_libraries(tst_themesinstall PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME themesinstall COMMAND tst_themesinstall)
+
+    add_executable(tst_randomize tests/tst_randomize.cpp)
+    target_link_libraries(tst_randomize PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME randomize COMMAND tst_randomize)
 endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)

@@ -16,6 +16,14 @@ mkdir -p "$DEPLOY"
 # that is harmless here since copydeps.sh below completes the DLL closure.
 windeployqt6 "$EXE" --dir "$DEPLOY" --no-translations --compiler-runtime >/dev/null 2>&1 || true
 cp "$EXE" "$DEPLOY/"
+# The privileged helper builds alongside the GUI and is the Scheduled
+# Tasks' action (NATIVE_HELPER_DESIGN.md); it shares the GUI's DLL closure.
+HELPER="$BUILD_DIR/SteamDeck_rEFInd_helper.exe"
+if [ ! -f "$HELPER" ]; then
+    echo "Error: $HELPER not found next to the GUI exe. Aborting." >&2
+    exit 1
+fi
+cp "$HELPER" "$DEPLOY/"
 cp "$BUILD_DIR"/*.dll "$DEPLOY/" 2>/dev/null || true
 for d in platforms styles imageformats iconengines tls networkinformation generic; do
     [ -d "$BUILD_DIR/$d" ] && cp -r "$BUILD_DIR/$d" "$DEPLOY/"
