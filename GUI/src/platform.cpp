@@ -1,7 +1,7 @@
 #include "platform.h"
+#include "espops/espconstants.h"
 
 #include <QCoreApplication>
-#include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
@@ -293,86 +293,43 @@ bool runInstallerScript(const QString &installSource)
     return QProcess::startDetached(QStringLiteral("xterm"), {QStringLiteral("-e"), script});
 }
 
-static const char kRootConfigScript[] = "/etc/SteamDeck_rEFInd/install_config_from_GUI.sh";
-static const char kRootThemesScript[] = "/etc/SteamDeck_rEFInd/install_themes_from_GUI.sh";
-
 // True when install-GUI.sh has set up the passwordless path for the given
-// root-owned helper: the script exists and the sudoers rule in
-// /etc/sudoers.d lets this user run it without a password (`sudo -n -l
-// <cmd>` exits 0 exactly then, without ever prompting).
-static bool passwordlessHelperReady(const char *rootScript)
+// helper subcommand: the sudoers rule in /etc/sudoers.d lets this user run
+// exactly that argument vector without a password (`sudo -n -l <cmd>
+// <arg>` exits 0 exactly then, without ever prompting).
+static bool passwordlessHelperReady(const QString &subcommand)
 {
-    if (!QFile::exists(QLatin1String(rootScript)))
+    if (!QFile::exists(QLatin1String(EspOps::kHelperEtcPath)))
         return false;
     QProcess proc;
     proc.start(QStringLiteral("sudo"),
-               {QStringLiteral("-n"), QStringLiteral("-l"), QLatin1String(rootScript)});
+               {QStringLiteral("-n"), QStringLiteral("-l"),
+                QLatin1String(EspOps::kHelperEtcPath), subcommand});
     if (!proc.waitForStarted())
         return false;
     proc.waitForFinished(-1);
     return proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0;
 }
 
-static bool passwordlessConfigInstallReady()
+// Runs one subcommand of the root-owned /etc helper binary
+// (NATIVE_HELPER_DESIGN.md). Allowed without a password by the sudoers
+// rule; -n keeps the GUI from hanging on a prompt if the rule vanished
+// since the trust check. Run synchronously with the output captured — the
+// caller presents the result dialog from *output, exactly like the Windows
+// build. (The old zenity password fallback is gone: a machine without the
+// sudoers rule gets the precise "re-run install-GUI.sh" dialog from the
+// trust check instead.)
+static int runRootHelperCaptured(const QString &subcommand, QString *output)
 {
-    return passwordlessHelperReady(kRootConfigScript);
-}
-
-int installConfig(QString *output)
-{
-    if (passwordlessConfigInstallReady()) {
-        // Allowed without a password by the sudoers rule; -n keeps the GUI
-        // from hanging on a prompt if the rule vanished since the check. Run
-        // synchronously with the output captured — the caller presents the
-        // result dialog from *output, exactly like the Windows build.
-        QProcess proc;
-        proc.setProcessChannelMode(QProcess::MergedChannels);
-        proc.start(QStringLiteral("sudo"),
-                   {QStringLiteral("-n"), QLatin1String(kRootConfigScript)});
-        if (!proc.waitForStarted()) {
-            if (output)
-                *output = QCoreApplication::translate("Platform",
-                                                  "sudo could not be started.");
-            return -1;
-        }
-        proc.waitForFinished(-1);
-        if (output)
-            *output = QString::fromLocal8Bit(proc.readAll());
-        return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
-    }
-    // Fallback when the rule isn't installed (the GUI installer was never
-    // re-run on this system): the staged script handles its own privilege
-    // (zenity password prompt) and shows its own success/error dialogs, so
-    // launch it detached.
-    if (output)
-        output->clear();
-    const bool ok = QProcess::startDetached(QStringLiteral("bash"),
-                                            {dataDir() + "/scripts/install_config_from_GUI.sh"});
-    return ok ? 0 : -1;
-}
-
-bool installConfigShowsOwnDialogs()
-{
-    // Only the zenity fallback owns its dialogs; on the passwordless path the
-    // GUI shows the captured output itself.
-    return !passwordlessConfigInstallReady();
-}
-
-int installThemes(QString *output)
-{
-    // Passwordless only — themes have no zenity fallback script. The caller
-    // gates on installThemesScriptTrusted(), which fails when the helper (or
-    // its sudoers rule) is missing; -n keeps the GUI from hanging on a prompt
-    // if the rule vanished since the check. Run synchronously with the output
-    // captured — the caller presents the result dialog from *output.
     QProcess proc;
     proc.setProcessChannelMode(QProcess::MergedChannels);
     proc.start(QStringLiteral("sudo"),
-               {QStringLiteral("-n"), QLatin1String(kRootThemesScript)});
+               {QStringLiteral("-n"),
+                QLatin1String(EspOps::kHelperEtcPath), subcommand});
     if (!proc.waitForStarted()) {
         if (output)
             *output = QCoreApplication::translate("Platform",
-                                              "sudo could not be started.");
+                                                  "sudo could not be started.");
         return -1;
     }
     proc.waitForFinished(-1);
@@ -381,77 +338,75 @@ int installThemes(QString *output)
     return proc.exitStatus() == QProcess::NormalExit ? proc.exitCode() : -1;
 }
 
-static bool matchesShippedScript(const QString &diskPath, const QString &resourcePath)
+int installConfig(QString *output)
 {
-    QFile ref(resourcePath);
-    QFile onDisk(diskPath);
-    if (!ref.open(QIODevice::ReadOnly) || !onDisk.open(QIODevice::ReadOnly))
+    return runRootHelperCaptured(QStringLiteral("install-config"), output);
+}
+
+bool installConfigShowsOwnDialogs()
+{
+    // The zenity fallback that owned its dialogs is gone; the GUI always
+    // shows the captured output itself, like the Windows build.
+    return false;
+}
+
+int installThemes(QString *output)
+{
+    return runRootHelperCaptured(QStringLiteral("install-themes"), output);
+}
+
+// The /etc helper runs as root via the passwordless sudoers rule. The
+// security boundary is its root ownership (nothing user-writable is ever
+// elevated); this handshake is skew detection, not tamper detection — it
+// runs `helper --version` unprivileged (the file is world-executable) and
+// requires the version this GUI was built with, so a helper left behind by
+// an older or newer install-GUI.sh run produces a precise "reinstall"
+// dialog instead of a subtle misbehavior. Together with the sudoers probe
+// it replaces the pre-4.x SHA-256 script hash-check, which died with the
+// on-disk scripts.
+static bool helperReady(const QString &subcommand, QString *detail)
+{
+    const QString helper = QLatin1String(EspOps::kHelperEtcPath);
+    QString found = QCoreApplication::translate("Platform", "missing");
+    bool versionOk = false;
+    QProcess proc;
+    proc.setProcessChannelMode(QProcess::SeparateChannels);
+    proc.start(helper, {QStringLiteral("--version")});
+    if (proc.waitForStarted() && proc.waitForFinished(10000)
+        && proc.exitStatus() == QProcess::NormalExit && proc.exitCode() == 0) {
+        const QString version =
+            QString::fromLocal8Bit(proc.readAllStandardOutput()).trimmed();
+        if (!version.isEmpty())
+            found = version;
+        versionOk = version == QLatin1String(ESPOPS_APP_VERSION);
+    }
+    if (!versionOk) {
+        if (detail)
+            *detail = QCoreApplication::translate(
+                          "Platform", "%1 (expected version %2, found: %3)")
+                          .arg(helper, QLatin1String(ESPOPS_APP_VERSION), found);
         return false;
-    return QCryptographicHash::hash(onDisk.readAll(), QCryptographicHash::Sha256)
-        == QCryptographicHash::hash(ref.readAll(), QCryptographicHash::Sha256);
+    }
+    if (!passwordlessHelperReady(subcommand)) {
+        if (detail)
+            *detail = QCoreApplication::translate(
+                          "Platform", "%1 (the passwordless sudo rule for '%2' is not installed)")
+                          .arg(helper, subcommand);
+        return false;
+    }
+    if (detail)
+        detail->clear();
+    return true;
 }
 
 bool installConfigScriptTrusted(QString *detail)
 {
-    if (passwordlessConfigInstallReady()) {
-        // The /etc copy is root-owned, so nobody unprivileged can have edited
-        // it — this catches a stale copy from another GUI version before it
-        // runs with root privileges. It carries no install-time placeholders
-        // (the invoking user is resolved from SUDO_USER at runtime), so the
-        // comparison is a straight byte-for-byte hash against the embedded
-        // reference.
-        if (!matchesShippedScript(QLatin1String(kRootConfigScript),
-                                  QStringLiteral(":/install_config_from_GUI_root.sh"))) {
-            if (detail)
-                *detail = QLatin1String(kRootConfigScript);
-            return false;
-        }
-        if (detail)
-            detail->clear();
-        return true;
-    }
-    // Zenity fallback path: install_config_from_GUI.sh pipes the user's sudo
-    // password into a root shell and sources lib_esp_target.sh into it, so
-    // refuse to launch unless both hash identically to the copies this build
-    // shipped (embedded as Qt resources at build time). Neither file has
-    // install-time placeholders, so the comparison is a straight
-    // byte-for-byte hash.
-    const QString scripts[] = {
-        QStringLiteral("install_config_from_GUI.sh"),
-        QStringLiteral("lib_esp_target.sh"),
-    };
-    for (const QString &name : scripts) {
-        const QString diskPath = dataDir() + "/scripts/" + name;
-        if (!matchesShippedScript(diskPath, QStringLiteral(":/") + name)) {
-            if (detail)
-                *detail = diskPath;
-            return false;
-        }
-    }
-    if (detail)
-        detail->clear();
-    return true;
+    return helperReady(QStringLiteral("install-config"), detail);
 }
 
 bool installThemesScriptTrusted(QString *detail)
 {
-    // The themes helper only exists on the passwordless path (no zenity
-    // fallback): it must be installed root-owned in /etc with its sudoers
-    // rule, and hash-match the copy embedded in this binary at build time —
-    // the same tamper rule as the config helper's passwordless path. A
-    // missing helper (an install-GUI.sh run predating themes support) fails
-    // this check too; the caller suggests re-running the GUI installer for
-    // both cases.
-    if (detail)
-        *detail = QLatin1String(kRootThemesScript);
-    if (!passwordlessHelperReady(kRootThemesScript))
-        return false;
-    if (!matchesShippedScript(QLatin1String(kRootThemesScript),
-                              QStringLiteral(":/install_themes_from_GUI_root.sh")))
-        return false;
-    if (detail)
-        detail->clear();
-    return true;
+    return helperReady(QStringLiteral("install-themes"), detail);
 }
 
 static bool systemctlInXterm(const QString &command)

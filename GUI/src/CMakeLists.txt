@@ -51,6 +51,8 @@ add_library(espops STATIC
     espops/espresolve.h
     espops/loadoption.cpp
     espops/loadoption.h
+    espops/randomize.cpp
+    espops/randomize.h
     espops/themesinstall.cpp
     espops/themesinstall.h
     espops/userio.cpp
@@ -190,7 +192,7 @@ if(BUILD_GUI_TESTS AND NOT WIN32)
     add_executable(tst_osdetect tests/tst_osdetect.cpp osdetect_common.cpp osdetect_linux.cpp platform.cpp)
     target_include_directories(tst_osdetect PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(tst_osdetect PRIVATE
-        Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets)
+        Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets espops)
     add_test(NAME osdetect COMMAND tst_osdetect)
 
     add_executable(tst_loadoption tests/tst_loadoption.cpp)

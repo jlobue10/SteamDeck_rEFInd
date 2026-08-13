@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.cpp" line="1688"/>
+        <location filename="mainwindow.cpp" line="1683"/>
         <source>Open Folder</source>
         <translation>폴더 열기</translation>
     </message>
@@ -280,9 +280,9 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
-        <location filename="mainwindow.cpp" line="1643"/>
+        <location filename="mainwindow.cpp" line="1640"/>
+        <location filename="mainwindow.cpp" line="1653"/>
         <location filename="mainwindow.cpp" line="1658"/>
-        <location filename="mainwindow.cpp" line="1663"/>
         <source>Install Themes</source>
         <translation>테마 설치</translation>
     </message>
@@ -342,9 +342,9 @@
     <message>
         <location filename="mainwindow.ui" line="1119"/>
         <location filename="mainwindow.cpp" line="1174"/>
-        <location filename="mainwindow.cpp" line="1192"/>
-        <location filename="mainwindow.cpp" line="1198"/>
-        <location filename="mainwindow.cpp" line="1203"/>
+        <location filename="mainwindow.cpp" line="1189"/>
+        <location filename="mainwindow.cpp" line="1195"/>
+        <location filename="mainwindow.cpp" line="1200"/>
         <source>Install Config</source>
         <translation>구성 설치</translation>
     </message>
@@ -513,14 +513,22 @@ Valid entries: %2</source>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1175"/>
-        <source>The config-install script was NOT run:
+        <location filename="mainwindow.cpp" line="1641"/>
+        <source>The privileged install helper was NOT run:
+
+%1
+
+It is missing or belongs to a different version of the app, so it cannot be run safely.
+
+Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to restore the matching helper, then try again.</source>
+        <oldsource>The config-install script was NOT run:
 
 %1
 
 It does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version — a mismatch means it was modified (possibly tampered with) or belongs to a different version.
 
-Reinstall the GUI to restore the original script, then try again.</source>
-        <translation>구성 설치 스크립트가 실행되지 않았습니다:
+Reinstall the GUI to restore the original script, then try again.</oldsource>
+        <translation type="unfinished">구성 설치 스크립트가 실행되지 않았습니다:
 
 %1
 
@@ -529,18 +537,18 @@ Reinstall the GUI to restore the original script, then try again.</source>
 GUI를 다시 설치하여 원본 스크립트를 복원한 후 다시 시도하세요.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1193"/>
-        <location filename="mainwindow.cpp" line="1205"/>
+        <location filename="mainwindow.cpp" line="1190"/>
+        <location filename="mainwindow.cpp" line="1202"/>
         <source>Installing the config failed (code %1).</source>
         <translation>구성 설치에 실패했습니다(코드 %1).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1200"/>
+        <location filename="mainwindow.cpp" line="1197"/>
         <source>The config was installed successfully.</source>
         <translation>구성이 성공적으로 설치되었습니다.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1201"/>
+        <location filename="mainwindow.cpp" line="1198"/>
         <source>The config was installed successfully.
 
 %1</source>
@@ -549,7 +557,7 @@ GUI를 다시 설치하여 원본 스크립트를 복원한 후 다시 시도하
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1206"/>
+        <location filename="mainwindow.cpp" line="1203"/>
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -558,28 +566,28 @@ GUI를 다시 설치하여 원본 스크립트를 복원한 후 다시 시도하
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1226"/>
-        <location filename="mainwindow.cpp" line="1236"/>
-        <location filename="mainwindow.cpp" line="1243"/>
+        <location filename="mainwindow.cpp" line="1223"/>
+        <location filename="mainwindow.cpp" line="1233"/>
+        <location filename="mainwindow.cpp" line="1240"/>
         <source>Copy PNG</source>
         <translation>PNG 복사</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="989"/>
         <location filename="mainwindow.cpp" line="998"/>
-        <location filename="mainwindow.cpp" line="1227"/>
-        <location filename="mainwindow.cpp" line="1237"/>
-        <location filename="mainwindow.cpp" line="1244"/>
+        <location filename="mainwindow.cpp" line="1224"/>
+        <location filename="mainwindow.cpp" line="1234"/>
+        <location filename="mainwindow.cpp" line="1241"/>
         <source>Could not copy %1 to %2</source>
         <translation>%1을(를) %2(으)로 복사할 수 없습니다</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1269"/>
+        <location filename="mainwindow.cpp" line="1266"/>
         <source>Invalid PNG</source>
         <translation>잘못된 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1270"/>
+        <location filename="mainwindow.cpp" line="1267"/>
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -588,58 +596,57 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 배경과 OS 아이콘은 실제 PNG 이미지여야 합니다(.png 확장자만 있는 파일이 아니라).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1543"/>
+        <location filename="mainwindow.cpp" line="1540"/>
         <source>Check For Update</source>
         <translation>업데이트 확인</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1546"/>
+        <location filename="mainwindow.cpp" line="1543"/>
         <source>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;최초 GUI 제작자: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;테스트와 QA를 맡아 준 Deck Wizard에게 특별히 감사드립니다&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard 듀얼 부팅 튜토리얼&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1595"/>
+        <location filename="mainwindow.cpp" line="1592"/>
         <source>&lt;p align=&apos;center&apos;&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;업데이트 확인에 실패했습니다. 인터넷 연결을 확인한 후 다시 시도하세요.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1598"/>
+        <location filename="mainwindow.cpp" line="1595"/>
         <source>&lt;p align=&apos;center&apos;&gt;An update is available &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;업데이트가 있습니다. &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;여기&lt;/a&gt;에서 받을 수 있습니다&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1602"/>
+        <location filename="mainwindow.cpp" line="1599"/>
         <source>&lt;p align=&apos;center&apos;&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;업데이트가 없습니다. 최신 버전을 사용 중입니다.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1612"/>
-        <location filename="mainwindow.cpp" line="1619"/>
+        <location filename="mainwindow.cpp" line="1609"/>
+        <location filename="mainwindow.cpp" line="1616"/>
         <source>systemd service</source>
         <translation>systemd 서비스</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1613"/>
-        <location filename="mainwindow.cpp" line="1620"/>
+        <location filename="mainwindow.cpp" line="1610"/>
+        <location filename="mainwindow.cpp" line="1617"/>
         <source>Failed to launch the service toggle.</source>
         <translation>서비스 전환을 시작하지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1626"/>
-        <location filename="mainwindow.cpp" line="1633"/>
+        <location filename="mainwindow.cpp" line="1623"/>
+        <location filename="mainwindow.cpp" line="1630"/>
         <source>Background Randomizer</source>
         <translation>배경 무작위 변경</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1627"/>
-        <location filename="mainwindow.cpp" line="1634"/>
-        <location filename="mainwindow.cpp" line="1675"/>
-        <location filename="mainwindow.cpp" line="1682"/>
+        <location filename="mainwindow.cpp" line="1624"/>
+        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1670"/>
+        <location filename="mainwindow.cpp" line="1677"/>
         <source>Failed to launch the randomizer setup.</source>
         <translation>무작위 배경 설정을 시작하지 못했습니다.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1644"/>
         <source>The themes-install script was NOT run:
 
 %1
@@ -647,7 +654,7 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation>테마 설치 스크립트가 실행되지 않았습니다:
+        <translation type="vanished">테마 설치 스크립트가 실행되지 않았습니다:
 
 %1
 
@@ -656,12 +663,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 GUI를 다시 설치(SteamOS에서는 install-GUI.sh 재실행)하여 스크립트를 설치하거나 복원한 후 다시 시도하세요.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1660"/>
+        <location filename="mainwindow.cpp" line="1655"/>
         <source>The themes were installed successfully.</source>
         <translation>테마가 성공적으로 설치되었습니다.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1661"/>
+        <location filename="mainwindow.cpp" line="1656"/>
         <source>The themes were installed successfully.
 
 %1</source>
@@ -670,12 +677,12 @@ GUI를 다시 설치(SteamOS에서는 install-GUI.sh 재실행)하여 스크립�
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1665"/>
+        <location filename="mainwindow.cpp" line="1660"/>
         <source>Installing the themes failed (code %1).</source>
         <translation>테마 설치에 실패했습니다(코드 %1).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1666"/>
+        <location filename="mainwindow.cpp" line="1661"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
@@ -684,13 +691,13 @@ GUI를 다시 설치(SteamOS에서는 install-GUI.sh 재실행)하여 스크립�
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1674"/>
-        <location filename="mainwindow.cpp" line="1681"/>
+        <location filename="mainwindow.cpp" line="1669"/>
+        <location filename="mainwindow.cpp" line="1676"/>
         <source>Theme Randomizer</source>
         <translation>테마 무작위 변경</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1689"/>
+        <location filename="mainwindow.cpp" line="1684"/>
         <source>Failed to open %1 in the file manager.</source>
         <translation>파일 관리자에서 %1을(를) 열지 못했습니다.</translation>
     </message>
@@ -708,10 +715,24 @@ GUI를 다시 설치(SteamOS에서는 install-GUI.sh 재실행)하여 스크립�
         <translation>powershell.exe를 시작할 수 없습니다.</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="334"/>
-        <location filename="platform.cpp" line="374"/>
+        <location filename="platform.cpp" line="331"/>
         <source>sudo could not be started.</source>
         <translation>sudo를 시작할 수 없습니다.</translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="370"/>
+        <source>missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="385"/>
+        <source>%1 (expected version %2, found: %3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="392"/>
+        <source>%1 (the passwordless sudo rule for &apos;%2&apos; is not installed)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

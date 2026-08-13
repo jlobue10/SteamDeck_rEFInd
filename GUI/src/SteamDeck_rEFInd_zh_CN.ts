@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.cpp" line="1688"/>
+        <location filename="mainwindow.cpp" line="1683"/>
         <source>Open Folder</source>
         <translation>打开文件夹</translation>
     </message>
@@ -280,9 +280,9 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
-        <location filename="mainwindow.cpp" line="1643"/>
+        <location filename="mainwindow.cpp" line="1640"/>
+        <location filename="mainwindow.cpp" line="1653"/>
         <location filename="mainwindow.cpp" line="1658"/>
-        <location filename="mainwindow.cpp" line="1663"/>
         <source>Install Themes</source>
         <translation>安装主题</translation>
     </message>
@@ -342,9 +342,9 @@
     <message>
         <location filename="mainwindow.ui" line="1119"/>
         <location filename="mainwindow.cpp" line="1174"/>
-        <location filename="mainwindow.cpp" line="1192"/>
-        <location filename="mainwindow.cpp" line="1198"/>
-        <location filename="mainwindow.cpp" line="1203"/>
+        <location filename="mainwindow.cpp" line="1189"/>
+        <location filename="mainwindow.cpp" line="1195"/>
+        <location filename="mainwindow.cpp" line="1200"/>
         <source>Install Config</source>
         <translation>安装配置</translation>
     </message>
@@ -513,14 +513,22 @@ Valid entries: %2</source>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1175"/>
-        <source>The config-install script was NOT run:
+        <location filename="mainwindow.cpp" line="1641"/>
+        <source>The privileged install helper was NOT run:
+
+%1
+
+It is missing or belongs to a different version of the app, so it cannot be run safely.
+
+Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to restore the matching helper, then try again.</source>
+        <oldsource>The config-install script was NOT run:
 
 %1
 
 It does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version — a mismatch means it was modified (possibly tampered with) or belongs to a different version.
 
-Reinstall the GUI to restore the original script, then try again.</source>
-        <translation>配置安装脚本未运行：
+Reinstall the GUI to restore the original script, then try again.</oldsource>
+        <translation type="unfinished">配置安装脚本未运行：
 
 %1
 
@@ -529,18 +537,18 @@ Reinstall the GUI to restore the original script, then try again.</source>
 请重新安装 GUI 以恢复原始脚本，然后重试。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1193"/>
-        <location filename="mainwindow.cpp" line="1205"/>
+        <location filename="mainwindow.cpp" line="1190"/>
+        <location filename="mainwindow.cpp" line="1202"/>
         <source>Installing the config failed (code %1).</source>
         <translation>配置安装失败（代码 %1）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1200"/>
+        <location filename="mainwindow.cpp" line="1197"/>
         <source>The config was installed successfully.</source>
         <translation>配置安装成功。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1201"/>
+        <location filename="mainwindow.cpp" line="1198"/>
         <source>The config was installed successfully.
 
 %1</source>
@@ -549,7 +557,7 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1206"/>
+        <location filename="mainwindow.cpp" line="1203"/>
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -558,28 +566,28 @@ Reinstall the GUI to restore the original script, then try again.</source>
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1226"/>
-        <location filename="mainwindow.cpp" line="1236"/>
-        <location filename="mainwindow.cpp" line="1243"/>
+        <location filename="mainwindow.cpp" line="1223"/>
+        <location filename="mainwindow.cpp" line="1233"/>
+        <location filename="mainwindow.cpp" line="1240"/>
         <source>Copy PNG</source>
         <translation>复制 PNG</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="989"/>
         <location filename="mainwindow.cpp" line="998"/>
-        <location filename="mainwindow.cpp" line="1227"/>
-        <location filename="mainwindow.cpp" line="1237"/>
-        <location filename="mainwindow.cpp" line="1244"/>
+        <location filename="mainwindow.cpp" line="1224"/>
+        <location filename="mainwindow.cpp" line="1234"/>
+        <location filename="mainwindow.cpp" line="1241"/>
         <source>Could not copy %1 to %2</source>
         <translation>无法将 %1 复制到 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1269"/>
+        <location filename="mainwindow.cpp" line="1266"/>
         <source>Invalid PNG</source>
         <translation>无效的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1270"/>
+        <location filename="mainwindow.cpp" line="1267"/>
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -588,58 +596,57 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 背景和系统图标必须是真正的 PNG 图像（而不仅仅是扩展名为 .png 的文件）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1543"/>
+        <location filename="mainwindow.cpp" line="1540"/>
         <source>Check For Update</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1546"/>
+        <location filename="mainwindow.cpp" line="1543"/>
         <source>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;GUI 原作者： &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;特别感谢 Deck Wizard 的测试与质量保证&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard 双系统教程&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1595"/>
+        <location filename="mainwindow.cpp" line="1592"/>
         <source>&lt;p align=&apos;center&apos;&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;检查更新失败。请检查网络连接后重试。&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1598"/>
+        <location filename="mainwindow.cpp" line="1595"/>
         <source>&lt;p align=&apos;center&apos;&gt;An update is available &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;有可用更新，请&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;点击此处&lt;/a&gt;获取&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1602"/>
+        <location filename="mainwindow.cpp" line="1599"/>
         <source>&lt;p align=&apos;center&apos;&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;未发现更新。您使用的已是最新版本。&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1612"/>
-        <location filename="mainwindow.cpp" line="1619"/>
+        <location filename="mainwindow.cpp" line="1609"/>
+        <location filename="mainwindow.cpp" line="1616"/>
         <source>systemd service</source>
         <translation>systemd 服务</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1613"/>
-        <location filename="mainwindow.cpp" line="1620"/>
+        <location filename="mainwindow.cpp" line="1610"/>
+        <location filename="mainwindow.cpp" line="1617"/>
         <source>Failed to launch the service toggle.</source>
         <translation>无法启动服务切换。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1626"/>
-        <location filename="mainwindow.cpp" line="1633"/>
+        <location filename="mainwindow.cpp" line="1623"/>
+        <location filename="mainwindow.cpp" line="1630"/>
         <source>Background Randomizer</source>
         <translation>背景随机更换</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1627"/>
-        <location filename="mainwindow.cpp" line="1634"/>
-        <location filename="mainwindow.cpp" line="1675"/>
-        <location filename="mainwindow.cpp" line="1682"/>
+        <location filename="mainwindow.cpp" line="1624"/>
+        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1670"/>
+        <location filename="mainwindow.cpp" line="1677"/>
         <source>Failed to launch the randomizer setup.</source>
         <translation>无法启动背景随机更换设置。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1644"/>
         <source>The themes-install script was NOT run:
 
 %1
@@ -647,7 +654,7 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 It is missing, or it does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version.
 
 Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, then try again.</source>
-        <translation>主题安装脚本未运行：
+        <translation type="vanished">主题安装脚本未运行：
 
 %1
 
@@ -656,12 +663,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 请重新安装 GUI（在 SteamOS 上重新运行 install-GUI.sh）以安装或恢复它，然后重试。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1660"/>
+        <location filename="mainwindow.cpp" line="1655"/>
         <source>The themes were installed successfully.</source>
         <translation>主题安装成功。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1661"/>
+        <location filename="mainwindow.cpp" line="1656"/>
         <source>The themes were installed successfully.
 
 %1</source>
@@ -670,12 +677,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1665"/>
+        <location filename="mainwindow.cpp" line="1660"/>
         <source>Installing the themes failed (code %1).</source>
         <translation>主题安装失败（代码 %1）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1666"/>
+        <location filename="mainwindow.cpp" line="1661"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
@@ -684,13 +691,13 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1674"/>
-        <location filename="mainwindow.cpp" line="1681"/>
+        <location filename="mainwindow.cpp" line="1669"/>
+        <location filename="mainwindow.cpp" line="1676"/>
         <source>Theme Randomizer</source>
         <translation>主题随机更换</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1689"/>
+        <location filename="mainwindow.cpp" line="1684"/>
         <source>Failed to open %1 in the file manager.</source>
         <translation>无法在文件管理器中打开 %1。</translation>
     </message>
@@ -708,10 +715,24 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
         <translation>无法启动 powershell.exe。</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="334"/>
-        <location filename="platform.cpp" line="374"/>
+        <location filename="platform.cpp" line="331"/>
         <source>sudo could not be started.</source>
         <translation>无法启动 sudo。</translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="370"/>
+        <source>missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="385"/>
+        <source>%1 (expected version %2, found: %3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="392"/>
+        <source>%1 (the passwordless sudo rule for &apos;%2&apos; is not installed)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

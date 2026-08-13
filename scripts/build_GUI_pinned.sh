@@ -58,15 +58,13 @@ podman run --rm -v "$REPO_ROOT:/src:ro" -v "$OUT:/out" "$IMAGE" \
         pacman -Syu --noconfirm --disable-download-timeout > /dev/null
         pacman -S --noconfirm --needed --disable-download-timeout cmake gcc make qt6-base qt6-tools > /dev/null
         pacman -Q glibc qt6-base gcc
-        # Stage GUI/ and scripts/ preserving the repo layout: resources.qrc
-        # embeds the config-install scripts via ../../scripts/ paths.
         mkdir -p /build
         cp -r /src/GUI /build/GUI
-        cp -r /src/scripts /build/scripts
         cd /build/GUI/src && mkdir -p build && cd build
         cmake .. -DCMAKE_BUILD_TYPE=Release > /dev/null
         make -j\$(nproc)
         install -Dm755 SteamDeck_rEFInd /out/SteamDeck_rEFInd
+        install -Dm755 SteamDeck_rEFInd_helper /out/SteamDeck_rEFInd_helper
     "
 
 # The regression this script exists to prevent: a binary that cannot start on
@@ -78,16 +76,20 @@ if ! command -v readelf > /dev/null; then
     echo "Error: readelf (binutils) is required for the ABI check. Aborting." >&2
     exit 1
 fi
-NEED="$(readelf -V "$OUT/SteamDeck_rEFInd" | grep -oE 'Qt_6\.[0-9]+' | sort -uV | tail -1 || true)"
-if [ -z "$NEED" ]; then
-    echo "Error: no Qt version node found in $OUT/SteamDeck_rEFInd; ABI check did not run." >&2
-    exit 1
-fi
-echo -e "\nBuilt $OUT/SteamDeck_rEFInd (requires $NEED)"
-if [ "$(printf '%s\nQt_6.9\n' "$NEED" | sort -V | tail -1)" != "Qt_6.9" ]; then
-    echo "Error: binary requires $NEED, newer than SteamOS's Qt_6.9; it would not start." >&2
-    exit 1
-fi
+# Both binaries link Qt (the helper links QtCore) and would fail on-Deck in
+# exactly the same silent way, so both get the assertion.
+for bin in SteamDeck_rEFInd SteamDeck_rEFInd_helper; do
+    NEED="$(readelf -V "$OUT/$bin" | grep -oE 'Qt_6\.[0-9]+' | sort -uV | tail -1 || true)"
+    if [ -z "$NEED" ]; then
+        echo "Error: no Qt version node found in $OUT/$bin; ABI check did not run." >&2
+        exit 1
+    fi
+    echo -e "\nBuilt $OUT/$bin (requires $NEED)"
+    if [ "$(printf '%s\nQt_6.9\n' "$NEED" | sort -V | tail -1)" != "Qt_6.9" ]; then
+        echo "Error: $bin requires $NEED, newer than SteamOS's Qt_6.9; it would not start." >&2
+        exit 1
+    fi
+done
 
 echo "To install it over the current one:"
 echo "  cp -f $OUT/SteamDeck_rEFInd \$HOME/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd"

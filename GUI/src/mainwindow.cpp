@@ -1170,16 +1170,13 @@ void MainWindow::on_Install_Config_clicked()
 {
     QString badScript;
     if (!Platform::installConfigScriptTrusted(&badScript)) {
-        appendLog(QStringLiteral("install config: refused, untrusted script"), badScript);
+        appendLog(QStringLiteral("install config: refused, helper missing or version mismatch"), badScript);
         QMessageBox::warning(this, tr("Install Config"),
-                             tr("The config-install script was NOT run:\n\n%1\n\n"
-                                "It does not match the copy shipped with this version of the "
-                                "app. Because it runs with root privileges, it is only ever "
-                                "run when it is byte-for-byte the shipped version — a mismatch "
-                                "means it was modified (possibly tampered with) or belongs to "
-                                "a different version.\n\n"
-                                "Reinstall the GUI to restore the original script, then try "
-                                "again.").arg(badScript));
+                             tr("The privileged install helper was NOT run:\n\n%1\n\n"
+                                "It is missing or belongs to a different version of the app, "
+                                "so it cannot be run safely.\n\n"
+                                "Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to "
+                                "restore the matching helper, then try again.").arg(badScript));
         return;
     }
     QString output;
@@ -1638,16 +1635,14 @@ void MainWindow::on_Install_Themes_pushButton_clicked()
 {
     QString badScript;
     if (!Platform::installThemesScriptTrusted(&badScript)) {
-        appendLog(QStringLiteral("install themes: refused, missing or untrusted script"),
+        appendLog(QStringLiteral("install themes: refused, helper missing or version mismatch"),
                   badScript);
         QMessageBox::warning(this, tr("Install Themes"),
-                             tr("The themes-install script was NOT run:\n\n%1\n\n"
-                                "It is missing, or it does not match the copy shipped with "
-                                "this version of the app. Because it runs with root "
-                                "privileges, it is only ever run when it is byte-for-byte "
-                                "the shipped version.\n\n"
+                             tr("The privileged install helper was NOT run:\n\n%1\n\n"
+                                "It is missing or belongs to a different version of the app, "
+                                "so it cannot be run safely.\n\n"
                                 "Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to "
-                                "install or restore it, then try again.").arg(badScript));
+                                "restore the matching helper, then try again.").arg(badScript));
         return;
     }
     QString output;

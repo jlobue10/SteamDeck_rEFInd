@@ -683,6 +683,25 @@ Vuci vàlidi: %2</translation>
         <source>Showtools</source>
         <translation>Showtools</translation>
     </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1175"/>
+        <location filename="mainwindow.cpp" line="1641"/>
+        <source>The privileged install helper was NOT run:
+
+%1
+
+It is missing or belongs to a different version of the app, so it cannot be run safely.
+
+Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to restore the matching helper, then try again.</source>
+        <oldsource>The config-install script was NOT run:
+
+%1
+
+It does not match the copy shipped with this version of the app. Because it runs with root privileges, it is only ever run when it is byte-for-byte the shipped version — a mismatch means it was modified (possibly tampered with) or belongs to a different version.
+
+Reinstall the GUI to restore the original script, then try again.</oldsource>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Platform</name>
@@ -700,6 +719,21 @@ Vuci vàlidi: %2</translation>
         <location filename="platform.cpp" line="155"/>
         <source>The privileged helper is not installed under Program Files.</source>
         <translation>L&apos;aiutanti privileggiatu nun è nstallatu sutta Program Files.</translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="370"/>
+        <source>missing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="385"/>
+        <source>%1 (expected version %2, found: %3)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="392"/>
+        <source>%1 (the passwordless sudo rule for &apos;%2&apos; is not installed)</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

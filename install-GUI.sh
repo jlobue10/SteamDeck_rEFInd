@@ -156,42 +156,32 @@ if ! sudo pacman -U --noconfirm "$INSTALL_PKG"; then
 fi
 rm -f "$INSTALL_PKG"
 
-# Passwordless Install Config: a root-owned, self-contained copy of the
-# config-install script plus a sudoers rule whitelisting exactly that path, so
-# the GUI can run it with `sudo -n` instead of a zenity password prompt. /etc
-# is a persistent overlay on SteamOS (upperdir on /var), so both pieces
-# survive OS updates just like the systemd units above. The script must be
-# installed root-owned BEFORE the rule that whitelists it, and the rule is
-# only installed if visudo validates it -- a broken file in /etc/sudoers.d
-# can lock sudo up entirely.
+# Passwordless Install Config / Install Themes: the pacman package above
+# installed the root-owned helper binary
+# (/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper); the sudoers rule below
+# whitelists exactly its two install subcommands, so the GUI can run them
+# with `sudo -n` and no password prompt. /etc is a persistent overlay on
+# SteamOS (upperdir on /var), so everything here survives OS updates just
+# like the systemd units. The privileged shell scripts of previous versions
+# (config/themes installers, both randomizers, lib_esp_target.sh) are
+# superseded by helper subcommands — remove stale root-owned copies so
+# nothing points at dead code.
 sudo install -d -m 0755 /etc/SteamDeck_rEFInd
-sudo install -o root -g root -m 0755 \
-    "$CURRENT_WD/scripts/install_config_from_GUI_root.sh" \
-    /etc/SteamDeck_rEFInd/install_config_from_GUI.sh
-# The themes installer (the GUI's Install Themes button) follows the exact
-# same passwordless pattern: root-owned self-contained script + a NOPASSWD
-# sudoers line for exactly that path (second line of the same rule file).
-sudo install -o root -g root -m 0755 \
-    "$CURRENT_WD/scripts/install_themes_from_GUI_root.sh" \
-    /etc/SteamDeck_rEFInd/install_themes_from_GUI.sh
+sudo rm -f /etc/SteamDeck_rEFInd/install_config_from_GUI.sh \
+    /etc/SteamDeck_rEFInd/install_themes_from_GUI.sh \
+    /etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh \
+    /etc/SteamDeck_rEFInd/rEFInd_theme_randomizer.sh \
+    /etc/SteamDeck_rEFInd/lib_esp_target.sh
 
-# The two systemd units run these as root on every boot, so they get root-owned
-# copies here too -- executing (or sourcing) a $HOME/.local path from a root
-# unit would let any code running as the desktop user get root at the next boot.
-# The package installs the same files; doing it here as well means the units are
-# safe even when the installed release predates this change.
+# bootnext-refind.service runs this as root on every boot, so it gets a
+# root-owned copy here too -- executing (or sourcing) a $HOME/.local path
+# from a root unit would let any code running as the desktop user get root
+# at the next boot. The package installs the same file; doing it here as
+# well means the unit is safe even when the installed release predates this
+# change.
 sudo install -o root -g root -m 0755 \
     "$CURRENT_WD/scripts/restore_EFI_entries.sh" \
     /etc/SteamDeck_rEFInd/restore_EFI_entries.sh
-sudo install -o root -g root -m 0755 \
-    "$CURRENT_WD/scripts/rEFInd_bg_randomizer.sh" \
-    /etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh
-sudo install -o root -g root -m 0755 \
-    "$CURRENT_WD/scripts/rEFInd_theme_randomizer.sh" \
-    /etc/SteamDeck_rEFInd/rEFInd_theme_randomizer.sh
-sudo install -o root -g root -m 0644 \
-    "$CURRENT_WD/scripts/lib_esp_target.sh" \
-    /etc/SteamDeck_rEFInd/lib_esp_target.sh
 
 # The package's post_install started bootnext-refind.service BEFORE the fresh
 # restore_EFI_entries.sh above replaced the release's copy; if the release

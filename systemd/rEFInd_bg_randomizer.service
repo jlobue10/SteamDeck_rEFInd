@@ -4,12 +4,10 @@ Description=Randomize Background on each rEFInd boot
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-# Root-owned copy on the persistent /etc overlay, NOT the one under
-# /home/deck/.local: a root unit must never execute (or source) a path the
-# desktop user can write, or replacing it is a password-free root escalation.
-# lib_esp_target.sh, which this script sources from its own directory, is
-# installed alongside it there.
-ExecStart=/etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh
+# Root-owned helper binary on the persistent /etc overlay, NOT anything
+# under /home/deck/.local: a root unit must never execute a path the desktop
+# user can write, or replacing that file is a password-free root escalation.
+ExecStart=/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper randomize-background
 
 [Install]
 WantedBy=multi-user.target

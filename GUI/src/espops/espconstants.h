@@ -24,6 +24,11 @@ constexpr const char kHelperEtcPath[] = "/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_
 // diagnostics.
 constexpr const char kInstallerName[] = "install-GUI.sh";
 
+// Root-owned pointer file naming the user's backgrounds directory, written
+// by the installer and read (as data, never sourced) by the background
+// randomizer. Lives on the persistent /etc overlay.
+constexpr const char kBackgroundDirPointer[] = "/etc/SteamDeck_rEFInd/background-dir";
+
 // "Running system's ESP" fallback mountpoints, in preference order, for
 // when NVRAM resolution finds nothing (first install, not yet booted
 // through rEFInd). /esp first on the Deck. Null-terminated.
