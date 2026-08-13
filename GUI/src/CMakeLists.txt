@@ -219,6 +219,13 @@ if(BUILD_GUI_TESTS AND NOT WIN32)
     add_executable(tst_randomize tests/tst_randomize.cpp)
     target_link_libraries(tst_randomize PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME randomize COMMAND tst_randomize)
+
+    # Includes espresolve_linux.cpp directly (anonymous-namespace helpers),
+    # so it compiles that file's dependencies instead of linking espops.
+    add_executable(tst_espresolve tests/tst_espresolve.cpp espops/loadoption.cpp)
+    target_include_directories(tst_espresolve PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(tst_espresolve PRIVATE Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME espresolve COMMAND tst_espresolve)
 endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)

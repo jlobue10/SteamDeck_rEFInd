@@ -129,8 +129,13 @@ QString mountPointOf(const QString &devicePath)
     QFile mounts(QStringLiteral("/proc/self/mounts"));
     if (!mounts.open(QIODevice::ReadOnly))
         return QString();
-    while (!mounts.atEnd()) {
-        const QString line = QString::fromLocal8Bit(mounts.readLine());
+    // No atEnd() here: procfs files report size 0, so QFile::atEnd() is
+    // true before the first read and would skip the whole file.
+    for (;;) {
+        const QByteArray raw = mounts.readLine();
+        if (raw.isEmpty())
+            break;
+        const QString line = QString::fromLocal8Bit(raw);
         const QStringList cols = line.split(QLatin1Char(' '));
         if (cols.size() < 2 || !cols.at(0).startsWith(QLatin1String("/dev/")))
             continue;
