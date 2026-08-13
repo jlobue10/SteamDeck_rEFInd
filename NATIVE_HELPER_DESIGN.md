@@ -460,3 +460,30 @@ Cross-repo: rEFInd_GUI implements first (it is the parity source for shared
 code already); this repo ports by copying `espops/` + `helper/` and
 re-applying the constants header — the same workflow the `osdetect_*` files
 use today.
+
+## 7. Verification runbook
+
+Development continues on the CachyOS desktop in the sibling rEFInd_GUI repo
+— see §7 of its NATIVE_HELPER_DESIGN.md for the Linux + MSYS2 runbook; port
+fixes here by copying the parity-locked files (espops/, helper/, tests/)
+and re-applying nothing (espconstants.h stays this repo's own).
+
+Deck-specific pass once rEFInd_GUI verification is done:
+
+- `scripts/build_GUI_pinned.sh` must produce BOTH binaries and pass the
+  Qt_6.9 assertion on each.
+- Manual test install on the Deck (install-GUI.sh installs release
+  packages, so place the branch build by hand): helper →
+  `/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper` (root:root 0755), the
+  new sudoers lines via `visudo -cf` → 0440, repointed randomizer units,
+  `background-dir` pointer already present from earlier installs.
+- Check: version handshake; passwordless `sudo -n` under SteamOS's
+  /etc/sudoers.d/wheel ordering; Install Config/Themes land on the ESP the
+  firmware boots (SD-card/Windows-side installs are the critical case);
+  both randomizers across two reboots; `bootnext-refind.service` untouched
+  and healthy; a SteamOS update survival check if feasible (/etc overlay
+  keeps helper + sudoers, GUI's ~/.local copy keeps running).
+- Then the same §7.3 cleanup as rEFInd_GUI (Windows/GUI/*.ps1 deletions
+  incl. `bootnext_refind_task.ps1`, Inno bootnext-checkbox rework,
+  SignPath config, CLAUDE.md/README rewrites, version bump, release, full
+  qa/DECK_QA_CHECKLIST.md pass).
