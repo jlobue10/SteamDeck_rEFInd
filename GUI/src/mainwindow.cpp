@@ -32,7 +32,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.4.0";
+static const char APP_VERSION[] = "3.4.1";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -1042,9 +1042,13 @@ void MainWindow::on_Create_Config_clicked()
             return;
     }
 
+    // Deliberately no QIODevice::Text: the same selections must stage the
+    // same bytes on Windows and Linux (rEFInd reads either line ending, and
+    // the Windows build's CRLF only made byte-comparisons between the two
+    // builds' installed configs fail).
     QSaveFile conf(guiConfigDir + "/refind.conf");
     conf.setDirectWriteFallback(false);
-    if (!conf.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!conf.open(QIODevice::WriteOnly)) {
         QMessageBox::critical(this, tr("Create Config"),
                               tr("Could not write %1").arg(conf.fileName()));
         return;

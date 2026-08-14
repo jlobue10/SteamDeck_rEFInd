@@ -9,6 +9,14 @@
 // loss), assets and the optional themes/active_theme.conf publish before
 // refind.conf, and the previous refind.conf is preserved as
 // refind.conf.prev through its own same-directory staging file.
+//
+// After publishing, a refind.conf.origin sidecar records who installed the
+// live config (product, platform, version, sha256, timestamp), and each
+// install reads the outgoing config's sidecar to note in its output when
+// it is replacing another GUI's install or a hand-edited config -- one
+// live config is shared by every installer that can reach the ESP, and
+// without the note two GUIs used alternately silently undo each other's
+// changes while both report success.
 
 #ifndef ESPOPS_CONFIGINSTALL_H
 #define ESPOPS_CONFIGINSTALL_H
@@ -46,6 +54,10 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
 // points at themes/active_theme.conf), everything else lands next to
 // refind.conf. Exposed for tests.
 QString destDirFor(const QString &fileName, const QString &refindDir);
+
+// The platform tag this build writes into refind.conf.origin ("Linux" or
+// "Windows"). Exposed for tests.
+const char *originPlatformName();
 
 } // namespace EspOps
 

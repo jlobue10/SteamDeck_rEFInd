@@ -144,11 +144,26 @@ while read -r dev parttype partuuid; do
         if [ -f "$mp/EFI/refind/refind.conf" ]; then
             sha256sum "$mp/EFI/refind/refind.conf"
             if [ -f "$SRC_DIR/refind.conf" ]; then
+                # Compare exact bytes first, then with line endings
+                # normalized: pre-3.4.1 Windows builds staged CRLF, so a
+                # CRLF-only difference means the other OS's GUI installed
+                # the same config -- content-wise a match, and exactly the
+                # cross-GUI overwrite the origin sidecar below attributes.
                 if cmp -s "$mp/EFI/refind/refind.conf" "$SRC_DIR/refind.conf"; then
                     echo ">>> refind.conf here MATCHES the staged source"
+                elif cmp -s <(tr -d '\r' < "$mp/EFI/refind/refind.conf") \
+                            <(tr -d '\r' < "$SRC_DIR/refind.conf"); then
+                    echo ">>> refind.conf here MATCHES the staged source except line endings (same config installed by the other OS's GUI)"
                 else
                     echo ">>> refind.conf here DIFFERS from the staged source"
                 fi
+            fi
+            # Who last installed this copy (written by >= 3.4.1 installers).
+            if [ -f "$mp/EFI/refind/refind.conf.origin" ]; then
+                echo "-- refind.conf.origin:"
+                grep -v '^#' "$mp/EFI/refind/refind.conf.origin"
+            else
+                echo "no refind.conf.origin (installed by a pre-3.4.1 version, or hand-placed)"
             fi
         else
             echo "no refind.conf in EFI/refind"

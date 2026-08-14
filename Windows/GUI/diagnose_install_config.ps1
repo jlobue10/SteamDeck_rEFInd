@@ -232,8 +232,28 @@ try {
                     if ($espHash -eq $srcHash) {
                         Write-Host '>>> refind.conf here MATCHES the staged source'
                     } else {
-                        Write-Host '>>> refind.conf here DIFFERS from the staged source'
+                        # Compare again with line endings normalized:
+                        # pre-3.4.1 Windows builds staged CRLF, so a
+                        # CRLF-only difference means the other OS's GUI
+                        # installed the same config -- content-wise a
+                        # match, and exactly the cross-GUI overwrite the
+                        # origin sidecar below attributes.
+                        $espText = ([System.IO.File]::ReadAllText($espConf)) -replace "`r", ''
+                        $srcText = ([System.IO.File]::ReadAllText($SrcConf)) -replace "`r", ''
+                        if ($espText -ceq $srcText) {
+                            Write-Host ">>> refind.conf here MATCHES the staged source except line endings (same config installed by the other OS's GUI)"
+                        } else {
+                            Write-Host '>>> refind.conf here DIFFERS from the staged source'
+                        }
                     }
+                }
+                # Who last installed this copy (written by >= 3.4.1 installers).
+                $originFile = Join-Path $refindDir 'refind.conf.origin'
+                if (Test-Path -LiteralPath $originFile) {
+                    Write-Host '-- refind.conf.origin:'
+                    Get-Content -LiteralPath $originFile | Where-Object { $_ -notmatch '^#' } | Write-Host
+                } else {
+                    Write-Host 'no refind.conf.origin (installed by a pre-3.4.1 version, or hand-placed)'
                 }
             } else {
                 Write-Host 'no refind.conf in EFI\refind'
