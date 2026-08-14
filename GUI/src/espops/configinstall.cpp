@@ -5,8 +5,11 @@
 // see familiar diagnostics. Change behavior only in both repos together.
 
 #include "configinstall.h"
+#include "espconstants.h"
 #include "userio.h"
 
+#include <QCryptographicHash>
+#include <QDateTime>
 #include <QDir>
 #include <QFile>
 #include <QMap>
@@ -37,7 +40,50 @@ const char *const kFiles[] = {
 // grind through ESP space first. Far above any real config/PNG.
 const qint64 kMaxSourceBytes = Q_INT64_C(256) * 1024 * 1024;
 
+// Sidecar recording which GUI last published refind.conf. One live config
+// is shared by every installer that can reach this ESP -- this product's
+// Linux and Windows builds, and on a dual-boot Deck the sibling product's
+// -- and each of them publishes its own independently generated copy, so
+// two GUIs used alternately silently undo each other's changes while both
+// report success (diagnosed on hardware, 2026-08-14). The record turns
+// that into a visible note at the next install. Informational only:
+// nothing keys behavior off it, and a missing or stale sidecar never
+// fails an install.
+const char kOriginFile[] = "refind.conf.origin";
+
+// Key=value lines; '#' comments and blank lines are skipped, and the
+// trim also strips a CRLF tail (the sidecar itself is written with LF,
+// but nothing guarantees what a hand edit leaves behind).
+QMap<QString, QString> readOriginFile(const QString &path)
+{
+    QMap<QString, QString> kv;
+    QFile f(path);
+    if (!f.open(QIODevice::ReadOnly))
+        return kv;
+    const QList<QByteArray> lines = f.readAll().split('\n');
+    for (const QByteArray &raw : lines) {
+        const QByteArray line = raw.trimmed();
+        if (line.isEmpty() || line.startsWith('#'))
+            continue;
+        const int eq = line.indexOf('=');
+        if (eq <= 0)
+            continue;
+        kv.insert(QString::fromUtf8(line.left(eq)),
+                  QString::fromUtf8(line.mid(eq + 1)));
+    }
+    return kv;
+}
+
 } // namespace
+
+const char *originPlatformName()
+{
+#ifdef Q_OS_WIN
+    return "Windows";
+#else
+    return "Linux";
+#endif
+}
 
 QString destDirFor(const QString &fileName, const QString &refindDir)
 {
@@ -76,7 +122,8 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
     QStringList sweepNames;
     for (const char *f : kFiles)
         sweepNames << QString::fromLatin1(f);
-    sweepNames << QStringLiteral("refind.conf.prev");
+    sweepNames << QStringLiteral("refind.conf.prev")
+               << QString::fromLatin1(kOriginFile);
     for (const QString &f : sweepNames) {
         QDir d(destDirFor(f, refindDir));
         const QStringList stale = d.entryList(
@@ -145,9 +192,11 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
     }
 
     // Preserve the rollback config through its own same-directory staging
-    // file (a straight copy could be truncated by a full ESP).
+    // file (a straight copy could be truncated by a full ESP), hashing the
+    // live bytes on the way through for the origin check below.
     const QString liveConf = refindDir + QLatin1String("/refind.conf");
     if (QFile::exists(liveConf)) {
+        QCryptographicHash liveHash(QCryptographicHash::Sha256);
         QString backupName;
         bool ok = false;
         {
@@ -166,8 +215,10 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
                 while (ok && !src.atEnd()) {
                     const QByteArray chunk = src.read(1 << 16);
                     ok = !chunk.isEmpty() || src.atEnd();
-                    if (!chunk.isEmpty())
+                    if (!chunk.isEmpty()) {
                         ok = backup.write(chunk) == chunk.size() && ok;
+                        liveHash.addData(chunk);
+                    }
                 }
                 ok = ok && backup.flush();
                 backup.close();
@@ -181,6 +232,44 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
                         {QStringLiteral("Could not preserve the previous "
                                         "refind.conf; the live config was not "
                                         "changed.")});
+        }
+
+        // Who wrote the config being replaced? The sidecar plus the hash of
+        // the live bytes distinguishes our own previous install (silent, the
+        // normal case) from another GUI's install and from a hand edit. No
+        // sidecar at all stays silent too -- that is every install over a
+        // pre-sidecar version.
+        const QMap<QString, QString> origin = readOriginFile(
+            refindDir + QLatin1Char('/') + QLatin1String(kOriginFile));
+        if (!origin.isEmpty()) {
+            const QString liveSha =
+                QString::fromLatin1(liveHash.result().toHex());
+            const bool sameInstaller =
+                origin.value(QStringLiteral("product"))
+                    == QLatin1String(kProductName)
+                && origin.value(QStringLiteral("platform"))
+                    == QLatin1String(originPlatformName());
+            if (origin.value(QStringLiteral("sha256")) != liveSha) {
+                out.lines
+                    << QStringLiteral(
+                           "Note: the config being replaced is not the one "
+                           "%1 (%2) last installed -- it was changed by hand "
+                           "or by another tool since.")
+                           .arg(origin.value(QStringLiteral("product")),
+                                origin.value(QStringLiteral("platform")));
+            } else if (!sameInstaller) {
+                out.lines
+                    << QStringLiteral(
+                           "Note: the config being replaced was installed by "
+                           "%1 (%2) on %3.")
+                           .arg(origin.value(QStringLiteral("product")),
+                                origin.value(QStringLiteral("platform")),
+                                origin.value(QStringLiteral("installed")))
+                    << QStringLiteral(
+                           "Each GUI publishes its own generated config -- "
+                           "installing from that one again will overwrite "
+                           "the config installed now.");
+            }
         }
     }
 
@@ -204,6 +293,54 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
         return fail(5,
                     {QStringLiteral("Failed while publishing refind.conf; the "
                                     "previous config is still active.")});
+    }
+
+    // Record this install in the origin sidecar. Best-effort: the config is
+    // already live, so a failure here must not fail the install -- it only
+    // costs the next install its attribution note.
+    QString publishedSha;
+    {
+        QFile published(liveConf);
+        QCryptographicHash hash(QCryptographicHash::Sha256);
+        if (published.open(QIODevice::ReadOnly) && hash.addData(&published))
+            publishedSha = QString::fromLatin1(hash.result().toHex());
+    }
+    bool originOk = !publishedSha.isEmpty();
+    if (originOk) {
+        const QByteArray record =
+            QStringLiteral("# Written by %1's config installer -- records "
+                           "which GUI last published refind.conf.\n"
+                           "# Informational only; safe to delete.\n"
+                           "product=%1\n"
+                           "platform=%2\n"
+                           "version=%3\n"
+                           "sha256=%4\n"
+                           "installed=%5\n")
+                .arg(QLatin1String(kProductName),
+                     QLatin1String(originPlatformName()),
+                     QLatin1String(ESPOPS_APP_VERSION), publishedSha,
+                     QDateTime::currentDateTime().toString(Qt::ISODate))
+                .toUtf8();
+        QString stagedOrigin;
+        {
+            QTemporaryFile stage(refindDir
+                                 + QStringLiteral("/.%1.new.XXXXXX")
+                                       .arg(QLatin1String(kOriginFile)));
+            stage.setAutoRemove(false);
+            originOk = stage.open() && stage.write(record) == record.size()
+                && stage.flush();
+            stagedOrigin = stage.fileName();
+        }
+        originOk = originOk
+            && publishRename(stagedOrigin, refindDir + QLatin1Char('/')
+                                               + QLatin1String(kOriginFile));
+        if (!originOk && !stagedOrigin.isEmpty())
+            QFile::remove(stagedOrigin);
+    }
+    if (!originOk) {
+        out.lines << QStringLiteral("Note: could not record this install in "
+                                    "%1 (the install itself succeeded).")
+                         .arg(QLatin1String(kOriginFile));
     }
 
     out.exitCode = 0;

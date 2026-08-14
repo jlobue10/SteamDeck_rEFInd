@@ -4,8 +4,10 @@
 // EFI/refind dir, with DirectUserFiles substituting the fork/setuid reader.
 
 #include "espops/configinstall.h"
+#include "espops/espconstants.h"
 #include "espops/userio.h"
 
+#include <QCryptographicHash>
 #include <QtTest>
 
 #ifdef Q_OS_UNIX
@@ -117,6 +119,84 @@ private slots:
         QCOMPARE(readBack("refind.conf.prev"), QByteArrayLiteral("old config\n"));
     }
 
+    void originSidecarWritten()
+    {
+        writeSrc("refind.conf", "timeout 5\n");
+        const InstallOutcome o = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(o.exitCode, 0);
+        const QByteArray origin = readBack("refind.conf.origin");
+        QVERIFY(origin.contains("product=" + QByteArray(kProductName)));
+        QVERIFY(origin.contains("platform=" + QByteArray(originPlatformName())));
+        // sha256 of the published bytes, so the next install can tell a
+        // hand edit from this publish.
+        const QByteArray sha =
+            QCryptographicHash::hash(QByteArrayLiteral("timeout 5\n"),
+                                     QCryptographicHash::Sha256)
+                .toHex();
+        QVERIFY2(origin.contains("sha256=" + sha), origin.constData());
+        // Replacing our own untouched install stays silent.
+        writeSrc("refind.conf", "timeout 10\n");
+        const InstallOutcome again = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(again.exitCode, 0);
+        QVERIFY2(!again.lines.join('\n').contains("Note:"),
+                 qPrintable(again.lines.join('\n')));
+    }
+
+    void crossInstallerReplacementNoted()
+    {
+        QVERIFY(QDir().mkpath(refindDir()));
+        {
+            QFile old(refindDir() + "/refind.conf");
+            QVERIFY(old.open(QIODevice::WriteOnly));
+            old.write("their config\n");
+        }
+        const QByteArray theirSha =
+            QCryptographicHash::hash(QByteArrayLiteral("their config\n"),
+                                     QCryptographicHash::Sha256)
+                .toHex();
+        {
+            QFile origin(refindDir() + "/refind.conf.origin");
+            QVERIFY(origin.open(QIODevice::WriteOnly));
+            origin.write("# comment\nproduct=Other_GUI\nplatform=Windows\n"
+                         "installed=2026-08-14T10:15:00\nsha256="
+                         + theirSha + "\n");
+        }
+        writeSrc("refind.conf", "our config\n");
+        const InstallOutcome o = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(o.exitCode, 0);
+        const QString all = o.lines.join('\n');
+        QVERIFY2(all.contains("installed by Other_GUI (Windows) "
+                              "on 2026-08-14T10:15:00"),
+                 qPrintable(all));
+        // The sidecar now names this build as the installer.
+        QVERIFY(readBack("refind.conf.origin")
+                    .contains("product=" + QByteArray(kProductName)));
+    }
+
+    void handEditedReplacementNoted()
+    {
+        QVERIFY(QDir().mkpath(refindDir()));
+        {
+            QFile old(refindDir() + "/refind.conf");
+            QVERIFY(old.open(QIODevice::WriteOnly));
+            old.write("edited by hand\n");
+        }
+        {
+            QFile origin(refindDir() + "/refind.conf.origin");
+            QVERIFY(origin.open(QIODevice::WriteOnly));
+            // Our own product/platform, but a sha that no longer matches
+            // the live bytes.
+            origin.write(QByteArray("product=") + kProductName + "\nplatform="
+                         + originPlatformName() + "\nsha256=" + QByteArray(64, '0')
+                         + "\n");
+        }
+        writeSrc("refind.conf", "new\n");
+        const InstallOutcome o = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(o.exitCode, 0);
+        QVERIFY2(o.lines.join('\n').contains("changed by hand or by another tool"),
+                 qPrintable(o.lines.join('\n')));
+    }
+
     void staleStagingSwept()
     {
         QVERIFY(QDir().mkpath(refindDir() + "/themes"));
@@ -124,6 +204,7 @@ private slots:
         for (const QString &p :
              {refindDir() + "/.refind.conf.new.abc123",
               refindDir() + "/.background.png.new.zz",
+              refindDir() + "/.refind.conf.origin.new.k7",
               refindDir() + "/themes/.active_theme.conf.new.q"}) {
             QFile f(p);
             QVERIFY(f.open(QIODevice::WriteOnly));
@@ -140,6 +221,7 @@ private slots:
         QCOMPARE(o.exitCode, 0);
         QVERIFY(!QFile::exists(refindDir() + "/.refind.conf.new.abc123"));
         QVERIFY(!QFile::exists(refindDir() + "/.background.png.new.zz"));
+        QVERIFY(!QFile::exists(refindDir() + "/.refind.conf.origin.new.k7"));
         QVERIFY(!QFile::exists(refindDir() + "/themes/.active_theme.conf.new.q"));
         QVERIFY(QFile::exists(refindDir() + "/.refind.conf.mine"));
     }

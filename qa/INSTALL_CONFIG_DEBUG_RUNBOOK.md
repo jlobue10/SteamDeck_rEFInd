@@ -1,5 +1,10 @@
 # Install Config "no effect at boot" — hardware debug runbook
 
+> **RESOLVED 2026-08-14 — see §10.** No resolver or publish bug: the Deck
+> and Windows GUIs were overwriting each other's installed config during
+> alternating test cycles. Kept as a worked example of using the
+> diagnostics; §1–§9 are the investigation as it ran.
+
 For the v3.4.0 report that Install Config shows a success dialog on both
 the Deck and Windows, but changes (including boot-entry/order changes,
 which no theme include can mask) never appear on the boot screen.
@@ -212,3 +217,48 @@ sudo sh -c 'cp ~deck/.local/SteamDeck_rEFInd/GUI/background.png \
 Caveat: if the §1 diagnostic shows the booting rEFInd is somewhere else
 (fallback `EFI/BOOT`, SD card, …), copy there instead — blind `/esp`
 writes are exactly the historical failure the resolver was built to end.
+
+## 10. Outcome (2026-08-14, OLED Deck, v3.4.0 both OSes)
+
+**No live bug in the install chain.** Every hypothesis in §6 was ruled out
+on hardware with the §1 diagnostic:
+
+- Single ESP-typed partition (`nvme0n1p1`), the same one `Boot0007
+  rEFInd` points at; every logged install chose tier 1 and wrote there.
+- `EFI/BOOT/bootx64.efi` is Valve's steamcl fallback (2025-dated), not a
+  rEFInd — no fallback-path install.
+- rEFInd demonstrably ran and read the just-installed config:
+  `vars/PreviousBoot` was written seconds before the session's boot, and
+  the live `refind.conf` matched the staged source byte-for-byte.
+
+**The actual mechanism**: `refind.conf.prev` — which `configinstall.cpp`
+writes as a copy of the live config taken at publish time — from a
+10:19:06 install was the staged config **with CRLF line endings**: the
+Windows GUI's rendition (its pre-3.4.1 staging wrote `\r\n`). The reboot
+history (`last -x reboot shutdown`) showed the only window it could have
+been published in was a ~3-minute Windows session between the Deck GUI's
+10:13:20 install and the 10:17:00 SteamOS boot — the maintainer confirmed
+running Install Config from Windows in the gaps. So each side's install
+truthfully reported success while replacing the other side's config;
+whenever the two sides' staged configs differ (i.e. whenever a change is
+being tested on one side), the change never survives to the next look at
+the boot menu.
+
+**Fixes shipped from this** (rEFInd_GUI PR #90 + this repo's companion,
+released as 3.4.1):
+
+- `installConfigSet` publishes a `refind.conf.origin` sidecar
+  (product/platform/version/sha256/timestamp) and notes in the install
+  output when the config it replaces was installed by another GUI or
+  changed by hand — the silent clobber is now a visible, attributed event.
+- Create Config stages LF on both platforms (no more `QIODevice::Text`),
+  so identical selections produce identical bytes across builds.
+- Both diagnostics in this repo now report "MATCHES except line endings
+  (same config installed by the other OS's GUI)" as its own verdict —
+  during this investigation the plain `cmp` reported the Windows twin as
+  `DIFFERS`, which §4's table would have misread — and print the origin
+  sidecar when present.
+
+The captured NVRAM dump and the CRLF-twin `.prev` remain in the report
+files (`~/refind-diag-deck-before.txt`) as fixtures if the resolver ever
+needs them.

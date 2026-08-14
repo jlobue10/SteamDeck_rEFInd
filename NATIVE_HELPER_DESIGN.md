@@ -273,6 +273,22 @@ semantics:
   staged `active_theme.conf` (into `themes/`, per `dest_dir_for()`) publish
   before `refind.conf`, `refind.conf.prev` backup, `sync` before temp
   mounts go away.
+- **Install origin sidecar** (added after the 2026-08-14 on-hardware
+  diagnosis of "Install Config succeeds but nothing changes at boot" —
+  `qa/INSTALL_CONFIG_DEBUG_RUNBOOK.md` §10): after publishing, the
+  installer writes `refind.conf.origin` next to the config — key=value
+  lines recording product, platform, version, the sha256 of the published
+  bytes, and a timestamp. One live config is shared by every installer
+  that can reach the ESP (this product's Deck and Windows builds; also the
+  sibling rEFInd_GUI's), and each publishes its own independently
+  generated copy, so two GUIs used alternately silently undo each other's
+  changes while both report success. Each install therefore reads the
+  outgoing config's sidecar and appends a `Note:` to its output when the
+  config it replaces was installed by a different product/platform (sha
+  matches, identity differs) or was modified since its recorded install
+  (sha differs). Informational only: no sidecar → no note (every install
+  over a pre-sidecar version), a failed sidecar write never fails the
+  install, and nothing keys behavior off the file.
 - **Read-only probe mounts**: un-mounted ESPs are probed
   `ro,nosuid,nodev,noexec` via exec of absolute-path `/usr/bin/mount`
   (parity with the scripts; no libmount dependency), only the chosen target
