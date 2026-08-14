@@ -1,8 +1,22 @@
 # Native helper consolidation — design
 
-Status: **Linux implemented on this branch; Windows compile + unit tests
-pass, hardware QA pending (Linux hardware run on the Deck also pending —
-rEFInd_GUI's §7.1 verified the shared Linux code on a CachyOS desktop).**
+Status: **Windows verified (compile, unit tests, and hardware QA in the
+lead repo); Deck-side Linux hardware run still pending — rEFInd_GUI's
+§7.1 verified the shared Linux code on a CachyOS desktop.**
+Windows hardware QA was run in rEFInd_GUI (Windows 11 desktop,
+2026-08-14) on the shared `espops`/`wintasks` code this repo carries
+byte-identical: Install Config / Install Themes resolve NVRAM-first and
+publish to the live ESP (staged set byte-identical on the ESP,
+`refind.conf.prev` written, no staging residue, no orphaned mount
+points); native COM Scheduled-Task registration reproduces the wrappers'
+settings exactly (HighestAvailable, InteractiveToken, LogonTrigger,
+battery settings, IgnoreNew, PT5M) and is idempotent on re-register and
+unregister; `bootnext` set BootNext to the rEFInd entry; the
+`randomize-theme` payload rotated themes on the real ESP over six runs
+with anti-repeat holding. The temp-mount-path leak into user-facing
+messages found there is fixed here too (`platform.cpp`). Not yet
+exercised anywhere: the multi-ESP stale-shadow case (the QA desktop has
+a single ESP) — a Deck with Windows on an SD card is the natural test.
 Windows compile pass (Windows 11 / MSYS2 UCRT64, 2026-08-14, ported from
 rEFInd_GUI's §7.2 run): `SteamDeck_rEFInd.exe` and
 `SteamDeck_rEFInd_helper.exe` build warning-free with the four fixes made

@@ -187,6 +187,21 @@ static int runEspInstallInProcess(QString *output, const char *noun,
     const EspOps::InstallOutcome o = action(files, srcDir, target.refindDir);
     if (output) {
         *output = o.lines.join(QLatin1Char('\n'));
+        // A letterless ESP is mounted on a private temp directory for the
+        // duration of the write, so espops' messages name a path that no
+        // longer exists by the time the user reads them (and reads as "it
+        // installed into Temp"). Present the ESP itself instead. The
+        // themes subdirectory is substituted first — replacing the parent
+        // first would leave a mixed "...target ESP/themes" tail.
+        if (!target.refindDir.isEmpty()) {
+            output->replace(target.refindDir + QLatin1String("/themes"),
+                            QCoreApplication::translate(
+                                "Platform",
+                                "EFI\\refind\\themes on the target ESP"));
+            output->replace(target.refindDir,
+                            QCoreApplication::translate(
+                                "Platform", "EFI\\refind on the target ESP"));
+        }
         if (o.exitCode == 0)
             *output += QStringLiteral("\n(chosen as %1)").arg(target.how);
     }
