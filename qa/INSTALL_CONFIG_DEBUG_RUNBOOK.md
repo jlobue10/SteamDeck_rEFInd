@@ -81,3 +81,134 @@ step 2 appear?** Revert the change in the GUI afterwards either way
 Attach all four capture files (`…-before.txt` / `…-after.txt` from both
 OSes) plus the noted dialog lines. The NVRAM dump in them doubles as the
 regression fixture for whatever fix comes out of this.
+
+---
+
+Everything below exists so the investigation can be **finished on the
+device** without the session that produced this branch.
+
+## 6. State of the investigation (handoff)
+
+Symptom (maintainer, Steam Deck OLED, released v3.4.0 on both OSes):
+Install Config shows the success dialog on the Deck **and** on Windows,
+but no change — including boot-entry/order changes — ever appears at
+boot. Boot-entry changes cannot be masked by a theme include, so the
+booting rEFInd is reading a different `refind.conf` than the one being
+written.
+
+Ruled out off-hardware (don't re-investigate these):
+
+- **The staged ESP publish** (`GUI/src/espops/configinstall.cpp`) — unit
+  tested (all six suites green) and exercised end-to-end in a container
+  (root helper + `SUDO_USER` + fake ESP → correct install, exit 0).
+- **The invocation chain** — sudoers template matches the exact argument
+  vectors the GUI runs; version handshake passes (released GUI and helper
+  both embed 3.4.0); dialog/exit-code plumbing audited on both platforms.
+- **The release artifacts** — v3.4.0 pkg contains the helper root-owned at
+  `etc/SteamDeck_rEFInd/`, both binaries need nothing newer than `Qt_6.9`
+  (no pre-`main()` linker abort), Windows deploy ships the helper exe.
+- **Parity skew** — `espops/` + `helper/main.cpp` are byte-identical with
+  rEFInd_GUI HEAD; `espconstants.h` diffs are all intentional.
+
+Established context:
+
+- NVRAM-first ESP targeting is not new in 3.4.0: the bash version shipped
+  in **v3.1.2** (2026-07-26) and the native resolver is a step-for-step
+  port of it (compared tier by tier). If Install Config last visibly
+  worked before 3.1.2, the misbehavior may span 3.1.2–3.3.0 unnoticed.
+- The Deck was **never** part of the hardware verification for this code
+  (rEFInd_GUI NATIVE_HELPER_DESIGN §7.3: Linux verified on a CachyOS
+  desktop only; the Windows pass also ran on the dev machine).
+
+Open hypotheses, in order (the §4 table maps diagnostic output to them):
+
+1. rEFInd actually boots from the fallback path `EFI/BOOT/bootx64.efi`
+   (own `refind.conf` beside it) while installs land in `EFI/refind/`.
+2. Two rEFInd installs on different ESP-typed partitions; NVRAM boots one,
+   the resolver verified-and-wrote the other.
+3. Resolver tier fell through (dialog's `(chosen as …)` says "an ESP
+   containing rEFInd" or "the running system's ESP" instead of "the ESP in
+   the firmware's rEFInd boot entry") and picked a shadow copy.
+
+Code map for the fix, wherever the data points:
+
+- Linux resolver: `GUI/src/espops/espresolve_linux.cpp` —
+  `EspResolver::resolve()` (the three tiers), `refindEspGuidFromNvram()`,
+  `mountPointOf()`/`ensureMounted()`.
+- Windows resolver: `GUI/src/espops/espresolve_win.cpp` — same shape.
+- Shared NVRAM matching: `GUI/src/espops/loadoption.cpp` —
+  `parseLoadOption()`, `loaderLooksLikeRefind()`.
+- Tests: `GUI/src/tests/` (`cmake -DBUILD_GUI_TESTS=ON`, then `ctest`);
+  add the captured NVRAM entry bytes as a `tst_loadoption`/`tst_espresolve`
+  fixture.
+- **Parity rule**: these files are byte-locked with the sibling rEFInd_GUI
+  repo (the implementation lead). Land the fix there, byte-copy `espops/` +
+  `helper/main.cpp` here, re-apply nothing (`espconstants.h` stays this
+  repo's own).
+
+Deck OLED specifics to expect in the diagnostic: DMI product name
+`Galileo`; internal disk `nvme0n1`; **three** ESP-typed partitions on a
+stock Deck — `nvme0n1p1` (label `esp`, where rEFInd lives) plus `efi-A`/
+`efi-B` (SteamOS's A/B `steamcl` partitions, also ESP-typed) — more with
+an SD card inserted. `/esp` and `/efi` are systemd automounts (the
+diagnostic triggers them itself).
+
+## 7. Getting this branch onto the Deck
+
+```
+cd ~ && git clone --branch claude/steamdeck-refind-install-debug-3utkvj --single-branch \
+    https://github.com/jlobue10/SteamDeck_rEFInd SteamDeck_rEFInd-debug
+```
+
+Clone to `~/SteamDeck_rEFInd-debug`, NOT `~/SteamDeck_rEFInd` — the
+release installer owns that path and `rm -rf`s it on every run.
+
+## 8. Applying a candidate fix on the Deck
+
+SteamOS has no compiler; build on any machine with podman using the
+pinned toolchain (this matters — an unpinned build links a newer Qt and
+aborts on-Deck before `main()`):
+
+```
+scripts/build_GUI_pinned.sh          # writes build-pinned/SteamDeck_rEFInd + _helper,
+                                     # asserts Qt <= 6.9 on BOTH binaries
+```
+
+- **Resolver fixes need only the helper** (ESP resolution runs behind sudo
+  on Linux). Hand-place it over the release copy:
+
+  ```
+  sudo install -o root -g root -m 0755 build-pinned/SteamDeck_rEFInd_helper \
+      /etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper
+  ```
+
+  The version handshake stays green as long as the branch's `project
+  VERSION` stays 3.4.0 (the installed release GUI expects exactly that
+  from `helper --version`). The sudoers rule from the release install
+  keeps matching — the path and argument vectors are unchanged.
+- GUI-side fixes: also replace the copy the desktop entry runs,
+  `~/.local/SteamDeck_rEFInd/GUI/SteamDeck_rEFInd` (the `/usr/bin` copy is
+  optional — a SteamOS update wipes it anyway).
+- Windows-side fixes: the in-process resolver lives in the GUI exe —
+  rebuild in MSYS2 UCRT64 and replace
+  `%ProgramFiles%\SteamDeck_rEFInd\SteamDeck_rEFInd.exe` (elevated), or
+  build the full installer via `Windows/GUI/assemble-deploy.sh` + Inno.
+- Re-run the §2 exercise after placing a fix; §1's diagnostics confirm
+  where the write landed.
+
+## 9. Immediate unblock (no fix required)
+
+If the boot menu must be corrected today regardless of diagnosis, the
+pre-3.1.2 manual path still works for a rEFInd that lives on the Deck's
+own ESP:
+
+```
+ls /esp/. > /dev/null    # trigger the automount
+sudo cp ~/.local/SteamDeck_rEFInd/GUI/refind.conf /esp/efi/refind/refind.conf
+sudo sh -c 'cp ~deck/.local/SteamDeck_rEFInd/GUI/background.png \
+    ~deck/.local/SteamDeck_rEFInd/GUI/os_icon*.png /esp/efi/refind/' 2>/dev/null
+```
+
+Caveat: if the §1 diagnostic shows the booting rEFInd is somewhere else
+(fallback `EFI/BOOT`, SD card, …), copy there instead — blind `/esp`
+writes are exactly the historical failure the resolver was built to end.
