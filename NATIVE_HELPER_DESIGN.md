@@ -501,6 +501,14 @@ Development continues on the CachyOS desktop in the sibling rEFInd_GUI repo
 fixes here by copying the parity-locked files (espops/, helper/, tests/)
 and re-applying nothing (espconstants.h stays this repo's own).
 
+If Install Config reports success but the boot screen never changes, run
+the read-only diagnostics first — `scripts/diagnose_install_config.sh`
+(sudo, on the Deck) and `Windows/GUI/diagnose_install_config.ps1`
+(elevated, on Windows). Each one names the ESP the resolver's NVRAM tiers
+would pick, hashes every on-ESP copy of refind.conf against the staged
+source, and flags a fallback `EFI/BOOT/bootx64.efi` rEFInd that a config
+written to `EFI/refind` can never reach.
+
 Deck-specific pass once rEFInd_GUI verification is done:
 
 - `scripts/build_GUI_pinned.sh` must produce BOTH binaries and pass the
