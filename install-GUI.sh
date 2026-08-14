@@ -60,18 +60,17 @@ if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
     exit 1
 fi
 
-# Check out the tag matching the package being installed. The GUI refuses to run
-# the config-install scripts unless they hash-match the copies embedded in the
-# binary at build time, so staging main-branch scripts next to a release binary
-# makes Install Config fail as "possibly tampered with" for every user the
-# moment either script changes after a release.
+# Check out the tag matching the package being installed, so the staged
+# scripts and assets are the ones the released binary expects. (The GUI's
+# privileged actions are version-handshaked against the packaged helper
+# binary, not hash-checked against these scripts any more, but staging
+# main-branch files next to a release binary is still asking for skew.)
 if [ -n "$VERSION" ] && [ "$VERSION" != "null" ]; then
     if git fetch --depth 1 origin "refs/tags/$VERSION:refs/tags/$VERSION" >/dev/null 2>&1 &&
         git checkout -q "$VERSION" >/dev/null 2>&1; then
         printf 'Staging scripts from tag %s.\n' "$VERSION"
     else
         echo "Warning: could not check out $VERSION; staging main-branch scripts instead." >&2
-        echo "If Install Config later reports the script as modified, that is why." >&2
     fi
 fi
 
@@ -241,7 +240,7 @@ if sudo visudo -cf "$CURRENT_WD/sudoers_rule.tmp" > /dev/null 2>&1; then
     echo "Enabled passwordless config install for $INSTALL_USER."
 else
     echo "Warning: the generated sudoers rule failed visudo validation and was NOT installed." >&2
-    echo "Install Config will fall back to asking for your sudo password." >&2
+    echo "Install Config and Install Themes will refuse to run until it is (re-run this installer)." >&2
 fi
 rm -f "$CURRENT_WD/sudoers_rule.tmp"
 
