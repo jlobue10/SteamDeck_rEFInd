@@ -21,6 +21,10 @@
 
 namespace EspOps {
 
+// Overwrite-capable rename for staged publishes (mv -f semantics on both
+// platforms; files only). Shared by configinstall and the randomizers.
+bool publishRename(const QString &from, const QString &to);
+
 struct UserFileEntry
 {
     QString relPath; // relative to the listed directory, '/'-separated

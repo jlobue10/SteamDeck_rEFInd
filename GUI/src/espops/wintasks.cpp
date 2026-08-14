@@ -142,12 +142,11 @@ bool setLogonTask(const QString &taskName, const QString &exePath,
 
     ComPtr<IRegisteredTask> registered;
     {
-        VARIANT nobody;
+        VARIANT nobody; // VT_EMPTY serves for userId, password, and sddl
         VariantInit(&nobody);
-        Bstr sddl(QString());
         if (FAILED(root->RegisterTaskDefinition(
                 name, task.p, TASK_CREATE_OR_UPDATE, nobody, nobody,
-                TASK_LOGON_INTERACTIVE_TOKEN, sddl, &registered)))
+                TASK_LOGON_INTERACTIVE_TOKEN, nobody, &registered)))
             return false;
     }
     // Run once now so enabling has an immediate effect, like the wrappers'

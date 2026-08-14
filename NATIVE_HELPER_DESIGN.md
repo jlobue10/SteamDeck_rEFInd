@@ -1,6 +1,25 @@
 # Native helper consolidation — design
 
-Status: **Linux implemented on this branch; Windows port pending.**
+Status: **Linux implemented on this branch; Windows compile + unit tests
+pass, hardware QA pending (Linux hardware run on the Deck also pending —
+rEFInd_GUI's §7.1 verified the shared Linux code on a CachyOS desktop).**
+Windows compile pass (Windows 11 / MSYS2 UCRT64, 2026-08-14, ported from
+rEFInd_GUI's §7.2 run): `SteamDeck_rEFInd.exe` and
+`SteamDeck_rEFInd_helper.exe` build warning-free with the four fixes made
+in the lead repo and copied here parity-locked: (1) `wintasks.cpp` passed
+a BSTR where `RegisterTaskDefinition` takes a VARIANT sddl (VT_EMPTY
+serves); (2) MinGW resolves the Task Scheduler CLSID/IIDs from
+`libtaskschd.a`, not libuuid — `taskschd` added to espops' link libs;
+(3) `std::rename` on UCRT refuses to overwrite, so staged publishes over
+a live file exited 5 — the shared `publishRename` (in `userio.cpp`, used
+by configinstall and the randomizers) uses
+`MoveFileExW(MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)` on
+Windows; (4) `QTemporaryFile` keeps its native handle open after
+`close()` and Windows cannot rename an open file — the config-backup
+block and `publishStaged` destruct the QTemporaryFile before publishing.
+The four platform-neutral test suites were un-gated from `NOT WIN32` and
+pass on Windows (`ctest`: 4/4); `helper --version` prints 3.3.0 and usage
+lists the Windows `bootnext` subcommand.
 Phases 1-3 are done for Linux: the espops library, the helper binary, both
 sudo-gated installs, both randomizers, the version handshake, the
 exact-argument sudoers rules, unit repointing, installer/packaging updates,

@@ -37,15 +37,6 @@ const char *const kFiles[] = {
 // grind through ESP space first. Far above any real config/PNG.
 const qint64 kMaxSourceBytes = Q_INT64_C(256) * 1024 * 1024;
 
-// mv -f semantics: QFile::rename refuses to overwrite, so publishing goes
-// through std::rename, which replaces the destination on POSIX and NTFS.
-bool publishRename(const QString &from, const QString &to)
-{
-    return std::rename(QFile::encodeName(from).constData(),
-                       QFile::encodeName(to).constData())
-        == 0;
-}
-
 } // namespace
 
 QString destDirFor(const QString &fileName, const QString &refindDir)
@@ -157,26 +148,34 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
     // file (a straight copy could be truncated by a full ESP).
     const QString liveConf = refindDir + QLatin1String("/refind.conf");
     if (QFile::exists(liveConf)) {
-        QTemporaryFile backup(refindDir
-                              + QStringLiteral("/.refind.conf.prev.new.XXXXXX"));
-        backup.setAutoRemove(false);
-        bool ok = backup.open();
-        if (ok) {
-            stagedPaths << backup.fileName();
-            QFile src(liveConf);
-            ok = src.open(QIODevice::ReadOnly);
-            while (ok && !src.atEnd()) {
-                const QByteArray chunk = src.read(1 << 16);
-                ok = !chunk.isEmpty() || src.atEnd();
-                if (!chunk.isEmpty())
-                    ok = backup.write(chunk) == chunk.size() && ok;
+        QString backupName;
+        bool ok = false;
+        {
+            // Scoped: QTemporaryFile keeps its native handle open even after
+            // close() (name reservation), and Windows cannot rename a file
+            // with an open handle — destruct before publishing.
+            QTemporaryFile backup(
+                refindDir + QStringLiteral("/.refind.conf.prev.new.XXXXXX"));
+            backup.setAutoRemove(false);
+            ok = backup.open();
+            if (ok) {
+                backupName = backup.fileName();
+                stagedPaths << backupName;
+                QFile src(liveConf);
+                ok = src.open(QIODevice::ReadOnly);
+                while (ok && !src.atEnd()) {
+                    const QByteArray chunk = src.read(1 << 16);
+                    ok = !chunk.isEmpty() || src.atEnd();
+                    if (!chunk.isEmpty())
+                        ok = backup.write(chunk) == chunk.size() && ok;
+                }
+                ok = ok && backup.flush();
+                backup.close();
             }
-            ok = ok && backup.flush();
-            backup.close();
-            ok = ok
-                && publishRename(backup.fileName(),
-                                 refindDir + QLatin1String("/refind.conf.prev"));
         }
+        ok = ok
+            && publishRename(backupName,
+                             refindDir + QLatin1String("/refind.conf.prev"));
         if (!ok) {
             return fail(5,
                         {QStringLiteral("Could not preserve the previous "

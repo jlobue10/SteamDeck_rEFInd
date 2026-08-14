@@ -55,6 +55,9 @@ int usage(FILE *to)
                  "  install-themes        install the staged theme trees onto the ESP\n"
                  "  randomize-background  pick a random boot background (boot/logon service)\n"
                  "  randomize-theme       pick a random installed theme (boot/logon service)\n"
+#ifdef Q_OS_WIN
+                 "  bootnext              set NVRAM BootNext to the rEFInd entry\n"
+#endif
                  "  --version             print the helper version and exit\n",
                  EspOps::kProductName, ESPOPS_APP_VERSION);
     return 64;

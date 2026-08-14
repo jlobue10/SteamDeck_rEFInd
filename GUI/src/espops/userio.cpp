@@ -3,9 +3,16 @@
 #include "userio.h"
 
 #include <QBuffer>
+#include <QDir>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
+
+#include <cstdio>
+
+#ifdef Q_OS_WIN
+#include <qt_windows.h>
+#endif
 
 #ifdef Q_OS_UNIX
 #include <cerrno>
@@ -38,6 +45,28 @@ bool nameIsClean(const QByteArray &name)
 }
 
 } // namespace
+
+// mv -f semantics for staged publishes: QFile::rename refuses to overwrite,
+// and on Windows so does std::rename (UCRT fails with EEXIST) — hence
+// MoveFileExW with MOVEFILE_REPLACE_EXISTING there; POSIX rename() replaces
+// natively. Files only — MOVEFILE_REPLACE_EXISTING cannot replace
+// directories (themesinstall's directory swaps rename to *absent* names, so
+// they stay on plain std::rename).
+bool publishRename(const QString &from, const QString &to)
+{
+#ifdef Q_OS_WIN
+    const QString f = QDir::toNativeSeparators(from);
+    const QString t = QDir::toNativeSeparators(to);
+    return MoveFileExW(reinterpret_cast<const wchar_t *>(f.utf16()),
+                       reinterpret_cast<const wchar_t *>(t.utf16()),
+                       MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)
+        != 0;
+#else
+    return std::rename(QFile::encodeName(from).constData(),
+                       QFile::encodeName(to).constData())
+        == 0;
+#endif
+}
 
 // --------------------------------------------------------------------------
 // DirectUserFiles — for contexts already running as the user.

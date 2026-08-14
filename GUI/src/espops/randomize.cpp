@@ -56,19 +56,24 @@ bool publishStaged(const QString &dir, const QString &name,
         for (const QString &s : stale)
             QFile::remove(d.filePath(s));
     }
-    QTemporaryFile stage(dir + QStringLiteral("/.%1.XXXXXX").arg(name));
-    stage.setAutoRemove(false);
-    if (!stage.open())
-        return false;
-    if (stage.write(content) != content.size() || !stage.flush()) {
-        stage.remove();
-        return false;
+    QString stageName;
+    {
+        // Scoped: QTemporaryFile keeps its native handle open even after
+        // close() (name reservation), and Windows cannot rename a file with
+        // an open handle — destruct before publishing.
+        QTemporaryFile stage(dir + QStringLiteral("/.%1.XXXXXX").arg(name));
+        stage.setAutoRemove(false);
+        if (!stage.open())
+            return false;
+        stageName = stage.fileName();
+        if (stage.write(content) != content.size() || !stage.flush()) {
+            stage.remove();
+            return false;
+        }
+        stage.close();
     }
-    stage.close();
-    if (std::rename(QFile::encodeName(stage.fileName()).constData(),
-                    QFile::encodeName(dir + QLatin1Char('/') + name).constData())
-        != 0) {
-        QFile::remove(stage.fileName());
+    if (!publishRename(stageName, dir + QLatin1Char('/') + name)) {
+        QFile::remove(stageName);
         return false;
     }
     return true;

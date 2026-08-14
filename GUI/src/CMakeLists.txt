@@ -152,9 +152,10 @@ target_link_libraries(espops PUBLIC Qt${QT_VERSION_MAJOR}::Core)
 if(WIN32)
     # advapi32: OpenProcessToken/AdjustTokenPrivileges for the
     # SeSystemEnvironmentPrivilege enable in espresolve_win.cpp.
-    # ole32/oleaut32/uuid: Task Scheduler COM in wintasks.cpp (uuid carries
-    # CLSID_TaskScheduler/IID_* for MinGW builds).
-    target_link_libraries(espops PUBLIC advapi32 ole32 oleaut32 uuid)
+    # ole32/oleaut32: Task Scheduler COM in wintasks.cpp; taskschd carries
+    # CLSID_TaskScheduler/IID_ITaskService/IID_IExecAction on MinGW (they
+    # are NOT in libuuid); uuid still supplies the generic COM IIDs.
+    target_link_libraries(espops PUBLIC advapi32 ole32 oleaut32 taskschd uuid)
 endif()
 target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network espops)
 
@@ -192,17 +193,14 @@ install(TARGETS SteamDeck_rEFInd
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-# Optional developer unit tests (Linux only; OFF so packaging builds are
-# unaffected): cmake -DBUILD_GUI_TESTS=ON, then ctest --test-dir <builddir>.
+# Optional developer unit tests (OFF so packaging builds are unaffected):
+# cmake -DBUILD_GUI_TESTS=ON, then ctest --test-dir <builddir>. The four
+# espops suites are platform-neutral (POSIX-only cases QSKIP on Windows);
+# osdetect/espresolve compile Linux-only sources and stay Linux-gated.
 option(BUILD_GUI_TESTS "Build the developer unit tests" OFF)
-if(BUILD_GUI_TESTS AND NOT WIN32)
+if(BUILD_GUI_TESTS)
     enable_testing()
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Test)
-    add_executable(tst_osdetect tests/tst_osdetect.cpp osdetect_common.cpp osdetect_linux.cpp platform.cpp)
-    target_include_directories(tst_osdetect PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(tst_osdetect PRIVATE
-        Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets espops)
-    add_test(NAME osdetect COMMAND tst_osdetect)
 
     add_executable(tst_loadoption tests/tst_loadoption.cpp)
     target_link_libraries(tst_loadoption PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
@@ -220,12 +218,20 @@ if(BUILD_GUI_TESTS AND NOT WIN32)
     target_link_libraries(tst_randomize PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME randomize COMMAND tst_randomize)
 
-    # Includes espresolve_linux.cpp directly (anonymous-namespace helpers),
-    # so it compiles that file's dependencies instead of linking espops.
-    add_executable(tst_espresolve tests/tst_espresolve.cpp espops/loadoption.cpp)
-    target_include_directories(tst_espresolve PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-    target_link_libraries(tst_espresolve PRIVATE Qt${QT_VERSION_MAJOR}::Test)
-    add_test(NAME espresolve COMMAND tst_espresolve)
+    if(NOT WIN32)
+        add_executable(tst_osdetect tests/tst_osdetect.cpp osdetect_common.cpp osdetect_linux.cpp platform.cpp)
+        target_include_directories(tst_osdetect PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+        target_link_libraries(tst_osdetect PRIVATE
+            Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets espops)
+        add_test(NAME osdetect COMMAND tst_osdetect)
+
+        # Includes espresolve_linux.cpp directly (anonymous-namespace helpers),
+        # so it compiles that file's dependencies instead of linking espops.
+        add_executable(tst_espresolve tests/tst_espresolve.cpp espops/loadoption.cpp)
+        target_include_directories(tst_espresolve PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+        target_link_libraries(tst_espresolve PRIVATE Qt${QT_VERSION_MAJOR}::Test)
+        add_test(NAME espresolve COMMAND tst_espresolve)
+    endif()
 endif()
 
 if(QT_VERSION_MAJOR EQUAL 6)
