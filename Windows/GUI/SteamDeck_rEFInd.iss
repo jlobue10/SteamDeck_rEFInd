@@ -57,6 +57,17 @@ Name: "bootnexttask"; Description: "Keep rEFInd first: set rEFInd as the &next b
 Source: "..\..\deploy\*"; DestDir: "{app}"; Flags: recursesubdirs createallsubdirs ignoreversion
 
 [InstallDelete]
+; Scripts superseded by the helper binary. Inno only adds and overwrites, so
+; without these an upgrade would leave the old privileged .ps1 files behind
+; in {app}\windows - dead code that no longer matches the shipped binary.
+Type: files; Name: "{app}\windows\install_config_from_GUI.ps1"
+Type: files; Name: "{app}\windows\install_themes_from_GUI.ps1"
+Type: files; Name: "{app}\windows\rEFInd_bg_randomizer.ps1"
+Type: files; Name: "{app}\windows\rEFInd_theme_randomizer.ps1"
+Type: files; Name: "{app}\windows\rEFInd_bg_randomizer_task.ps1"
+Type: files; Name: "{app}\windows\rEFInd_theme_randomizer_task.ps1"
+Type: files; Name: "{app}\windows\bootnext_refind_task.ps1"
+Type: files; Name: "{app}\windows\uefi_refind.ps1"
 ; Pre-3.x installed the app itself into %LOCALAPPDATA%\SteamDeck_rEFInd
 ; (per-user). Its self-elevating exe and privileged helper scripts must not
 ; stay runnable from the user-writable data directory, so remove the legacy
@@ -92,23 +103,30 @@ Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; WorkingDir: "{app
 Name: "{localappdata}\SteamDeck_rEFInd\GUI\backgrounds"; Filename: "{localappdata}\SteamDeck_rEFInd\backgrounds"
 
 [Run]
-; Preserve an enabled legacy task while moving its elevated action out of the
-; user-writable data directory.
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\rEFInd_bg_randomizer_task.ps1"" -Migrate"; Flags: runhidden waituntilterminated
+; Upgrades: tasks registered by an older version run .ps1 wrappers that no
+; longer ship, so re-point every one the user had enabled at the helper exe
+; (and convert the pre-3.x names). Creates nothing that wasn't enabled.
+Filename: "{app}\SteamDeck_rEFInd_helper.exe"; Parameters: "migrate-tasks"; Flags: runhidden waituntilterminated
 ; Opt-in bootnext task (see [Tasks] above).
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\bootnext_refind_task.ps1"" -Enable"; Tasks: bootnexttask; Flags: runhidden waituntilterminated
+Filename: "{app}\SteamDeck_rEFInd_helper.exe"; Parameters: "enable-logon-task bootnext"; Tasks: bootnexttask; Flags: runhidden waituntilterminated
 ; unchecked: don't launch the GUI by default when the installer finishes.
 Filename: "{app}\{#AppExe}"; Description: "Launch {#AppName}"; Flags: nowait postinstall skipifsilent runascurrentuser unchecked
 
 [UninstallRun]
 ; Undo the rEFInd boot entry and ESP files before the app files disappear.
 Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\uninstall_rEFInd.ps1"""; Flags: shellexec waituntilterminated; Verb: runas; RunOnceId: "UninstallRefind"; Check: ShouldRemoveRefind
-; Unconditional: the scheduled tasks execute scripts under {app}\windows, which
+; Unconditional: the scheduled tasks execute the helper under {app}, which
 ; this uninstall removes, so they must be unregistered even when rEFInd itself
 ; is kept bootable (uninstall_rEFInd.ps1 above only runs on a full removal).
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\bootnext_refind_task.ps1"" -Disable"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveBootnextTask"
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\rEFInd_theme_randomizer_task.ps1"" -Disable"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveThemeRandTask"
-Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\windows\rEFInd_bg_randomizer_task.ps1"" -Disable"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveBgRandTask"
+; Deleting needs no battery settings, so schtasks is enough here (registration
+; is the part that requires the Task Scheduler COM API); a missing task just
+; makes schtasks exit nonzero, which is harmless. The pre-3.x names are
+; included so an ancient install leaves nothing behind.
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""SteamDeck_rEFInd_bootnext"" /F"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveBootnextTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""SteamDeck_rEFInd_theme_randomizer"" /F"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveThemeRandTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""SteamDeck_rEFInd_bg_randomizer"" /F"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveBgRandTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""rEFInd_bg_randomizer"" /F"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveLegacyBgRandTask"
+Filename: "{sys}\schtasks.exe"; Parameters: "/Delete /TN ""rEFInd Boot Sequence"" /F"; Flags: runhidden waituntilterminated; RunOnceId: "RemoveLegacyBootSeqTask"
 
 [UninstallDelete]
 ; The app generates data the uninstaller's manifest doesn't cover (the

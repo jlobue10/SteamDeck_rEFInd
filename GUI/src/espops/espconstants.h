@@ -29,6 +29,42 @@ constexpr const char kInstallerName[] = "install-GUI.sh";
 // randomizer. Lives on the persistent /etc overlay.
 constexpr const char kBackgroundDirPointer[] = "/etc/SteamDeck_rEFInd/background-dir";
 
+// Windows only. The at-logon Scheduled Tasks this product manages: the
+// suffix appended to kProductName for the task name, and the helper
+// subcommand the task runs. Null-terminated. `migrate-tasks` re-points
+// every one of these that already exists at the installed helper exe.
+// The bootnext task is the Windows counterpart of the Deck's
+// bootnext-refind.service and has no rEFInd_GUI equivalent.
+struct LogonTaskSpec
+{
+    const char *nameSuffix;
+    const char *subcommand;
+};
+inline constexpr LogonTaskSpec kLogonTasks[] = {
+    {"_bg_randomizer", "randomize-background"},
+    {"_theme_randomizer", "randomize-theme"},
+    {"_bootnext", "bootnext"},
+    {nullptr, nullptr},
+};
+
+// Windows only. Task names registered by earlier versions, whose action ran
+// a .ps1 wrapper that no longer ships. On upgrade each one that still exists
+// is re-registered under its current name and then unregistered, so an
+// enabled feature survives instead of silently failing at every logon.
+// "rEFInd Boot Sequence" is the pre-2.3.1 bcdedit task from the Dual Boot
+// Fix zip that the bootnext task superseded. Null-terminated.
+struct LegacyLogonTask
+{
+    const char *oldName;
+    const char *newNameSuffix;
+    const char *subcommand;
+};
+inline constexpr LegacyLogonTask kLegacyLogonTasks[] = {
+    {"rEFInd_bg_randomizer", "_bg_randomizer", "randomize-background"},
+    {"rEFInd Boot Sequence", "_bootnext", "bootnext"},
+    {nullptr, nullptr, nullptr},
+};
+
 // "Running system's ESP" fallback mountpoints, in preference order, for
 // when NVRAM resolution finds nothing (first install, not yet booted
 // through rEFInd). /esp first on the Deck. Null-terminated.

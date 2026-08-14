@@ -11,6 +11,7 @@
 #include "loadoption.h"
 
 #include <QDir>
+#include <QSet>
 
 #include <qt_windows.h>
 #include <taskschd.h>
@@ -158,6 +159,85 @@ bool setLogonTask(const QString &taskName, const QString &exePath,
         registered->Run(nothing, &running);
     }
     return true;
+}
+
+bool logonTaskExists(const QString &taskName)
+{
+    ComScope com;
+    if (FAILED(com.hr) && com.hr != RPC_E_CHANGED_MODE)
+        return false;
+    ComPtr<ITaskService> service;
+    if (FAILED(CoCreateInstance(CLSID_TaskScheduler, nullptr,
+                                CLSCTX_INPROC_SERVER, IID_ITaskService,
+                                reinterpret_cast<void **>(&service))))
+        return false;
+    VARIANT empty;
+    VariantInit(&empty);
+    if (FAILED(service->Connect(empty, empty, empty, empty)))
+        return false;
+    ComPtr<ITaskFolder> root;
+    {
+        Bstr rootPath(QStringLiteral("\\"));
+        if (FAILED(service->GetFolder(rootPath, &root)))
+            return false;
+    }
+    ComPtr<IRegisteredTask> task;
+    Bstr name(taskName);
+    return SUCCEEDED(root->GetTask(name, &task)) && task;
+}
+
+int migrateLogonTasks(const QString &helperExe, QStringList *warnings)
+{
+    int migrated = 0;
+    const QString product = QString::fromLatin1(kProductName);
+    QSet<QString> done; // names the legacy pass already re-pointed
+
+    // Tasks registered by a previous version under an older name: recreate
+    // under the current name first, then drop the old one. Names handled
+    // here are skipped by the current-name pass below.
+    for (const LegacyLogonTask *t = kLegacyLogonTasks; t->oldName; ++t) {
+        const QString oldName = QString::fromLatin1(t->oldName);
+        if (!logonTaskExists(oldName))
+            continue;
+        const QString newName = product + QLatin1String(t->newNameSuffix);
+        if (!setLogonTask(newName, helperExe,
+                          QString::fromLatin1(t->subcommand), true)) {
+            if (warnings)
+                warnings->append(
+                    QStringLiteral("could not re-register '%1' as '%2'; "
+                                   "re-enable it in the app")
+                        .arg(oldName, newName));
+            continue;
+        }
+        if (!setLogonTask(oldName, helperExe,
+                          QString::fromLatin1(t->subcommand), false)
+            && warnings) {
+            warnings->append(
+                QStringLiteral("could not remove the superseded task '%1'")
+                    .arg(oldName));
+        }
+        done.insert(newName);
+        ++migrated;
+    }
+
+    // Current-name tasks whose action still points at a .ps1 wrapper that no
+    // longer ships: CREATE_OR_UPDATE re-points them at the helper.
+    for (const LogonTaskSpec *t = kLogonTasks; t->nameSuffix; ++t) {
+        const QString name = product + QLatin1String(t->nameSuffix);
+        if (done.contains(name) || !logonTaskExists(name))
+            continue;
+        if (!setLogonTask(name, helperExe, QString::fromLatin1(t->subcommand),
+                          true)) {
+            if (warnings)
+                warnings->append(
+                    QStringLiteral("could not re-point '%1' at the helper; "
+                                   "re-enable it in the app")
+                        .arg(name));
+            continue;
+        }
+        ++migrated;
+    }
+    return migrated;
 }
 
 int bootNextToRefind(QStringList *warnings)

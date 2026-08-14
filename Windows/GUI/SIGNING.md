@@ -30,6 +30,8 @@ configuration". Create two:
 
 - **`deploy-contents`** — signs the files inside the uploaded `deploy` folder:
   - `SteamDeck_rEFInd.exe` (Authenticode / PE)
+  - `SteamDeck_rEFInd_helper.exe` (Authenticode / PE) — the privileged helper
+    the Scheduled Tasks run; it must be signed for the same reason the GUI is
   - `windows/*.ps1` (Authenticode / PowerShell)
 - **`installer`** — signs the single uploaded `SteamDeck_rEFInd-<ver>-setup.exe`
   (Authenticode / PE).

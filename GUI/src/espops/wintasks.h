@@ -28,6 +28,17 @@ namespace EspOps {
 bool setLogonTask(const QString &taskName, const QString &exePath,
                   const QString &subcommand, bool enable);
 
+// True when an at-logon task with this name is registered.
+bool logonTaskExists(const QString &taskName);
+
+// Upgrade path (NATIVE_HELPER_DESIGN.md §4): re-point every task listed in
+// espconstants.h's kLogonTasks that already exists at `helperExe`, and
+// convert each surviving kLegacyLogonTasks entry to its current name. A
+// task the user never enabled is NOT created. Returns the number of tasks
+// migrated; problems are appended to *warnings and are not failures (the
+// installer must not abort over a cosmetic feature).
+int migrateLogonTasks(const QString &helperExe, QStringList *warnings);
+
 // The bootnext payload: set NVRAM BootNext to the firmware's rEFInd entry
 // (found by loader path first, exact "rEFInd" label second — the same walk
 // as ESP resolution). Cosmetic at-logon semantics: "no rEFInd entry" warns
