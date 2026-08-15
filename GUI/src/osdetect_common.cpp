@@ -219,14 +219,17 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
 
     for (const Partition &p : partitions) {
         // Removable media recognized by well-known labels, ESP-typed or not.
+        // The stanza still references the volume by partition GUID: rEFInd can
+        // drop a label-matched stanza even with the medium present, and the
+        // GUID is unique where labels need not be.
         if (p.label.compare(QLatin1String("BATOCERA"), Qt::CaseInsensitive) == 0) {
             addUnique({QStringLiteral("Batocera"), QStringLiteral("Batocera"),
-                       QStringLiteral("/EFI/BOOT/bootx64.efi"), QStringLiteral("BATOCERA"), false});
+                       QStringLiteral("/EFI/BOOT/bootx64.efi"), espVolumeId(p), false});
             continue;
         }
         if (p.label.compare(QLatin1String("VTOYEFI"), Qt::CaseInsensitive) == 0) {
             addUnique({QStringLiteral("Ventoy"), QStringLiteral("Ventoy"),
-                       QStringLiteral("/EFI/BOOT/grubx64_real.efi"), QStringLiteral("VTOYEFI"), false});
+                       QStringLiteral("/EFI/BOOT/grubx64_real.efi"), espVolumeId(p), false});
             continue;
         }
         if (!isEsp(p) || !p.mountPoint.isEmpty())
