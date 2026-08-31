@@ -45,6 +45,16 @@
 		echo "# Installation Failed. Downloaded archive is corrupt."
 		exit 1
 	fi
+	# Verify the download against the known-good SHA-256 of rEFInd 0.14.2 before
+	# staging an EFI binary that boots pre-OS (Secure Boot is off on the Deck).
+	# Bump this hash deliberately whenever REFIND version changes.
+	REFIND_SHA256=f0f90fcc6d879d3d5d85f5b1480a4f45e9ae61821d0c81bd3adba01319075e83
+	if ! printf '%s  refind-bin-gnuefi-0.14.2.zip\n' "$REFIND_SHA256" | sha256sum -c - >/dev/null 2>&1; then
+		zenity --error --title="Download Error" --text="The downloaded rEFInd archive failed SHA-256 verification against the known-good 0.14.2 release. Aborting for safety." --width=400 2>/dev/null
+		echo 100
+		echo "# Installation Failed. Checksum mismatch on rEFInd download."
+		exit 1
+	fi
 	unzip -o refind-bin-gnuefi-0.14.2.zip
 	if ! sudo steamos-readonly disable; then
 		echo "# Installation failed: could not disable SteamOS read-only mode."

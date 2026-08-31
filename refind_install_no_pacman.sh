@@ -45,6 +45,11 @@ if ! wget -O refind-bin-gnuefi-0.14.2.zip https://sourceforge.net/projects/refin
     exit 1
 fi
 unzip -t refind-bin-gnuefi-0.14.2.zip >/dev/null || { echo "Error: downloaded zip is corrupt. Aborting." >&2; exit 1; }
+# Verify against the known-good SHA-256 of rEFInd 0.14.2 before staging an EFI
+# binary that boots pre-OS. Bump this hash deliberately when the version changes.
+REFIND_SHA256=f0f90fcc6d879d3d5d85f5b1480a4f45e9ae61821d0c81bd3adba01319075e83
+printf '%s  refind-bin-gnuefi-0.14.2.zip\n' "$REFIND_SHA256" | sha256sum -c - >/dev/null 2>&1 \
+	|| { echo "Error: rEFInd download failed SHA-256 verification against the known-good 0.14.2 release. Aborting." >&2; exit 1; }
 unzip -a -o refind-bin-gnuefi-0.14.2.zip
 
 disable_readonly

@@ -1,11 +1,16 @@
 # Setting next boot as rEFInd... Windows PowerShell script (Run as Administrator) for task scheduler
 # Credit goes to Reddit user lucidludic for the idea and some code snippets (modified)
 
-$REFIND_IDENT = bcdedit /enum FIRMWARE | Select-String -Pattern 'refind_x64.efi' -Context 2 | findstr "{"
+# Resolve native tools by absolute System32 path, never by PATH lookup (this
+# script runs elevated).
+$System32 = [Environment]::SystemDirectory
+$Bcdedit  = Join-Path $System32 'bcdedit.exe'
+$Findstr  = Join-Path $System32 'findstr.exe'
+
+$REFIND_IDENT = & $Bcdedit /enum FIRMWARE | Select-String -Pattern 'refind_x64.efi' -Context 2 | & $Findstr "{"
 $REFIND_GUID = ($REFIND_IDENT | Select-String "{.*}").Matches.Value
 
-bcdedit /set "{fwbootmgr}" bootsequence "$REFIND_GUID" /addfirst
+& $Bcdedit /set "{fwbootmgr}" bootsequence "$REFIND_GUID" /addfirst
 
 # Re-enabling Scheduled Task
 Enable-ScheduledTask -TaskName "rEFInd Boot Sequence"
-

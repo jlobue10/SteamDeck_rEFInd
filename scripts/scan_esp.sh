@@ -79,7 +79,7 @@ while [ "$#" -ge 2 ]; do
         # Unmounted ESP: mount it read-only on a private mount point for
         # the duration of the scan.
         mnt="$(mktemp -d)"
-        if ! mount -o ro "$root" "$mnt" 2>/dev/null; then
+        if ! mount -o ro,nosuid,nodev,noexec "$root" "$mnt" 2>/dev/null; then
             rmdir "$mnt" 2>/dev/null
             shift 2
             continue

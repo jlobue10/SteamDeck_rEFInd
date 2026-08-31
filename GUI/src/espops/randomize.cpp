@@ -190,9 +190,19 @@ int randomizeBackground(const QString &refindDir, QStringList *warnings)
     // The unit is root, but the input directory belongs to the desktop
     // user: select and read the file in the directory owner's unprivileged
     // context (the fd-handoff equivalent of the scripts' runuser).
+    // lstat (not stat): a stat() here follows a symlink, so a user could point
+    // the final path component at another local user's directory and have us
+    // drop to that user and stream their PNGs onto the shared ESP. Refuse a
+    // symlinked or non-directory target instead.
     struct stat st;
-    if (::stat(QFile::encodeName(bgDir).constData(), &st) != 0)
+    if (::lstat(QFile::encodeName(bgDir).constData(), &st) != 0)
         return 0;
+    if (S_ISLNK(st.st_mode) || !S_ISDIR(st.st_mode)) {
+        warn(warnings,
+             QStringLiteral("refusing a background directory that is a symlink "
+                            "or not a directory"));
+        return 0;
+    }
     if (st.st_uid == 0) {
         warn(warnings,
              QStringLiteral("refusing a background directory without a "

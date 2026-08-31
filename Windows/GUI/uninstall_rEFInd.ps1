@@ -19,13 +19,20 @@ $EfiGlobalGuid = '{8BE4DF61-93CA-11D2-AA0D-00E098032B8C}'
 # entry carrying it belongs to {bootmgr} and must never be deleted here.
 $BootmgrBlobHex = '57494e444f5753'
 
+# Resolve native tools by absolute System32 path, never by PATH lookup: this
+# script runs elevated, so a mountvol.exe/bcdedit.exe planted in a user-writable
+# directory earlier on the machine PATH would otherwise run with our privileges.
+$Sys32 = [Environment]::SystemDirectory
+$MountvolExe = Join-Path $Sys32 'mountvol.exe'
+$BcdeditExe  = Join-Path $Sys32 'bcdedit.exe'
+
 # mountvol reports failure on stderr, which Windows PowerShell 5.1 turns into a
 # terminating RemoteException when redirected under ErrorActionPreference Stop;
 # run it with the preference relaxed so a failed mount stays a plain exit code.
 function Invoke-Mountvol([string[]]$mvArgs) {
     $eap = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
-    try { mountvol @mvArgs 2>$null | Out-Null } finally { $ErrorActionPreference = $eap }
+    try { & $MountvolExe @mvArgs 2>$null | Out-Null } finally { $ErrorActionPreference = $eap }
     return $LASTEXITCODE
 }
 
@@ -57,7 +64,7 @@ function Invoke-Bcdedit {
     $prev = $ErrorActionPreference
     $ErrorActionPreference = 'Continue'
     try {
-        $out = & bcdedit @BcdArgs 2>&1 | ForEach-Object { "$_" }
+        $out = & $BcdeditExe @BcdArgs 2>&1 | ForEach-Object { "$_" }
         return [pscustomobject]@{ Ok = ($LASTEXITCODE -eq 0); Output = @($out) }
     } finally {
         $ErrorActionPreference = $prev
