@@ -19,6 +19,13 @@ source=(
 md5sums=(
     'SKIP'
 )
+# Enforce a signed release tag: once release tags are created with `git tag -s`,
+# uncomment this with the signing key's full fingerprint. makepkg then refuses to
+# build unless the cloned tag is signed by that key — protecting local/AUR builds
+# the same way the CI "Verify release tag signature" step protects the workflow.
+# See SIGNING-TAGS.md. (Leave commented until tags are actually signed, or every
+# makepkg run will fail on the unsigned tag.)
+#validpgpkeys=('REPLACE_WITH_RELEASE_KEY_FINGERPRINT')
 
 prepare() {
     cd $_pkgname
