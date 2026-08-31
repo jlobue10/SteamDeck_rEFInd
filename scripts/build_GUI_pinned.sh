@@ -17,6 +17,10 @@ set -euo pipefail
 
 ARCH_SNAPSHOT='2025/07/30'   # qt6-base 6.9.1-5, glibc 2.41 — SteamOS 3.8.16
 BOOTSTRAP_DATE='2025.07.01'  # self-consistent root from the same era
+# Supply-chain pin for the bootstrap tarball (immutable snapshot). Leave empty to
+# only LOG the hash; set it (same value as arch-release.yml's BOOTSTRAP_SHA256)
+# to ENFORCE it. Keep in sync with the workflow and BOOTSTRAP_DATE.
+BOOTSTRAP_SHA256="${BOOTSTRAP_SHA256:-}"
 IMAGE='arch-pinned:steamos'
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -35,6 +39,13 @@ if ! podman image exists "$IMAGE"; then
     echo -e "Fetching pinned Arch root (${BOOTSTRAP_DATE})...\n"
     curl -fsSL -o "$WORK/bootstrap.tar.zst" \
         "https://archive.archlinux.org/iso/${BOOTSTRAP_DATE}/archlinux-bootstrap-${BOOTSTRAP_DATE}-x86_64.tar.zst"
+    echo "bootstrap.tar.zst sha256: $(sha256sum "$WORK/bootstrap.tar.zst" | cut -d' ' -f1)"
+    if [ -n "$BOOTSTRAP_SHA256" ]; then
+        echo "${BOOTSTRAP_SHA256}  $WORK/bootstrap.tar.zst" | sha256sum -c - \
+            || { echo "Error: bootstrap tarball SHA-256 does not match the pinned value. Aborting." >&2; exit 1; }
+    else
+        echo "Warning: BOOTSTRAP_SHA256 not pinned; skipping bootstrap integrity check." >&2
+    fi
     # Extract and repack inside a user namespace: the tarball carries
     # root-owned files and restrictive directory modes that a plain
     # unprivileged tar cannot write.
