@@ -10,6 +10,36 @@ the `osdetect_*` files and `previewdialog`'s `PreviewTheme` are parity-locked
 byte-identical between them; findings in shared code apply to **both** and any fix must
 be made in both to preserve the parity lock.
 
+## Remediation status (v3.4.2)
+
+Addressed in the v3.4.2 release:
+
+- **#1/#2 Windows LPE + junction delete** — the four `.bat` wrappers now refuse a
+  pre-existing reparse point, delete-and-recreate `C:\rEFInd_Scripts` so the admin is
+  its owner, reset owner to Administrators, and fail closed if the create races; the
+  uninstaller refuses to recurse into a junction.
+- **#8 bare-name calls** — the legacy Windows `.ps1`s and the standalone uninstaller now
+  resolve `bcdedit`/`findstr`/`mountvol`/`reg` by absolute System32 path.
+- **#3 rEFInd download integrity** — the Sourceforge installers verify the archive
+  against a pinned SHA-256 (`f0f90fcc…`) before extracting.
+- **#9 randomizer symlink** — `randomize.cpp` now `lstat`s the backgrounds dir and refuses
+  a symlink/non-directory before dropping privileges (byte-identical in both repos).
+- **#10 rich-text dialogs** — Install Config/Themes result dialogs render captured output
+  as `Qt::PlainText`.
+- **#11 sudoers username**, **#13 `scan_esp.sh` mount flags**, **#12 Inno Setup
+  Authenticode gate**, and the RPM `Source1` staging note — all fixed.
+
+Tracked as follow-ups (not in v3.4.2), with rationale in each finding:
+
+- **#4 UEFI driver pinning** — the driver URL deliberately tracks `releases/latest` of the
+  jlobue10 fork under active development (documented in CLAUDE.md); pinning waits until the
+  fork is upstreamed.
+- **#5 release-package signing** and **#7 commit-pinned sources** — need a `SHA256SUMS`
+  release asset / signed tags, a release-process change beyond this code bump.
+- **#6 Arch bootstrap checksum + pacman signing** — deferred rather than hardcode a hash
+  that could not be verified from the audit environment; a wrong pin would break the
+  official Deck build.
+
 ## Bottom line
 
 The security architecture is fundamentally sound. **No unprivileged→root escalation

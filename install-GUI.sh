@@ -232,6 +232,18 @@ fi
 rm -f "$BG_DIR_CONFIG_TMP"
 
 INSTALL_USER="$(id -un)"
+# Refuse a username that is not a plain POSIX account name before splicing it
+# into the sudoers rule: sed metacharacters would corrupt the substitution, and
+# whitespace could in principle widen the generated rule. visudo -cf below is
+# the backstop, but validate up front so we fail with a clear message instead of
+# writing a surprising rule.
+case "$INSTALL_USER" in
+    *[!a-z0-9_-]* | '' | [!a-z_]*)
+        echo "Error: refusing to build a sudoers rule for unexpected username '$INSTALL_USER'." >&2
+        echo "Install Config and Install Themes will not be enabled." >&2
+        INSTALL_USER="" ;;
+esac
+if [ -n "$INSTALL_USER" ]; then
 sed "s/^USER /$INSTALL_USER /" "$CURRENT_WD/scripts/zz_SteamDeck_rEFInd_install_config" \
     > "$CURRENT_WD/sudoers_rule.tmp"
 if sudo visudo -cf "$CURRENT_WD/sudoers_rule.tmp" > /dev/null 2>&1; then
@@ -243,6 +255,7 @@ else
     echo "Install Config and Install Themes will refuse to run until it is (re-run this installer)." >&2
 fi
 rm -f "$CURRENT_WD/sudoers_rule.tmp"
+fi
 
 enable_readonly || exit 70
 

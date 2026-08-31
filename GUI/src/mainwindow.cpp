@@ -32,7 +32,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.4.1";
+static const char APP_VERSION[] = "3.4.2";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -1170,6 +1170,24 @@ static QString outputTail(const QString &output)
     return QStringLiteral("[...]\n") + QStringList(lines.mid(lines.size() - 20)).join('\n');
 }
 
+// Show captured helper output as PLAIN text. The output can carry ESP-derived
+// strings (e.g. the refind.conf.origin sidecar another product/user wrote onto
+// the shared ESP), and the static QMessageBox helpers default to Qt::AutoText,
+// which would render an embedded <a href> as a live, clickable link inside a
+// trusted result dialog. Force plain text so nothing from the ESP is rendered
+// as markup.
+static void showCapturedOutput(QWidget *parent, QMessageBox::Icon icon,
+                               const QString &title, const QString &text)
+{
+    QMessageBox box(parent);
+    box.setIcon(icon);
+    box.setWindowTitle(title);
+    box.setText(text);
+    box.setTextFormat(Qt::PlainText);
+    box.setStandardButtons(QMessageBox::Ok);
+    box.exec();
+}
+
 void MainWindow::on_Install_Config_clicked()
 {
     QString badScript;
@@ -1196,16 +1214,16 @@ void MainWindow::on_Install_Config_clicked()
     }
     const QString details = outputTail(output);
     if (rc == 0) {
-        QMessageBox::information(this, tr("Install Config"),
-                                 details.isEmpty()
-                                     ? tr("The config was installed successfully.")
-                                     : tr("The config was installed successfully.\n\n%1").arg(details));
+        showCapturedOutput(this, QMessageBox::Information, tr("Install Config"),
+                           details.isEmpty()
+                               ? tr("The config was installed successfully.")
+                               : tr("The config was installed successfully.\n\n%1").arg(details));
     } else {
-        QMessageBox::critical(this, tr("Install Config"),
-                              details.isEmpty()
-                                  ? tr("Installing the config failed (code %1).").arg(rc)
-                                  : tr("Installing the config failed (code %1).\n\n%2")
-                                        .arg(rc).arg(details));
+        showCapturedOutput(this, QMessageBox::Critical, tr("Install Config"),
+                           details.isEmpty()
+                               ? tr("Installing the config failed (code %1).").arg(rc)
+                               : tr("Installing the config failed (code %1).\n\n%2")
+                                     .arg(rc).arg(details));
     }
 }
 
@@ -1654,16 +1672,16 @@ void MainWindow::on_Install_Themes_pushButton_clicked()
     appendLog(QStringLiteral("install themes: rc %1").arg(rc), output);
     const QString details = outputTail(output);
     if (rc == 0) {
-        QMessageBox::information(this, tr("Install Themes"),
-                                 details.isEmpty()
-                                     ? tr("The themes were installed successfully.")
-                                     : tr("The themes were installed successfully.\n\n%1").arg(details));
+        showCapturedOutput(this, QMessageBox::Information, tr("Install Themes"),
+                           details.isEmpty()
+                               ? tr("The themes were installed successfully.")
+                               : tr("The themes were installed successfully.\n\n%1").arg(details));
     } else {
-        QMessageBox::critical(this, tr("Install Themes"),
-                              details.isEmpty()
-                                  ? tr("Installing the themes failed (code %1).").arg(rc)
-                                  : tr("Installing the themes failed (code %1).\n\n%2")
-                                        .arg(rc).arg(details));
+        showCapturedOutput(this, QMessageBox::Critical, tr("Install Themes"),
+                           details.isEmpty()
+                               ? tr("Installing the themes failed (code %1).").arg(rc)
+                               : tr("Installing the themes failed (code %1).\n\n%2")
+                                     .arg(rc).arg(details));
     }
 }
 
