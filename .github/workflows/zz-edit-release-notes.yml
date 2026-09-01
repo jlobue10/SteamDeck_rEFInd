@@ -1,0 +1,27 @@
+name: zz-edit-release-notes
+# Temporary, dispatch-only helper: sets a release's notes body from an input.
+# Used once to write the v3.4.3 release notes; safe to delete afterward.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to edit (e.g. v3.4.3)'
+        required: true
+      notes:
+        description: 'Markdown release notes'
+        required: true
+permissions:
+  contents: write
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}
+          NOTES: ${{ inputs.notes }}
+        run: |
+          printf '%s' "$NOTES" > notes.md
+          gh release edit "$TAG" --repo "$REPO" --notes-file notes.md
