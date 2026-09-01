@@ -84,8 +84,12 @@ fi
 CHECKSUM_REQUIRED_FROM='3.4.3'
 release_requires_checksum() {
     local version="${VERSION#v}"
-    [ -n "$version" ] && [ "$version" != "null" ] &&
-        [ "$(printf '%s\n%s\n' "$CHECKSUM_REQUIRED_FROM" "$version" | sort -V | head -n 1)" = "$CHECKSUM_REQUIRED_FROM" ]
+    # An unknown/malformed release version must not turn a checksum download
+    # failure into the legacy compatibility path.
+    case "$version" in
+        '' | null | *[!0-9.]*) return 0 ;;
+    esac
+    [ "$(printf '%s\n%s\n' "$CHECKSUM_REQUIRED_FROM" "$version" | sort -V | head -n 1)" = "$CHECKSUM_REQUIRED_FROM" ]
 }
 
 verify_release_asset() {
