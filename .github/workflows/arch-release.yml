@@ -35,11 +35,9 @@ env:
   # snapshot instead fails on package splits (e.g. gcc-libs -> libasan/...).
   ARCH_SNAPSHOT: '2025/07/30'
   BOOTSTRAP_DATE: '2025.07.01'
-  # Supply-chain pin for the bootstrap tarball. Leave empty to only LOG the hash
-  # (the build step prints it every run); once you have captured the value from a
-  # trusted run, paste it here to ENFORCE it — a mismatch then fails the build.
-  # Bump this in lockstep with BOOTSTRAP_DATE.
-  BOOTSTRAP_SHA256: ''
+  # Official sha256sums.txt value for the immutable bootstrap snapshot. Bump
+  # this in lockstep with BOOTSTRAP_DATE.
+  BOOTSTRAP_SHA256: 'bc943f1d3d25d9350a23574b7eacdd8e00badd8f546ce05929d233b404bfd155'
   # Highest Qt symbol version SteamOS 3.8.x can load. The guard below fails the
   # release if the built binary requires anything newer.
   MAX_QT_ABI: '6.9'
@@ -69,15 +67,11 @@ jobs:
         run: |
           curl -fsSL --retry 3 --retry-delay 15 -o bootstrap.tar.zst \
             "https://archive.archlinux.org/iso/${BOOTSTRAP_DATE}/archlinux-bootstrap-${BOOTSTRAP_DATE}-x86_64.tar.zst"
-          # Supply-chain: the pinned snapshot is immutable, so the tarball's hash
-          # is stable. Always log it; enforce it when BOOTSTRAP_SHA256 is pinned.
+          # Supply-chain: verify the immutable snapshot before importing it as
+          # the root filesystem used to build the release package.
           echo "bootstrap.tar.zst sha256: $(sha256sum bootstrap.tar.zst | cut -d' ' -f1)"
-          if [ -n "${BOOTSTRAP_SHA256:-}" ]; then
-            echo "${BOOTSTRAP_SHA256}  bootstrap.tar.zst" | sha256sum -c - \
-              || { echo "::error::bootstrap tarball SHA-256 does not match the pinned BOOTSTRAP_SHA256"; exit 1; }
-          else
-            echo "::warning::BOOTSTRAP_SHA256 is not pinned; skipping bootstrap integrity check (paste the sha256 above into env.BOOTSTRAP_SHA256 to enforce)"
-          fi
+          echo "${BOOTSTRAP_SHA256}  bootstrap.tar.zst" | sha256sum -c - \
+            || { echo "::error::bootstrap tarball SHA-256 does not match the pinned BOOTSTRAP_SHA256"; exit 1; }
           sudo mkdir -p /tmp/rootfs
           sudo tar --use-compress-program=unzstd -xf bootstrap.tar.zst -C /tmp/rootfs
           sudo tar -C /tmp/rootfs/root.x86_64 -cf - . | docker import - arch-pinned:build
