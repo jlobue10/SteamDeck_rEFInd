@@ -55,14 +55,18 @@ if ! podman image exists "$IMAGE"; then
 fi
 
 echo -e "Building GUI...\n"
-# Signature checking is off because the archive is served over HTTPS and keys
-# valid at snapshot time are marked disabled in today's keyring.
+# Initialize the bootstrap snapshot's era-matched keyring, update it from the
+# same pinned archive, and require package signatures for the build toolchain.
 podman run --rm -v "$REPO_ROOT:/src:ro" -v "$OUT:/out" "$IMAGE" \
     bash -euo pipefail -c "
         A='https://archive.archlinux.org/repos/${ARCH_SNAPSHOT}'
-        printf '[options]\nArchitecture = auto\nSigLevel = Never\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n' \"\$A\" \"\$A\" > /etc/pacman.conf
+        printf '[options]\nArchitecture = auto\nSigLevel = Required DatabaseOptional\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n' \"\$A\" \"\$A\" > /etc/pacman.conf
         # --disable-download-timeout: archive.archlinux.org intermittently
         # throttles transfers below pacman's low-speed abort threshold.
+        pacman-key --init
+        pacman-key --populate archlinux
+        pacman -Sy --noconfirm --needed --disable-download-timeout archlinux-keyring > /dev/null
+        pacman-key --populate archlinux
         pacman -Syu --noconfirm --disable-download-timeout > /dev/null
         pacman -S --noconfirm --needed --disable-download-timeout cmake gcc make qt6-base qt6-tools > /dev/null
         pacman -Q glibc qt6-base gcc
