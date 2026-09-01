@@ -76,9 +76,11 @@ jobs:
           sudo tar --use-compress-program=unzstd -xf bootstrap.tar.zst -C /tmp/rootfs
           sudo tar -C /tmp/rootfs/root.x86_64 -cf - . | docker import - arch-pinned:build
 
-      # Signature checking is off because the archive is served over HTTPS and
-      # keys valid at snapshot time are marked disabled in today's keyring.
-      # Both pacman calls run with --disable-download-timeout and retries:
+      # Use the bootstrap snapshot's era-matched Arch keyring, then update it
+      # from the same pinned repository before the full upgrade. Package
+      # signatures are required; repository database signatures remain
+      # optional because the archive does not consistently retain them.
+      # Pacman calls run with --disable-download-timeout and retries:
       # archive.archlinux.org intermittently throttles transfers to a crawl,
       # which trips pacman's low-speed abort ("Operation too slow") and has
       # failed real release builds on an otherwise-fine tag.
@@ -93,7 +95,11 @@ jobs:
               done
             }
             A="https://archive.archlinux.org/repos/'"$ARCH_SNAPSHOT"'"
-            printf "[options]\nArchitecture = auto\nSigLevel = Never\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n" "$A" "$A" > /etc/pacman.conf
+            printf "[options]\nArchitecture = auto\nSigLevel = Required DatabaseOptional\n[core]\nServer = %s/\$repo/os/\$arch\n[extra]\nServer = %s/\$repo/os/\$arch\n" "$A" "$A" > /etc/pacman.conf
+            pacman-key --init
+            pacman-key --populate archlinux
+            retry pacman -Sy --noconfirm --needed --disable-download-timeout archlinux-keyring
+            pacman-key --populate archlinux
             retry pacman -Syu --noconfirm --disable-download-timeout
             # Exact makedepends from the PKGBUILD (plus git for the source
             # clone); makepkg then runs without -s, so a drifting PKGBUILD
