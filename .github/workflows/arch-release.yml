@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           KEY=.github/release-signing-key.asc
-          if [ -f "$KEY" ] && grep -q 'BEGIN PGP PUBLIC KEY BLOCK' "$KEY"; then
+          if [ -f "$KEY" ] && grep -q '^-----BEGIN PGP PUBLIC KEY BLOCK-----' "$KEY"; then
             echo "Verifying signature of tag $TAG against the committed release key..."
             gpg --quiet --import "$KEY"
             git fetch --force origin "refs/tags/${TAG}:refs/tags/${TAG}"
