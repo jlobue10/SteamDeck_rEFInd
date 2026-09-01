@@ -23,6 +23,27 @@ jobs:
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
+      - name: Verify release tag signature
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          KEY=.github/release-signing-key.asc
+          if [ -f "$KEY" ] && grep -q 'BEGIN PGP PUBLIC KEY BLOCK' "$KEY"; then
+            echo "Verifying signature of tag $TAG against the committed release key..."
+            gpg --quiet --import "$KEY"
+            git fetch --force origin "refs/tags/${TAG}:refs/tags/${TAG}"
+            if ! git verify-tag "$TAG"; then
+              echo "::error::Tag $TAG is not signed by the trusted release key (must be an annotated tag made with 'git tag -s')."
+              exit 1
+            fi
+            echo "Tag signature verified."
+          else
+            echo "::warning::No release signing key committed at $KEY yet; skipping tag signature verification. See SIGNING-TAGS.md to enable."
+          fi
+
       - name: Set up MSYS2 (UCRT64)
         uses: msys2/setup-msys2@66cd2cce69caa17b53920067426061ca1de3a884 # v2
         with:
