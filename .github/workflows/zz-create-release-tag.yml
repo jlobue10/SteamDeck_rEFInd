@@ -1,0 +1,29 @@
+name: zz-create-release-tag
+# Temporary, dispatch-only helper: creates or moves a tag ref to a given commit.
+# Used to (re)cut v3.4.3 when direct tag pushes were unavailable; safe to delete.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag name to create/move (e.g. v3.4.3)'
+        required: true
+      sha:
+        description: 'Commit SHA the tag should point at'
+        required: true
+permissions:
+  contents: write
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or move tag ref
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ inputs.tag }}
+          SHA: ${{ inputs.sha }}
+        run: |
+          gh api -X PATCH "repos/${REPO}/git/refs/tags/${TAG}" \
+            -f "sha=${SHA}" -F "force=true" \
+          || gh api -X POST "repos/${REPO}/git/refs" \
+            -f "ref=refs/tags/${TAG}" -f "sha=${SHA}"
