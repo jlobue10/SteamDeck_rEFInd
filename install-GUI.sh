@@ -40,7 +40,25 @@ restore_readonly_on_exit() {
 trap restore_readonly_on_exit EXIT
 
 cd "$HOME" || exit 1
-rm -rf "$HOME/SteamDeck_rEFInd"
+# Never destroy a contributor checkout or an unrelated directory. Reuse the
+# installer convention from the sibling rEFInd_GUI project: only remove a clean
+# clone whose origin is exactly this repository.
+if [ -e "$HOME/SteamDeck_rEFInd" ]; then
+    if [ -d "$HOME/SteamDeck_rEFInd/.git" ] &&
+        git -C "$HOME/SteamDeck_rEFInd" remote get-url origin 2>/dev/null |
+            grep -Eqi '(^|[:/])jlobue10/SteamDeck_rEFInd(\.git)?/?$'; then
+        if [ -n "$(git -C "$HOME/SteamDeck_rEFInd" status --porcelain 2>/dev/null)" ]; then
+            echo "Error: $HOME/SteamDeck_rEFInd has uncommitted changes. Aborting." >&2
+            echo "Move or commit that checkout, then re-run this installer." >&2
+            exit 1
+        fi
+        rm -rf "$HOME/SteamDeck_rEFInd"
+    else
+        echo "Error: $HOME/SteamDeck_rEFInd exists and is not a clean SteamDeck_rEFInd clone." >&2
+        echo "Move it aside, then re-run this installer." >&2
+        exit 1
+    fi
+fi
 if ! git clone --depth 1 https://github.com/jlobue10/SteamDeck_rEFInd; then
     echo "Error: failed to clone the SteamDeck_rEFInd repository. Aborting." >&2
     exit 1
@@ -60,6 +78,49 @@ if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" == "null" ]; then
     exit 1
 fi
 
+# Release workflows publish "<package>.sha256" next to the package. v3.4.2
+# predates that asset, so allow that one transitional release with a warning;
+# every release from v3.4.3 onward must provide a valid checksum.
+CHECKSUM_REQUIRED_FROM='3.4.3'
+release_requires_checksum() {
+    local version="${VERSION#v}"
+    # An unknown/malformed release version must not turn a checksum download
+    # failure into the legacy compatibility path.
+    case "$version" in
+        '' | null | *[!0-9.]*) return 0 ;;
+    esac
+    [ "$(printf '%s\n%s\n' "$CHECKSUM_REQUIRED_FROM" "$version" | sort -V | head -n 1)" = "$CHECKSUM_REQUIRED_FROM" ]
+}
+
+verify_release_asset() {
+    local url="$1" artifact="$2" sidecar="${artifact}.sha256"
+    local expected actual
+    if ! wget -q -O "$sidecar" "${url}.sha256"; then
+        rm -f "$sidecar"
+        if release_requires_checksum; then
+            echo "Error: release $VERSION is missing the required checksum for $artifact. Aborting." >&2
+            rm -f "$artifact"
+            return 1
+        fi
+        echo "Warning: release ${VERSION:-unknown} predates published checksums; $artifact could not be verified." >&2
+        return 0
+    fi
+    expected="$(awk 'NR == 1 { print $1 }' "$sidecar")"
+    rm -f "$sidecar"
+    if [ "${#expected}" -ne 64 ] || [[ "$expected" == *[!0-9A-Fa-f]* ]]; then
+        echo "Error: malformed checksum sidecar for $artifact. Aborting." >&2
+        rm -f "$artifact"
+        return 1
+    fi
+    actual="$(sha256sum "$artifact" | cut -d' ' -f1)"
+    if [ "${actual,,}" != "${expected,,}" ]; then
+        echo "Error: SHA-256 mismatch for $artifact. Aborting before installation." >&2
+        rm -f "$artifact"
+        return 1
+    fi
+    echo "Verified SHA-256 for $artifact."
+}
+
 # Check out the tag matching the package being installed, so the staged
 # scripts and assets are the ones the released binary expects. (The GUI's
 # privileged actions are version-handshaked against the packaged helper
@@ -73,6 +134,18 @@ if [ -n "$VERSION" ] && [ "$VERSION" != "null" ]; then
         echo "Warning: could not check out $VERSION; staging main-branch scripts instead." >&2
     fi
 fi
+
+# Validate the replacement before disabling read-only mode or changing the
+# existing installation. pacman -U upgrades in place, so the working package
+# remains installed if the download or verification fails.
+printf "Installing version %s...\n" "${VERSION}"
+INSTALL_PKG="$(basename "$DOWNLOAD_URL")"
+if ! wget -O "$INSTALL_PKG" "$DOWNLOAD_URL" || [ ! -s "$INSTALL_PKG" ]; then
+    rm -f "$INSTALL_PKG"
+    echo "Error: failed to download $DOWNLOAD_URL. Aborting." >&2
+    exit 1
+fi
+verify_release_asset "$DOWNLOAD_URL" "$INSTALL_PKG" || exit 1
 
 disable_readonly || exit 1
 mkdir -p "$HOME/.local/SteamDeck_rEFInd/GUI"
@@ -114,38 +187,20 @@ if [ -f "$HOME/Desktop/refind_GUI.desktop" ]; then
     rm -f "$HOME/Desktop/refind_GUI.desktop"
 fi
 
-printf "Installing version %s...\n" "${VERSION}"
-INSTALL_PKG="$(basename "$DOWNLOAD_URL")"
-wget -O "$INSTALL_PKG" "$DOWNLOAD_URL"
-if [ $? -ne 0 ] || [ ! -s "$INSTALL_PKG" ]; then
-    echo "Error: failed to download $DOWNLOAD_URL. Aborting." >&2
-    exit 1
-fi
-
-if pacman -Qs SteamDeck_rEFInd > /dev/null; then
-    sudo pacman -R --noconfirm SteamDeck_rEFInd
-fi
-
-if [ -f /etc/systemd/system/bootnext-refind.service ]; then
-    sudo systemctl disable --now bootnext-refind.service
-    # Force removing old service file from previous versions
-    echo -e "\nRemoving old bootnext-refind.service\n"
-    sudo rm /etc/systemd/system/bootnext-refind.service
-fi
-
-if [ -f /etc/systemd/system/rEFInd_bg_randomizer.service ]; then
-    sudo systemctl disable --now rEFInd_bg_randomizer.service
-    # Force removing old service file from previous versions
-    echo -e "\nRemoving old rEFInd_bg_randomizer.service\n"
-    sudo rm /etc/systemd/system/rEFInd_bg_randomizer.service
-fi
-
-if [ -f /etc/systemd/system/rEFInd_theme_randomizer.service ]; then
-    sudo systemctl disable --now rEFInd_theme_randomizer.service
-    # Force removing old service file from previous versions
-    echo -e "\nRemoving old rEFInd_theme_randomizer.service\n"
-    sudo rm /etc/systemd/system/rEFInd_theme_randomizer.service
-fi
+# Old script-based installs may have unowned unit files at paths now owned by
+# the package. Remove only those stale copies; package-owned units are upgraded
+# normally by pacman and remain available if the upgrade fails.
+remove_unowned_unit() {
+    local unit="$1" path="/etc/systemd/system/$1"
+    if [ -f "$path" ] && ! pacman -Qo "$path" >/dev/null 2>&1; then
+        sudo systemctl disable --now "$unit" >/dev/null 2>&1 || true
+        echo "Removing stale unowned $unit"
+        sudo rm -f "$path"
+    fi
+}
+remove_unowned_unit bootnext-refind.service
+remove_unowned_unit rEFInd_bg_randomizer.service
+remove_unowned_unit rEFInd_theme_randomizer.service
 
 # The package's post_install scriptlet handles daemon-reload plus enabling and
 # starting bootnext-refind.service.
@@ -195,8 +250,8 @@ fi
 # The theme randomizer unit ships in the release package like the two units
 # above, but the installed release may predate it. Stage the unit file
 # directly when the package didn't provide it, so the GUI's Theme Rand
-# buttons work immediately; the removal block before `pacman -U` above keeps
-# a later package upgrade from colliding with this copy.
+# buttons work immediately. A later installer removes this copy only while it
+# is still unowned, before upgrading to a package that owns it.
 if [ ! -f /etc/systemd/system/rEFInd_theme_randomizer.service ]; then
     sudo install -o root -g root -m 0644 \
         "$CURRENT_WD/systemd/rEFInd_theme_randomizer.service" \
