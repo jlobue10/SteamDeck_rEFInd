@@ -226,13 +226,19 @@ if [ -n "$WINDOWS_BOOTNUM" ] && [ -n "$NEW_BOOTNUM" ]; then
 fi
 
 # The unit below runs this script as root on every boot, so it has to live
-# somewhere the desktop user cannot write -- /etc is a persistent overlay on
-# SteamOS, so a root-owned copy there survives updates too. Installing it under
-# $HOME/.local instead would let any code running as the user replace it and
-# get root at the next boot.
+# somewhere the desktop user cannot write. Installing it under $HOME/.local
+# instead would let any code running as the user replace it and get root at
+# the next boot.
 sudo install -d -m 0755 /etc/SteamDeck_rEFInd
 sudo install -o root -g root -m 0755 "$CURRENT_WD/scripts/restore_EFI_entries.sh" \
 	/etc/SteamDeck_rEFInd/restore_EFI_entries.sh
+# Since SteamOS 3.6 an atomic update resets /etc except for keep-listed paths.
+# The default list keeps the unit and its enablement symlink but not the script
+# above, so bootnext-refind.service failed with status=203/EXEC on the first
+# boot after every OS update (issue #232). This drop-in keeps the script (and
+# the GUI's helper + sudoers rule) and is itself on the default keep list.
+sudo install -D -o root -g root -m 0644 "$CURRENT_WD/scripts/SteamDeck_rEFInd.atomic-update-keep.conf" \
+	/etc/atomic-update.conf.d/SteamDeck_rEFInd.conf
 
 # Adding Systemctl daemon for rEFInd to be next boot priority
 # Credit goes to Reddit user lucidludic for the idea :)

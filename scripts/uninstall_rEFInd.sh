@@ -14,7 +14,8 @@
 #     only undo the services/boot entries)
 #   - with --remove-app, also removes the SteamDeck_rEFInd package (pacman,
 #     inside the steamos-readonly bracket), ~/.local/SteamDeck_rEFInd,
-#     /etc/SteamDeck_rEFInd, and the passwordless-config sudoers rule
+#     /etc/SteamDeck_rEFInd, the passwordless-config sudoers rule, and the
+#     atomic-update keep-list drop-in that preserved them across OS updates
 #
 # Run as the deck user: ./uninstall_rEFInd.sh [--keep-esp-files] [--remove-app]
 # (privileged steps use sudo per command, like the install scripts).
@@ -218,7 +219,10 @@ if [ "$REMOVE_APP" -eq 1 ]; then
 	# (remove the sudoers rule before the root-owned script it whitelists).
 	sudo rm -f /etc/sudoers.d/zz_SteamDeck_rEFInd_install_config
 	sudo rm -rf /etc/SteamDeck_rEFInd
-	echo "Removed the app data, /etc/SteamDeck_rEFInd, the sudoers rule, and desktop shortcuts."
+	# The SteamOS atomic-update keep-list drop-in that preserved the two paths
+	# above across OS updates; nothing is left for it to keep.
+	sudo rm -f /etc/atomic-update.conf.d/SteamDeck_rEFInd.conf
+	echo "Removed the app data, /etc/SteamDeck_rEFInd, the sudoers rule, the atomic-update keep-list drop-in, and desktop shortcuts."
 fi
 
 # Summary, read back from live NVRAM.

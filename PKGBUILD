@@ -41,10 +41,14 @@ build() {
 
 package() {
 	install -Dm755 "${srcdir}/$_pkgname/GUI/src/build/SteamDeck_rEFInd" "${pkgdir}/usr/bin/SteamDeck_rEFInd"
-	# The privileged helper lives on the persistent /etc overlay (like the
-	# root-owned script copies it replaces) so the sudoers rule and the
-	# systemd units keep working after a SteamOS update wipes /usr.
+	# The privileged helper lives under /etc (like the root-owned script
+	# copies it replaces), not under /usr, which a SteamOS update replaces
+	# wholesale. /etc is reset by atomic updates too, except for keep-listed
+	# paths: the atomic-update.conf.d drop-in below keeps /etc/SteamDeck_rEFInd
+	# and the sudoers rule, so the units and passwordless Install Config keep
+	# working after an update (issue #232).
 	install -Dm755 "${srcdir}/$_pkgname/GUI/src/build/SteamDeck_rEFInd_helper" "${pkgdir}/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper"
+	install -Dm644 "${srcdir}/$_pkgname/scripts/SteamDeck_rEFInd.atomic-update-keep.conf" "${pkgdir}/etc/atomic-update.conf.d/SteamDeck_rEFInd.conf"
 	install -Dm644 "${srcdir}/$_pkgname/SteamDeck_rEFInd.desktop" "${pkgdir}/usr/share/applications/SteamDeck_rEFInd.desktop"
 	install -Dm644 "${srcdir}/$_pkgname/SteamDeck_rEFInd.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/SteamDeck_rEFInd.png"
         install -Dm644 "${srcdir}/$_pkgname/systemd/rEFInd_bg_randomizer.service" "${pkgdir}/etc/systemd/system/rEFInd_bg_randomizer.service"
