@@ -214,18 +214,28 @@ rm -f "$INSTALL_PKG"
 # installed the root-owned helper binary
 # (/etc/SteamDeck_rEFInd/SteamDeck_rEFInd_helper); the sudoers rule below
 # whitelists exactly its two install subcommands, so the GUI can run them
-# with `sudo -n` and no password prompt. /etc is a persistent overlay on
-# SteamOS (upperdir on /var), so everything here survives OS updates just
-# like the systemd units. The privileged shell scripts of previous versions
-# (config/themes installers, both randomizers, lib_esp_target.sh) are
-# superseded by helper subcommands — remove stale root-owned copies so
-# nothing points at dead code.
+# with `sudo -n` and no password prompt. The privileged shell scripts of
+# previous versions (config/themes installers, both randomizers,
+# lib_esp_target.sh) are superseded by helper subcommands — remove stale
+# root-owned copies so nothing points at dead code.
 sudo install -d -m 0755 /etc/SteamDeck_rEFInd
 sudo rm -f /etc/SteamDeck_rEFInd/install_config_from_GUI.sh \
     /etc/SteamDeck_rEFInd/install_themes_from_GUI.sh \
     /etc/SteamDeck_rEFInd/rEFInd_bg_randomizer.sh \
     /etc/SteamDeck_rEFInd/rEFInd_theme_randomizer.sh \
     /etc/SteamDeck_rEFInd/lib_esp_target.sh
+
+# Since SteamOS 3.6 an atomic update resets /etc to the new image except for
+# the paths on the keep list (/usr/lib/rauc/atomic-update-keep.conf plus the
+# drop-ins in /etc/atomic-update.conf.d/). The default list keeps the systemd
+# units and their .wants symlinks but NOT /etc/SteamDeck_rEFInd/ or the sudoers
+# rule, so after an update the enabled units pointed at files that no longer
+# existed (issue #232). Register ours; the drop-in itself is on the default
+# list. The package installs the same file; doing it here as well covers an
+# installed release that predates it.
+sudo install -D -o root -g root -m 0644 \
+    "$CURRENT_WD/scripts/SteamDeck_rEFInd.atomic-update-keep.conf" \
+    /etc/atomic-update.conf.d/SteamDeck_rEFInd.conf
 
 # bootnext-refind.service runs this as root on every boot, so it gets a
 # root-owned copy here too -- executing (or sourcing) a $HOME/.local path
@@ -260,9 +270,10 @@ if [ ! -f /etc/systemd/system/rEFInd_theme_randomizer.service ]; then
 fi
 
 # The randomizer runs as root under systemd, where $HOME is /root. Record the
-# actual desktop user's backgrounds directory as data in a root-owned file on
-# SteamOS's persistent /etc overlay. The service validates and reads this file;
-# it never sources it as shell code.
+# actual desktop user's backgrounds directory as data in a root-owned file
+# under /etc/SteamDeck_rEFInd (kept across SteamOS updates by the keep-list
+# drop-in above). The service validates and reads this file; it never sources
+# it as shell code.
 case "$HOME" in
     /*) ;;
     *)

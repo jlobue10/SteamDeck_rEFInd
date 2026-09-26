@@ -66,6 +66,14 @@ if [ -x "$HELPER" ]; then
 else
     echo "helper: MISSING at $HELPER"
 fi
+# Since SteamOS 3.6 an atomic update resets /etc except for keep-listed paths;
+# without this drop-in the next OS update removes the helper and the sudoers
+# rule again (issue #232).
+if [ -f /etc/atomic-update.conf.d/SteamDeck_rEFInd.conf ]; then
+    echo "atomic-update keep list: /etc/atomic-update.conf.d/SteamDeck_rEFInd.conf present"
+elif [ -f /usr/lib/rauc/atomic-update-keep.conf ]; then
+    echo "atomic-update keep list: MISSING /etc/atomic-update.conf.d/SteamDeck_rEFInd.conf -- the next SteamOS update wipes /etc/SteamDeck_rEFInd; re-run the GUI installer"
+fi
 if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
     if sudo -n -u "$SUDO_USER" true 2>/dev/null &&
         runuser -u "$SUDO_USER" -- sudo -n -l "$HELPER" install-config >/dev/null 2>&1; then
