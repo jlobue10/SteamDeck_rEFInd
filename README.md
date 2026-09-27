@@ -91,9 +91,23 @@ More themes to explore (installable manually the same way — drop a folder unde
 
 ## Windows app (new in 2.0.0)
 
-The GUI also builds and runs on Windows (Qt6), so you can configure and install rEFInd from the Windows side of a dual-boot Deck. Download `SteamDeck_rEFInd-<version>-setup.exe` from the [Releases](https://github.com/jlobue10/SteamDeck_rEFInd/releases) page. The installer requests Administrator access so executable code and privileged helpers can be protected under Program Files; mutable configuration stays in `%LOCALAPPDATA%\SteamDeck_rEFInd`. Release builds are code-signed via SignPath Foundation — see `Windows/GUI/SIGNING.md`.
+The GUI also builds and runs on Windows (Qt6), so you can configure and install rEFInd from the Windows side of a dual-boot Deck. Download `SteamDeck_rEFInd-<version>-setup.exe` from the [Releases](https://github.com/jlobue10/SteamDeck_rEFInd/releases) page. The installer requests Administrator access so executable code and privileged helpers can be protected under Program Files; mutable configuration stays in `%LOCALAPPDATA%\SteamDeck_rEFInd`. Release builds are code-signed — see the [code signing policy](#code-signing-policy) below and `Windows/GUI/SIGNING.md`.
 
 The **Sysd On/Off**, **Rand BG On/Off**, and **Theme Rand On/Off** buttons work in the Windows app too: each toggles a Windows scheduled task that runs at logon and does what the matching systemd service does on SteamOS (set rEFInd as the next boot, randomize the background, randomize the theme). The installer also offers an optional checkbox — off by default — to enable the "keep rEFInd first" bootnext task right away.
+
+### Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+The Windows release binaries — `SteamDeck_rEFInd.exe`, `SteamDeck_rEFInd_helper.exe`, the bundled `windows\*.ps1` scripts, and the `SteamDeck_rEFInd-<version>-setup.exe` installer — are Authenticode-signed with a certificate issued to this project by SignPath Foundation. Signing happens only inside this repository's GitHub Actions release workflow, from the source at a tagged commit; nothing is signed on a developer machine. The Qt and MinGW runtime DLLs bundled with the app are upstream MSYS2 builds and ship unsigned. Details, including the exact artifact configurations SignPath applies, are in `Windows/GUI/SIGNING.md`.
+
+**Team roles.** This is a single-maintainer project; every role is held by [@jlobue10](https://github.com/jlobue10):
+
+- *Authors* (may change the source without further review): jlobue10
+- *Reviewers* (review and approve changes from anyone else, via pull request): jlobue10
+- *Approvers* (approve each release signing request in SignPath): jlobue10
+
+**Privacy policy.** This program will not transfer any information to other networked systems unless specifically requested by the user. The only network access is user-initiated: **Check For Update** (in the About dialog) fetches this repository's `VERSION` file from GitHub, and **Install rEFInd** downloads rEFInd from SourceForge and the `UsbXbox360Dxe` / `TouchI2cDxe` UEFI drivers from GitHub. No telemetry is collected, and the optional at-logon scheduled tasks work entirely offline. Those downloads are subject to [GitHub's privacy statement](https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement) and [SourceForge's privacy policy](https://slashdotmedia.com/privacy-statement/).
 
 ## Script-only installation (deprecated... no GUI)
 

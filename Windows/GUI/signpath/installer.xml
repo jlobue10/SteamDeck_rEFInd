@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath artifact configuration "installer" (Stage B of
+  .github/workflows/windows-release.yml). The workflow uploads the Inno Setup
+  output SteamDeck_rEFInd-<version>-setup.exe as a GitHub Actions artifact
+  (a ZIP with the exe at its root, hence <zip-file>). Its contents were
+  already signed in Stage A; Inno Setup archives are opaque to SignPath, so
+  only the outer setup exe is signed here. Inno's generated uninstaller
+  (unins000.exe) is not signed.
+
+  The restrictions match Windows/GUI/SteamDeck_rEFInd.iss: VersionInfoProductName
+  is SteamDeck_rEFInd and VersionInfoProductTextVersion is the release
+  version, which the workflow passes as the "version" parameter from the
+  VERSION file. Paste this file into the artifact configuration in the
+  SignPath console (slug: installer) whenever it changes here.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://signpath.io/artifact-configuration/v1 https://app.signpath.io/Web/artifact-configuration/v1.xsd">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+
+  <zip-file>
+    <pe-file path="SteamDeck_rEFInd-${version}-setup.exe" product-name="SteamDeck_rEFInd" product-version="${version}">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

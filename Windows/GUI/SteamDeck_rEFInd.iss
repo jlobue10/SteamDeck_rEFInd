@@ -28,6 +28,17 @@ WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayIcon={app}\{#AppExe}
+; VERSIONINFO of the setup exe itself. The SignPath "installer" artifact
+; configuration (signpath\installer.xml) refuses to sign it unless ProductName
+; is SteamDeck_rEFInd and ProductVersion equals the release version, so keep
+; these aligned with GUI/src/version.h.in.
+VersionInfoVersion={#AppVersion}
+VersionInfoProductName=SteamDeck_rEFInd
+VersionInfoProductVersion={#AppVersion}
+VersionInfoProductTextVersion={#AppVersion}
+VersionInfoCompany=jlobue10
+VersionInfoDescription={#AppName} Setup
+VersionInfoCopyright=Copyright (c) 2022 jlobue10. MIT License.
 
 [Languages]
 ; Only languages whose .isl ships with the Inno Setup compiler are listed;

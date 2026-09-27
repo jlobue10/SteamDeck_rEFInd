@@ -18,10 +18,37 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: read
+      # SignPath's connector reads the job and downloads the uploaded artifact
+      # with the workflow token; the top-level grant above is contents-only.
+      actions: read
     env:
       SIGN: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      # The release version is the single value every signed binary must carry
+      # as its VERSIONINFO ProductVersion (GUI/src/version.h.in, the Inno
+      # VersionInfo* directives): the SignPath artifact configurations restrict
+      # on it (Windows/GUI/signpath/*.xml), so a carrier that missed the bump
+      # fails signing instead of shipping mismatched metadata.
+      - name: Determine release version
+        id: ver
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d '[:space:]' < VERSION)"
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::VERSION file content '$VERSION' is not X.Y.Z"
+            exit 1
+          fi
+          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the VERSION file ($VERSION); the signed ProductVersion would not match the release."
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Release version: $VERSION"
 
       - name: Verify release tag signature
         if: startsWith(github.ref, 'refs/tags/')
@@ -81,6 +108,9 @@ jobs:
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
           artifact-configuration-slug: ${{ vars.SIGNPATH_DEPLOY_CONFIG_SLUG }}
+          # Fills the product-version restriction in the artifact configuration.
+          parameters: |
+            version: "${{ steps.ver.outputs.version }}"
           github-artifact-id: ${{ steps.unsigned_deploy.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: deploy-signed
@@ -126,6 +156,9 @@ jobs:
           project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
           signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
           artifact-configuration-slug: ${{ vars.SIGNPATH_INSTALLER_CONFIG_SLUG }}
+          # Fills the product-version restriction in the artifact configuration.
+          parameters: |
+            version: "${{ steps.ver.outputs.version }}"
           github-artifact-id: ${{ steps.unsigned_installer.outputs.artifact-id }}
           wait-for-completion: true
           output-artifact-directory: Windows/GUI/Output

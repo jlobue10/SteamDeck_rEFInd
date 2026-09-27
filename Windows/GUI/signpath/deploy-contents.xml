@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SignPath artifact configuration "deploy-contents" (Stage A of
+  .github/workflows/windows-release.yml). The workflow uploads the assembled
+  deploy/ folder as a GitHub Actions artifact, which is always a ZIP with the
+  folder's contents at its root, hence the <zip-file> root element.
+
+  Only the files listed here are signed; everything else in the ZIP (the Qt
+  and MinGW runtime DLLs and plugin directories, icons, backgrounds, themes,
+  GUI/refind.conf) passes through untouched. The DLLs are upstream MSYS2
+  builds and ship unsigned, as SignPath Foundation's terms allow.
+
+  product-name / product-version are SignPath Foundation's required file
+  metadata restrictions: signing fails unless each PE file's VERSIONINFO
+  ProductName is "SteamDeck_rEFInd" (GUI/src/version.h.in) and its
+  ProductVersion equals the "version" parameter the workflow passes from the
+  VERSION file. Paste this file into the artifact configuration in the
+  SignPath console (slug: deploy-contents) whenever it changes here.
+-->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1"
+                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xsi:schemaLocation="http://signpath.io/artifact-configuration/v1 https://app.signpath.io/Web/artifact-configuration/v1.xsd">
+  <parameters>
+    <parameter name="version" required="true" />
+  </parameters>
+
+  <zip-file>
+    <pe-file-set>
+      <include path="SteamDeck_rEFInd.exe" product-name="SteamDeck_rEFInd" product-version="${version}" />
+      <include path="SteamDeck_rEFInd_helper.exe" product-name="SteamDeck_rEFInd" product-version="${version}" />
+      <for-each>
+        <authenticode-sign />
+      </for-each>
+    </pe-file-set>
+
+    <!-- Windows/GUI/*.ps1, shipped as windows/ by assemble-deploy.sh. Listed
+         explicitly rather than as *.ps1 so a script that turns up in the
+         deploy folder unexpectedly fails signing instead of getting signed. -->
+    <directory path="windows">
+      <powershell-file-set>
+        <include path="diagnose_install_config.ps1" />
+        <include path="install-SteamDeck_rEFInd-GUI.ps1" />
+        <include path="install_rEFInd.ps1" />
+        <include path="uninstall_rEFInd.ps1" />
+        <for-each>
+          <authenticode-sign />
+        </for-each>
+      </powershell-file-set>
+    </directory>
+  </zip-file>
+</artifact-configuration>
