@@ -85,6 +85,10 @@ set(PROJECT_SOURCES
 
 if(WIN32)
     enable_language(RC)
+    # Version numbers for the VERSIONINFO resources (rEFInd_GUI.rc, helper.rc)
+    # come from project(VERSION) above through this generated header, so the
+    # .rc files are not version carriers. See GUI/src/version.h.in.
+    configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version_generated.h @ONLY)
     list(APPEND PROJECT_SOURCES osdetect_win.cpp rEFInd_GUI.rc)
 else()
     list(APPEND PROJECT_SOURCES osdetect_linux.cpp)
@@ -167,6 +171,14 @@ target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt
 # Tasks' action.
 add_executable(SteamDeck_rEFInd_helper helper/main.cpp)
 target_link_libraries(SteamDeck_rEFInd_helper PRIVATE espops)
+
+if(WIN32)
+    # Both Windows binaries carry a VERSIONINFO resource built from the header
+    # configured above (the RC compiler finds it through the include dir).
+    target_sources(SteamDeck_rEFInd_helper PRIVATE helper.rc)
+    target_include_directories(SteamDeck_rEFInd PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+    target_include_directories(SteamDeck_rEFInd_helper PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 
 if(WIN32)
     # shell32: SHGetKnownFolderPath; ole32: CoTaskMemFree; uuid: the

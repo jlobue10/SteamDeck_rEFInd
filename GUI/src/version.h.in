@@ -1,0 +1,22 @@
+/* Template for version_generated.h, which CMake writes into the build tree
+ * from project(VERSION) in CMakeLists.txt (Windows only). It feeds the
+ * VERSIONINFO resources in rEFInd_GUI.rc and helper.rc, so the .rc files are
+ * not version carriers: bump CMakeLists.txt and they follow.
+ *
+ * ProductName / ProductVersion matter beyond Explorer's Details tab: the
+ * SignPath artifact configurations (Windows/GUI/signpath/*.xml) restrict on
+ * them, and SignPath refuses to sign a binary whose values differ. Keep
+ * APP_PRODUCT_NAME equal to the product-name in those files and to the
+ * installer's VersionInfoProductName in Windows/GUI/SteamDeck_rEFInd.iss. */
+#ifndef STEAMDECK_REFIND_VERSION_GENERATED_H
+#define STEAMDECK_REFIND_VERSION_GENERATED_H
+
+#define APP_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define APP_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define APP_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define APP_VERSION_STR   "@PROJECT_VERSION@"
+#define APP_PRODUCT_NAME  "SteamDeck_rEFInd"
+#define APP_COMPANY_NAME  "jlobue10"
+#define APP_COPYRIGHT     "Copyright (c) 2022 jlobue10. MIT License."
+
+#endif

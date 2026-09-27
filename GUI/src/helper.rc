@@ -1,13 +1,11 @@
-// Embeds the UAC manifest (RT_MANIFEST resource id 1), the app icon (shown
-// by Explorer, shortcuts, and the taskbar), and the VERSIONINFO block.
-// Version numbers come from version_generated.h (configured by CMake from
-// project(VERSION)); ProductName/ProductVersion are what the SignPath
-// artifact configuration checks before signing. See Windows/GUI/SIGNING.md.
+// VERSIONINFO for SteamDeck_rEFInd_helper.exe (the privileged helper the
+// Scheduled Tasks run). No manifest: the helper is launched by the already
+// elevated GUI or by tasks that run with highest privileges. Version numbers
+// come from version_generated.h (configured by CMake from project(VERSION));
+// ProductName/ProductVersion must match the GUI's because the SignPath
+// artifact configuration restricts on them. See Windows/GUI/SIGNING.md.
 #include <winver.h>
 #include "version_generated.h"
-
-1 24 "rEFInd_GUI.manifest"
-IDI_ICON1 ICON "SteamDeck_rEFInd.ico"
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION    APP_VERSION_MAJOR,APP_VERSION_MINOR,APP_VERSION_PATCH,0
@@ -23,11 +21,11 @@ BEGIN
         BLOCK "040904B0"
         BEGIN
             VALUE "CompanyName",      APP_COMPANY_NAME
-            VALUE "FileDescription",  "SteamDeck rEFInd GUI"
+            VALUE "FileDescription",  "SteamDeck rEFInd GUI privileged helper"
             VALUE "FileVersion",      APP_VERSION_STR
-            VALUE "InternalName",     "SteamDeck_rEFInd"
+            VALUE "InternalName",     "SteamDeck_rEFInd_helper"
             VALUE "LegalCopyright",   APP_COPYRIGHT
-            VALUE "OriginalFilename", "SteamDeck_rEFInd.exe"
+            VALUE "OriginalFilename", "SteamDeck_rEFInd_helper.exe"
             VALUE "ProductName",      APP_PRODUCT_NAME
             VALUE "ProductVersion",   APP_VERSION_STR
         END
