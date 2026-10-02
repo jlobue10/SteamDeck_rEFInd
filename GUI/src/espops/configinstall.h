@@ -17,6 +17,11 @@
 // live config is shared by every installer that can reach the ESP, and
 // without the note two GUIs used alternately silently undo each other's
 // changes while both report success.
+//
+// A successful install that published an active_theme.conf also checks that
+// the theme directories it names exist on the ESP, and notes it when they
+// do not: the theme trees are copied by a separate action (Install Themes),
+// and a theme whose files are missing boots to rEFInd's default banner.
 
 #ifndef ESPOPS_CONFIGINSTALL_H
 #define ESPOPS_CONFIGINSTALL_H

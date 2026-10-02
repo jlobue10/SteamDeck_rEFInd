@@ -53,6 +53,8 @@ add_library(espops STATIC
     espops/loadoption.h
     espops/randomize.cpp
     espops/randomize.h
+    espops/themeconf.cpp
+    espops/themeconf.h
     espops/themesinstall.cpp
     espops/themesinstall.h
     espops/userio.cpp
@@ -206,7 +208,7 @@ install(TARGETS SteamDeck_rEFInd
 )
 
 # Optional developer unit tests (OFF so packaging builds are unaffected):
-# cmake -DBUILD_GUI_TESTS=ON, then ctest --test-dir <builddir>. The four
+# cmake -DBUILD_GUI_TESTS=ON, then ctest --test-dir <builddir>. The five
 # espops suites are platform-neutral (POSIX-only cases QSKIP on Windows);
 # osdetect/espresolve compile Linux-only sources and stay Linux-gated.
 option(BUILD_GUI_TESTS "Build the developer unit tests" OFF)
@@ -229,6 +231,10 @@ if(BUILD_GUI_TESTS)
     add_executable(tst_randomize tests/tst_randomize.cpp)
     target_link_libraries(tst_randomize PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME randomize COMMAND tst_randomize)
+
+    add_executable(tst_themeconf tests/tst_themeconf.cpp)
+    target_link_libraries(tst_themeconf PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME themeconf COMMAND tst_themeconf)
 
     if(NOT WIN32)
         add_executable(tst_osdetect tests/tst_osdetect.cpp osdetect_common.cpp osdetect_linux.cpp platform.cpp)

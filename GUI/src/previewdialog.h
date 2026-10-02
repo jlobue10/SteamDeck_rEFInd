@@ -33,9 +33,12 @@ struct PreviewTheme {
 
     // Parses the visual directives out of themeConfPath. Asset paths in
     // theme.conf are ESP-relative ("themes/<name>/..."); themesRoot is the
-    // local themes directory they resolve against. An asset that does not
-    // resolve to an existing file stays empty, and the preview falls back
-    // to its themeless drawing for that element. Never sets name/randomPick.
+    // local themes directory they resolve against. Paths naming a theme
+    // directory that does not exist there are first re-rooted onto the
+    // theme's own directory, exactly as Create Config stages them. An asset
+    // that still does not resolve to an existing file stays empty, and the
+    // preview falls back to its themeless drawing for that element. Never
+    // sets name/randomPick.
     static PreviewTheme load(const QString &themeConfPath, const QString &themesRoot);
 };
 

@@ -1,5 +1,7 @@
 #include "previewdialog.h"
+#include "espops/themeconf.h"
 
+#include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QFontMetrics>
@@ -130,10 +132,19 @@ PreviewTheme PreviewTheme::load(const QString &themeConfPath, const QString &the
 {
     PreviewTheme theme;
     QFile file(themeConfPath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!file.open(QIODevice::ReadOnly))
         return theme;
     const QString confDir = QFileInfo(themeConfPath).path();
-    QTextStream in(&file);
+    // Parse what Create Config stages rather than the raw file: asset paths
+    // naming a theme directory that does not exist are re-rooted onto the
+    // theme's own, so a theme kept in a folder its theme.conf doesn't expect
+    // previews the way it will boot (espops/themeconf.h).
+    const QByteArray conf = EspOps::retargetThemeConf(
+        file.readAll(), QFileInfo(confDir).fileName(),
+        themesRoot.isEmpty()
+            ? QStringList()
+            : QDir(themesRoot).entryList(QDir::Dirs | QDir::NoDotAndDotDot));
+    QTextStream in(conf);
     while (!in.atEnd()) {
         const QString line = in.readLine().trimmed();
         if (line.isEmpty() || line.startsWith(QLatin1Char('#')))

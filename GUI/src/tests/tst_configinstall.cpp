@@ -79,6 +79,39 @@ private slots:
         QVERIFY2(leftovers.isEmpty(), qPrintable(leftovers.join(' ')));
     }
 
+    void missingThemeTreeNoted()
+    {
+        // The active theme's files are copied by Install Themes, not here:
+        // an install whose theme directory is absent from the ESP succeeds,
+        // but says the theme will not show until the files are there.
+        writeSrc("refind.conf", "include themes/active_theme.conf\n");
+        writeSrc("active_theme.conf", "icons_dir themes/wave/icons\n"
+                                      "banner themes/wave/bg.png\n");
+        const InstallOutcome o = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(o.exitCode, 0);
+        const QString all = o.lines.join('\n');
+        QVERIFY2(all.contains("needs themes/wave,"), qPrintable(all));
+        QVERIFY2(all.contains("Install Themes"), qPrintable(all));
+        QCOMPARE(all.count("themes/wave"), 1); // one line per directory
+    }
+
+    void installedThemeTreeNotNoted()
+    {
+        writeSrc("refind.conf", "include themes/active_theme.conf\n");
+        writeSrc("active_theme.conf", "banner themes/wave/bg.png\n");
+        QVERIFY(QDir().mkpath(refindDir() + "/themes/wave"));
+        const InstallOutcome o = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(o.exitCode, 0);
+        QVERIFY2(!o.lines.join('\n').contains("Install Themes"),
+                 qPrintable(o.lines.join('\n')));
+
+        // No theme at all: nothing to note either.
+        QFile::remove(srcPath("active_theme.conf"));
+        const InstallOutcome plain = installConfigSet(files, src.path(), refindDir());
+        QCOMPARE(plain.exitCode, 0);
+        QVERIFY(!plain.lines.join('\n').contains("Install Themes"));
+    }
+
     void missingConfigFailsWith6()
     {
         writeSrc("background.png", "PNG");

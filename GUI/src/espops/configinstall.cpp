@@ -6,12 +6,14 @@
 
 #include "configinstall.h"
 #include "espconstants.h"
+#include "themeconf.h"
 #include "userio.h"
 
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QMap>
 #include <QTemporaryFile>
 
@@ -347,6 +349,34 @@ InstallOutcome installConfigSet(UserFiles &user, const QString &srcDir,
     out.lines << QStringLiteral("Installed %1 file(s) to %2")
                      .arg(copied)
                      .arg(refindDir);
+
+    // The config now includes the active theme, but the theme's own files
+    // travel separately (Install Themes). Without them every asset path
+    // dangles and rEFInd draws its default banner instead of the theme --
+    // which looks like the install did nothing, so say so here.
+    if (staged.contains(QStringLiteral("active_theme.conf"))) {
+        const QString themesDir =
+            destDirFor(QStringLiteral("active_theme.conf"), refindDir);
+        QStringList missing;
+        QFile active(themesDir + QLatin1String("/active_theme.conf"));
+        if (active.open(QIODevice::ReadOnly)) {
+            const QStringList named = themeDirsReferenced(active.read(4 << 20));
+            for (const QString &dir : named) {
+                if (!QFileInfo(themesDir + QLatin1Char('/') + dir).isDir())
+                    missing << dir;
+            }
+        }
+        if (!missing.isEmpty()) {
+            out.lines
+                << QStringLiteral("Note: the selected theme needs themes/%1, "
+                                  "which is not on the EFI System Partition "
+                                  "yet.")
+                       .arg(missing.join(QStringLiteral(", themes/")))
+                << QStringLiteral("Use Install Themes to copy the theme files "
+                                  "-- until then rEFInd shows its default "
+                                  "banner instead of the theme.");
+        }
+    }
     return out;
 }
 
