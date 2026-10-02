@@ -63,7 +63,7 @@ How it works: when a theme is selected, **Create Config** appends a single stabl
 Using themes from the GUI:
 
 1. **Theme** dropdown — pick a theme (or `Random` to have one picked for you at Create Config time; `None` keeps the classic look). Then **Create Config** and **Install Config** as usual.
-2. **Install Themes** — copies the whole `themes/` tree to the ESP (`EFI/refind/themes/`, about 12 MB). Needed once before an installed config's theme can render, and again only if the shipped themes change.
+2. **Install Themes** — copies the whole `themes/` tree to the ESP (`EFI/refind/themes/`, about 12 MB). Needed once before an installed config's theme can render, and again only if the shipped themes change or you add your own. If the selected theme's files are not on the ESP yet, **Install Config** says so — until they are, rEFInd falls back to its own default banner (the rEFInd logo, stretched over the screen) instead of the theme.
 3. **Theme Rand On / Theme Rand Off** — enable or disable the per-boot theme randomizer (the `rEFInd_theme_randomizer` systemd service on SteamOS, a scheduled task running at each Windows logon in the Windows app): it copies a random theme's `theme.conf` over `themes/active_theme.conf` on the ESP. It only acts when the live `refind.conf` contains the theme include line, so it is inert while the Theme dropdown is `None`.
 
 Note: if both the background randomizer and the theme randomizer are enabled, the theme's banner wins — a theme's `theme.conf` sets its own `banner`, which supersedes the randomized `background.png`.
@@ -84,7 +84,7 @@ Note: if both the background randomizer and the theme randomizer are enabled, th
 
 \* These themes carry no explicit redistribution license; they are included with full attribution and links to the originals, and will be removed immediately at the original author's request.
 
-More themes to explore (installable manually the same way — drop a folder under `themes/` whose `theme.conf` uses `themes/<folder>/...` paths):
+More themes to explore (installable manually the same way — drop a folder holding a `theme.conf` under `themes/`, then press **Install Themes**; the folder name does not have to match the `themes/<name>/...` paths inside the `theme.conf`, a theme unpacked as `<name>-master` works as it is):
 
 - [rEFInd Themes Collection](https://refind-themes-collection.netlify.app/) — gallery site; its source and theme list live on GitHub at [martinmilani/rEFInd-theme-collection](https://github.com/martinmilani/rEFInd-theme-collection)
 - [rodsbooks.com — Using rEFInd Themes](https://www.rodsbooks.com/refind/themes.html)

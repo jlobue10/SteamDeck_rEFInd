@@ -4,6 +4,7 @@
 #include "platform.h"
 #include "previewdialog.h"
 #include "uitranslation.h"
+#include "espops/themeconf.h"
 
 #include <QDateTime>
 #include <QDesktopServices>
@@ -974,12 +975,20 @@ QString MainWindow::resolveThemeChoice(const QString &choice)
     return choice;
 }
 
-// Stages GUI/active_theme.conf as a copy of the chosen theme's theme.conf,
-// with the same QSaveFile publish-on-commit pattern as the generated config
-// (a partial copy must never replace a previously staged good one).
+// Stages GUI/active_theme.conf from the chosen theme's theme.conf, with the
+// same QSaveFile publish-on-commit pattern as the generated config (a
+// partial copy must never replace a previously staged good one).
+//
+// Not a verbatim copy: asset paths that name a theme directory which does
+// not exist are re-rooted onto the theme's actual directory. A theme added
+// by hand usually sits in a folder named after the download
+// ("ursamajor-rEFInd-master") while its theme.conf still says
+// themes/ursamajor-rEFInd/..., and rEFInd answers the dangling banner path
+// with its own logo stretched over the screen (rEFInd_GUI issue #101).
 bool MainWindow::stageActiveThemeConf(const QString &themeName)
 {
-    QFile input(themesRootDir() + QLatin1Char('/') + themeName
+    const QString themesRoot = themesRootDir();
+    QFile input(themesRoot + QLatin1Char('/') + themeName
                 + QStringLiteral("/theme.conf"));
     QSaveFile output(guiConfigDir + QStringLiteral("/active_theme.conf"));
     output.setDirectWriteFallback(false);
@@ -990,7 +999,10 @@ bool MainWindow::stageActiveThemeConf(const QString &themeName)
                                                                output.fileName()));
         return false;
     }
-    const QByteArray payload = input.readAll();
+    int retargeted = 0;
+    const QByteArray payload = EspOps::retargetThemeConf(
+        input.readAll(), themeName,
+        QDir(themesRoot).entryList(QDir::Dirs | QDir::NoDotAndDotDot), &retargeted);
     const qint64 written = output.write(payload);
     if (payload.isEmpty() || written != payload.size() || !output.commit()) {
         output.cancelWriting();
@@ -998,6 +1010,11 @@ bool MainWindow::stageActiveThemeConf(const QString &themeName)
                              tr("Could not copy %1 to %2").arg(input.fileName(),
                                                                output.fileName()));
         return false;
+    }
+    if (retargeted > 0) {
+        appendLog(QStringLiteral("create config: theme %1: re-rooted %2 asset path(s) "
+                                 "onto themes/%1")
+                      .arg(themeName, QString::number(retargeted)));
     }
     return true;
 }

@@ -2,6 +2,7 @@
 
 #include "randomize.h"
 #include "espconstants.h"
+#include "themeconf.h"
 #include "userio.h"
 
 #include <QBuffer>
@@ -99,13 +100,24 @@ int randomizeTheme(const QString &refindDir, QStringList *warnings)
     QStringList candidates;
     const QStringList names = QDir(themesDir).entryList(
         QDir::Dirs | QDir::NoDotAndDotDot | QDir::NoSymLinks);
-    for (const QString &n : names) {
-        const QString confPath = themesDir + QLatin1Char('/') + n
+    const auto confPath = [&](const QString &name) {
+        return themesDir + QLatin1Char('/') + name
             + QLatin1String("/theme.conf");
-        const QFileInfo fi(confPath);
+    };
+    for (const QString &n : names) {
+        const QFileInfo fi(confPath(n));
         if (fi.isFile() && fi.size() > 0)
-            candidates << confPath;
+            candidates << n;
     }
+    // What a candidate becomes as active_theme.conf: its theme.conf with any
+    // asset path naming a directory that is not installed re-rooted onto the
+    // theme's own. A hand-added "<name>-master" tree whose theme.conf still
+    // says themes/<name>/... would otherwise boot to rEFInd's default banner
+    // (themeconf.h).
+    const auto activeContent = [&](const QString &name) {
+        return retargetThemeConf(readWhole(confPath(name), 4 << 20), name,
+                                 names);
+    };
     if (candidates.isEmpty()) {
         warn(warnings,
              QStringLiteral("no themes found under %1; keeping the current "
@@ -121,7 +133,7 @@ int randomizeTheme(const QString &refindDir, QStringList *warnings)
         const QByteArray active = readWhole(activePath, 4 << 20);
         QStringList fresh;
         for (const QString &c : candidates) {
-            if (readWhole(c, 4 << 20) != active)
+            if (activeContent(c) != active)
                 fresh << c;
         }
         if (!fresh.isEmpty())
@@ -130,11 +142,11 @@ int randomizeTheme(const QString &refindDir, QStringList *warnings)
 
     const QString pick =
         pickFrom.at(int(QRandomGenerator::global()->bounded(quint32(pickFrom.size()))));
-    const QByteArray content = readWhole(pick, 4 << 20);
+    const QByteArray content = activeContent(pick);
     if (content.isEmpty()) {
         warn(warnings,
              QStringLiteral("could not read %1; keeping the current theme")
-                 .arg(pick));
+                 .arg(confPath(pick)));
         return 0;
     }
     if (!publishStaged(themesDir, QStringLiteral("active_theme.conf"), content))

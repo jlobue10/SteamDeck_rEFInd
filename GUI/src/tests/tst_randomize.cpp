@@ -109,6 +109,52 @@ private slots:
         QCOMPARE(randomizeTheme(refindDir(), nullptr), 0);
         QCOMPARE(active(), QByteArrayLiteral("banner g\n"));
     }
+
+    void misnamedThemeDirRetargeted()
+    {
+        // A hand-added theme installed under its download name: theme.conf
+        // says themes/ursamajor-rEFInd/..., the tree is
+        // themes/ursamajor-rEFInd-master/. The published active_theme.conf
+        // must point at the directory that exists.
+        writeFile(refindDir() + "/refind.conf",
+                  "include themes/active_theme.conf\n");
+        writeFile(refindDir() + "/themes/ursamajor-rEFInd-master/theme.conf",
+                  "banner themes/ursamajor-rEFInd/background.png\n"
+                  "showtools shutdown\n");
+        QStringList warnings;
+        QCOMPARE(randomizeTheme(refindDir(), &warnings), 0);
+        QVERIFY2(warnings.isEmpty(), qPrintable(warnings.join('\n')));
+        QCOMPARE(active(),
+                 QByteArrayLiteral(
+                     "banner themes/ursamajor-rEFInd-master/background.png\n"
+                     "showtools shutdown\n"));
+        // The installed theme.conf itself is never modified.
+        QFile conf(refindDir() + "/themes/ursamajor-rEFInd-master/theme.conf");
+        QVERIFY(conf.open(QIODevice::ReadOnly));
+        QVERIFY(conf.readAll().contains("themes/ursamajor-rEFInd/background.png"));
+    }
+
+    void antiRepeatSeesRetargetedContent()
+    {
+        // The anti-repeat compare must match the active file against what a
+        // candidate would be published as, not against its raw theme.conf --
+        // otherwise a retargeted theme never counts as "already active" and
+        // can be picked twice in a row.
+        writeFile(refindDir() + "/refind.conf",
+                  "include themes/active_theme.conf\n");
+        writeFile(refindDir() + "/themes/x-master/theme.conf",
+                  "banner themes/x/bg.png\n");
+        writeFile(refindDir() + "/themes/wave/theme.conf",
+                  "banner themes/wave/bg.png\n");
+        QByteArray previous;
+        for (int i = 0; i < 6; ++i) {
+            QCOMPARE(randomizeTheme(refindDir(), nullptr), 0);
+            const QByteArray current = active();
+            QVERIFY2(current != previous, qPrintable(QString::number(i)));
+            QVERIFY(!current.contains("themes/x/"));
+            previous = current;
+        }
+    }
 };
 
 QTEST_APPLESS_MAIN(TestRandomize)

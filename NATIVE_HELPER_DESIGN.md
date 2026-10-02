@@ -129,6 +129,7 @@ GUI/src/
     configinstall.cpp  staged publish-last config install
     themesinstall.cpp  staged per-theme dir swap with rollback
     randomize.cpp      bg + theme randomizer payloads
+    themeconf.cpp      theme.conf asset-path re-rooting (pure, testable)
     userio_linux.cpp   fork/setuid fd-handoff reads of the invoking user's files
   helper/            NEW — SteamDeck_rEFInd_helper (QtCore console app)
     main.cpp           subcommand dispatch, --version

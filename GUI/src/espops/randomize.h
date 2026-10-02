@@ -30,8 +30,10 @@ namespace EspOps {
 class UserFiles;
 
 // Replace <refindDir>/themes/active_theme.conf with a random installed
-// theme's theme.conf. Takes no user-writable input at all — candidates are
-// the ESP's own root-owned themes/*/theme.conf.
+// theme's theme.conf, its asset paths re-rooted onto the theme's own
+// directory where they name one that is not installed (themeconf.h). Takes
+// no user-writable input at all — candidates are the ESP's own root-owned
+// themes/*/theme.conf.
 int randomizeTheme(const QString &refindDir, QStringList *warnings);
 
 // Replace <refindDir>/background.png with a random PNG from the
