@@ -14,7 +14,7 @@ Please feel free to donate and support me at the following link. Donations are n
 Make sure your `sudo` password is set and you are connected to the internet, then run this from a terminal in desktop mode:
 
 ```
-curl -L https://github.com/jlobue10/SteamDeck_rEFInd/raw/main/install-GUI.sh | sh
+curl -L https://github.com/jlobue10/SteamDeck_rEFInd/raw/main/install-GUI.sh | bash
 ```
 
 The installer stages everything into `~/.local/SteamDeck_rEFInd/`, installs the latest GUI release package, and creates a desktop shortcut.
