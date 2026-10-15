@@ -130,7 +130,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.cpp" line="1683"/>
+        <location filename="mainwindow.cpp" line="1834"/>
         <source>Open Folder</source>
         <translation>Map openen</translation>
     </message>
@@ -276,15 +276,15 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
-        <location filename="mainwindow.cpp" line="1640"/>
-        <location filename="mainwindow.cpp" line="1653"/>
-        <location filename="mainwindow.cpp" line="1658"/>
+        <location filename="mainwindow.cpp" line="1791"/>
+        <location filename="mainwindow.cpp" line="1804"/>
+        <location filename="mainwindow.cpp" line="1809"/>
         <source>Install Themes</source>
         <translation>Thema&apos;s installeren</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="976"/>
-        <location filename="mainwindow.cpp" line="1011"/>
+        <location filename="mainwindow.cpp" line="1113"/>
         <source>Showtools</source>
         <translation>Showtools</translation>
     </message>
@@ -310,7 +310,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1075"/>
-        <location filename="mainwindow.cpp" line="612"/>
+        <location filename="mainwindow.cpp" line="673"/>
         <source>Install rEFInd</source>
         <translation>rEFInd installeren</translation>
     </message>
@@ -321,12 +321,14 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1097"/>
-        <location filename="mainwindow.cpp" line="958"/>
-        <location filename="mainwindow.cpp" line="968"/>
-        <location filename="mainwindow.cpp" line="988"/>
-        <location filename="mainwindow.cpp" line="997"/>
-        <location filename="mainwindow.cpp" line="1048"/>
-        <location filename="mainwindow.cpp" line="1059"/>
+        <location filename="mainwindow.cpp" line="1044"/>
+        <location filename="mainwindow.cpp" line="1054"/>
+        <location filename="mainwindow.cpp" line="1082"/>
+        <location filename="mainwindow.cpp" line="1094"/>
+        <location filename="mainwindow.cpp" line="1154"/>
+        <location filename="mainwindow.cpp" line="1168"/>
+        <location filename="mainwindow.cpp" line="1179"/>
+        <location filename="mainwindow.cpp" line="1190"/>
         <source>Create Config</source>
         <translation>Config aanmaken</translation>
     </message>
@@ -337,10 +339,10 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1119"/>
-        <location filename="mainwindow.cpp" line="1174"/>
-        <location filename="mainwindow.cpp" line="1189"/>
-        <location filename="mainwindow.cpp" line="1195"/>
-        <location filename="mainwindow.cpp" line="1200"/>
+        <location filename="mainwindow.cpp" line="1325"/>
+        <location filename="mainwindow.cpp" line="1340"/>
+        <location filename="mainwindow.cpp" line="1346"/>
+        <location filename="mainwindow.cpp" line="1351"/>
         <source>Install Config</source>
         <translation>Config installeren</translation>
     </message>
@@ -380,42 +382,42 @@
         <translation>Achtergrond</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="44"/>
+        <location filename="mainwindow.cpp" line="46"/>
         <source>None</source>
         <translation>Geen</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="137"/>
+        <location filename="mainwindow.cpp" line="139"/>
         <source>Small (96)</source>
         <translation>Klein (96)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="138"/>
+        <location filename="mainwindow.cpp" line="140"/>
         <source>Default (128)</source>
         <translation>Standaard (128)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="139"/>
+        <location filename="mainwindow.cpp" line="141"/>
         <source>Medium (160)</source>
         <translation>Middelgroot (160)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="140"/>
+        <location filename="mainwindow.cpp" line="142"/>
         <source>Large (192)</source>
         <translation>Groot (192)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="141"/>
+        <location filename="mainwindow.cpp" line="143"/>
         <source>Extra Large (256)</source>
         <translation>Extra groot (256)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="142"/>
+        <location filename="mainwindow.cpp" line="144"/>
         <source>XXL (512)</source>
         <translation>XXL (512)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="144"/>
+        <location filename="mainwindow.cpp" line="146"/>
         <source>Requires efibootmgr (Linux only)</source>
         <translation>Vereist efibootmgr (alleen Linux)</translation>
     </message>
@@ -424,72 +426,84 @@
         <translation type="vanished">systemd-service (alleen Linux)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="148"/>
+        <location filename="mainwindow.cpp" line="150"/>
         <source>Not needed: no unreadable EFI System Partition was found</source>
         <translation>Niet nodig: er is geen onleesbare EFI-systeempartitie gevonden</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="180"/>
+        <location filename="mainwindow.cpp" line="182"/>
         <source>System default</source>
         <translation>Systeemstandaard</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="253"/>
+        <location filename="mainwindow.cpp" line="255"/>
         <source>Random</source>
         <translation>Willekeurig</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="361"/>
+        <location filename="mainwindow.cpp" line="389"/>
+        <source>Kernel images changed</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="390"/>
+        <source>The config staged here boots %1 from a Unified Kernel Image that is no longer on the EFI System Partition (a kernel update on that Linux system replaced it).
+
+Use Create Config and Install Config to point it at the current kernels. If rEFInd_GUI is installed on that Linux system, its kernel-install hook has already updated the installed boot menu, and this only refreshes the copy staged here.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="407"/>
         <source>Scanning…</source>
         <translation>Scannen…</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="570"/>
+        <location filename="mainwindow.cpp" line="631"/>
         <source>Image (*.png)</source>
         <translation>Afbeelding (*.png)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="586"/>
+        <location filename="mainwindow.cpp" line="647"/>
         <source>Select Background PNG</source>
         <translation>Achtergrond-PNG selecteren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="591"/>
+        <location filename="mainwindow.cpp" line="652"/>
         <source>Select OS Icon 1 PNG</source>
         <translation>PNG voor OS-pictogram 1 selecteren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="596"/>
+        <location filename="mainwindow.cpp" line="657"/>
         <source>Select OS Icon 2 PNG</source>
         <translation>PNG voor OS-pictogram 2 selecteren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="601"/>
+        <location filename="mainwindow.cpp" line="662"/>
         <source>Select OS Icon 3 PNG</source>
         <translation>PNG voor OS-pictogram 3 selecteren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="606"/>
+        <location filename="mainwindow.cpp" line="667"/>
         <source>Select OS Icon 4 PNG</source>
         <translation>PNG voor OS-pictogram 4 selecteren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="613"/>
+        <location filename="mainwindow.cpp" line="674"/>
         <source>Failed to launch the installation script.</source>
         <translation>Kon het installatiescript niet starten.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="959"/>
+        <location filename="mainwindow.cpp" line="1045"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
         <translation>Er zijn geen thema&apos;s gevonden, dus kon er geen willekeurig thema worden gekozen. Installeer de GUI opnieuw om de meegeleverde thema&apos;s te herstellen.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="969"/>
+        <location filename="mainwindow.cpp" line="1055"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
         <translation>Het geselecteerde thema &quot;%1&quot; is niet gevonden (of zijn theme.conf is leeg). Kies een ander thema, of installeer de GUI opnieuw om de meegeleverde thema&apos;s te herstellen.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1012"/>
+        <location filename="mainwindow.cpp" line="1114"/>
         <source>These showtools entries are not recognized: %1
 
 Valid entries: %2</source>
@@ -498,18 +512,32 @@ Valid entries: %2</source>
 Geldige waarden: %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1049"/>
+        <location filename="mainwindow.cpp" line="1155"/>
         <source>Could not write %1</source>
         <translation>Kon %1 niet schrijven</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1060"/>
+        <location filename="mainwindow.cpp" line="1169"/>
+        <source>No OS entries were detected or selected.
+
+The generated config would contain no boot stanzas, so it was not written. Use Deep Scan to look for more bootloaders, or pick an OS in the Boot Option boxes, then create the config again.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1180"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
         <translation>Kon %1 niet volledig wegschrijven — de schijf is mogelijk vol. De config is niet bijgewerkt.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1175"/>
-        <location filename="mainwindow.cpp" line="1641"/>
+        <location filename="mainwindow.cpp" line="1191"/>
+        <source>This config boots Unified Kernel Images, whose file names change with every kernel update of the Linux system that owns them.
+
+Install rEFInd_GUI on that Linux system: its kernel-install hook re-points these boot entries automatically after every kernel update. Otherwise, use Create Config and Install Config again here after that system updates its kernel.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="1326"/>
+        <location filename="mainwindow.cpp" line="1792"/>
         <source>The privileged install helper was NOT run:
 
 %1
@@ -533,18 +561,18 @@ Het komt niet overeen met de kopie die met deze versie van de app is meegeleverd
 Installeer de GUI opnieuw om het originele script te herstellen en probeer het daarna nogmaals.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1190"/>
-        <location filename="mainwindow.cpp" line="1202"/>
+        <location filename="mainwindow.cpp" line="1341"/>
+        <location filename="mainwindow.cpp" line="1353"/>
         <source>Installing the config failed (code %1).</source>
         <translation>Het installeren van de config is mislukt (code %1).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1197"/>
+        <location filename="mainwindow.cpp" line="1348"/>
         <source>The config was installed successfully.</source>
         <translation>De config is met succes geïnstalleerd.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1198"/>
+        <location filename="mainwindow.cpp" line="1349"/>
         <source>The config was installed successfully.
 
 %1</source>
@@ -553,7 +581,7 @@ Installeer de GUI opnieuw om het originele script te herstellen en probeer het d
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1203"/>
+        <location filename="mainwindow.cpp" line="1354"/>
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -562,28 +590,28 @@ Installeer de GUI opnieuw om het originele script te herstellen en probeer het d
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1223"/>
-        <location filename="mainwindow.cpp" line="1233"/>
-        <location filename="mainwindow.cpp" line="1240"/>
+        <location filename="mainwindow.cpp" line="1374"/>
+        <location filename="mainwindow.cpp" line="1384"/>
+        <location filename="mainwindow.cpp" line="1391"/>
         <source>Copy PNG</source>
         <translation>PNG kopiëren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="989"/>
-        <location filename="mainwindow.cpp" line="998"/>
-        <location filename="mainwindow.cpp" line="1224"/>
-        <location filename="mainwindow.cpp" line="1234"/>
-        <location filename="mainwindow.cpp" line="1241"/>
+        <location filename="mainwindow.cpp" line="1083"/>
+        <location filename="mainwindow.cpp" line="1095"/>
+        <location filename="mainwindow.cpp" line="1375"/>
+        <location filename="mainwindow.cpp" line="1385"/>
+        <location filename="mainwindow.cpp" line="1392"/>
         <source>Could not copy %1 to %2</source>
         <translation>Kon %1 niet naar %2 kopiëren</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1266"/>
+        <location filename="mainwindow.cpp" line="1417"/>
         <source>Invalid PNG</source>
         <translation>Ongeldige PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1267"/>
+        <location filename="mainwindow.cpp" line="1418"/>
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -592,53 +620,53 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 Achtergronden en OS-pictogrammen moeten echte PNG-afbeeldingen zijn (niet slechts bestanden met de extensie .png).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1540"/>
+        <location filename="mainwindow.cpp" line="1691"/>
         <source>Check For Update</source>
         <translation>Controleren op updates</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1543"/>
+        <location filename="mainwindow.cpp" line="1694"/>
         <source>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Oorspronkelijke maker van de GUI: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Met speciale dank aan Deck Wizard voor het testen en de kwaliteitscontrole&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Dual-boot-tutorial van Deck Wizard&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1592"/>
+        <location filename="mainwindow.cpp" line="1743"/>
         <source>&lt;p align=&apos;center&apos;&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;De updatecontrole is mislukt. Controleer je internetverbinding en probeer het opnieuw.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1595"/>
+        <location filename="mainwindow.cpp" line="1746"/>
         <source>&lt;p align=&apos;center&apos;&gt;An update is available &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;Er is een update beschikbaar &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;hier&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1599"/>
+        <location filename="mainwindow.cpp" line="1750"/>
         <source>&lt;p align=&apos;center&apos;&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;Geen update gevonden. Je gebruikt de nieuwste versie.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1609"/>
-        <location filename="mainwindow.cpp" line="1616"/>
+        <location filename="mainwindow.cpp" line="1760"/>
+        <location filename="mainwindow.cpp" line="1767"/>
         <source>systemd service</source>
         <translation>systemd-service</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1610"/>
-        <location filename="mainwindow.cpp" line="1617"/>
+        <location filename="mainwindow.cpp" line="1761"/>
+        <location filename="mainwindow.cpp" line="1768"/>
         <source>Failed to launch the service toggle.</source>
         <translation>Kon het omschakelen van de service niet starten.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1623"/>
-        <location filename="mainwindow.cpp" line="1630"/>
+        <location filename="mainwindow.cpp" line="1774"/>
+        <location filename="mainwindow.cpp" line="1781"/>
         <source>Background Randomizer</source>
         <translation>Achtergrondrandomizer</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1624"/>
-        <location filename="mainwindow.cpp" line="1631"/>
-        <location filename="mainwindow.cpp" line="1670"/>
-        <location filename="mainwindow.cpp" line="1677"/>
+        <location filename="mainwindow.cpp" line="1775"/>
+        <location filename="mainwindow.cpp" line="1782"/>
+        <location filename="mainwindow.cpp" line="1821"/>
+        <location filename="mainwindow.cpp" line="1828"/>
         <source>Failed to launch the randomizer setup.</source>
         <translation>Kon de randomizer-instelling niet starten.</translation>
     </message>
@@ -659,12 +687,12 @@ Het ontbreekt, of het komt niet overeen met de kopie die met deze versie van de 
 Installeer de GUI opnieuw (op SteamOS: voer install-GUI.sh opnieuw uit) om het te installeren of te herstellen en probeer het daarna nogmaals.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1655"/>
+        <location filename="mainwindow.cpp" line="1806"/>
         <source>The themes were installed successfully.</source>
         <translation>De thema&apos;s zijn met succes geïnstalleerd.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1656"/>
+        <location filename="mainwindow.cpp" line="1807"/>
         <source>The themes were installed successfully.
 
 %1</source>
@@ -673,12 +701,12 @@ Installeer de GUI opnieuw (op SteamOS: voer install-GUI.sh opnieuw uit) om het t
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1660"/>
+        <location filename="mainwindow.cpp" line="1811"/>
         <source>Installing the themes failed (code %1).</source>
         <translation>Het installeren van de thema&apos;s is mislukt (code %1).</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1661"/>
+        <location filename="mainwindow.cpp" line="1812"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
@@ -687,13 +715,13 @@ Installeer de GUI opnieuw (op SteamOS: voer install-GUI.sh opnieuw uit) om het t
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1669"/>
-        <location filename="mainwindow.cpp" line="1676"/>
+        <location filename="mainwindow.cpp" line="1820"/>
+        <location filename="mainwindow.cpp" line="1827"/>
         <source>Theme Randomizer</source>
         <translation>Themarandomizer</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1684"/>
+        <location filename="mainwindow.cpp" line="1835"/>
         <source>Failed to open %1 in the file manager.</source>
         <translation>Kon %1 niet openen in de bestandsbeheerder.</translation>
     </message>
@@ -701,32 +729,46 @@ Installeer de GUI opnieuw (op SteamOS: voer install-GUI.sh opnieuw uit) om het t
 <context>
     <name>Platform</name>
     <message>
-        <location filename="platform.cpp" line="173"/>
         <source>The privileged helper is not installed under Program Files.</source>
-        <translation>De geprivilegieerde helper is niet onder Program Files geïnstalleerd.</translation>
+        <translation type="vanished">De geprivilegieerde helper is niet onder Program Files geïnstalleerd.</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="183"/>
         <source>powershell.exe could not be started.</source>
-        <translation>powershell.exe kon niet worden gestart.</translation>
+        <translation type="vanished">powershell.exe kon niet worden gestart.</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="331"/>
+        <location filename="platform.cpp" line="176"/>
+        <source>No EFI System Partition with rEFInd on it could be found.
+Install rEFInd first, then install the %1.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="198"/>
+        <source>EFI\refind\themes on the target ESP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="202"/>
+        <source>EFI\refind on the target ESP</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="355"/>
         <source>sudo could not be started.</source>
         <translation>sudo kon niet worden gestart.</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="370"/>
+        <location filename="platform.cpp" line="394"/>
         <source>missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="385"/>
+        <location filename="platform.cpp" line="409"/>
         <source>%1 (expected version %2, found: %3)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="392"/>
+        <location filename="platform.cpp" line="416"/>
         <source>%1 (the passwordless sudo rule for &apos;%2&apos; is not installed)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -734,32 +776,32 @@ Installeer de GUI opnieuw (op SteamOS: voer install-GUI.sh opnieuw uit) om het t
 <context>
     <name>PreviewDialog</name>
     <message>
-        <location filename="previewdialog.cpp" line="62"/>
+        <location filename="previewdialog.cpp" line="64"/>
         <source>No boot options selected.</source>
         <translation>Geen opstartopties geselecteerd.</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="178"/>
+        <location filename="previewdialog.cpp" line="189"/>
         <source>Preview</source>
         <translation>Voorbeeld</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="193"/>
+        <location filename="previewdialog.cpp" line="204"/>
         <source>Approximate preview — rEFInd&apos;s real rendering also depends on the firmware resolution and theme.</source>
         <translation>Benaderend voorbeeld — de werkelijke weergave van rEFInd hangt ook af van de firmwareresolutie en het thema.</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="196"/>
+        <location filename="previewdialog.cpp" line="207"/>
         <source>Approximate preview showing the randomly picked &quot;%1&quot; theme — Random picks a theme anew each time the config is created.</source>
         <translation>Benaderend voorbeeld met het willekeurig gekozen thema &quot;%1&quot; — &quot;Willekeurig&quot; kiest telkens een nieuw thema wanneer de configuratie wordt aangemaakt.</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="200"/>
+        <location filename="previewdialog.cpp" line="211"/>
         <source>Approximate preview with the &quot;%1&quot; theme applied — rEFInd&apos;s real rendering also depends on the firmware resolution and the theme&apos;s other settings.</source>
         <translation>Benaderend voorbeeld met het thema &quot;%1&quot; toegepast — de werkelijke weergave van rEFInd hangt ook af van de firmwareresolutie en de overige instellingen van het thema.</translation>
     </message>
     <message>
-        <location filename="previewdialog.cpp" line="209"/>
+        <location filename="previewdialog.cpp" line="220"/>
         <source>Boot screen</source>
         <translation>Opstartscherm</translation>
     </message>
