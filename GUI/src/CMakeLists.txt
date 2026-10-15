@@ -163,7 +163,18 @@ if(WIN32)
     # are NOT in libuuid); uuid still supplies the generic COM IIDs.
     target_link_libraries(espops PUBLIC advapi32 ole32 oleaut32 taskschd uuid)
 endif()
-target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network espops)
+# Unified Kernel Image families for manual stanzas (see uki/uki.h). QtCore
+# only; parity-locked byte-identical with the sibling rEFInd_GUI repo (the
+# osdetect_* files use it). The kernel-install refresh (ukirefresh.cpp) is
+# rEFInd_GUI-only: SteamOS never runs kernel-install.
+add_library(uki STATIC
+    uki/uki.cpp
+    uki/uki.h
+)
+target_link_libraries(uki PUBLIC Qt${QT_VERSION_MAJOR}::Core)
+target_include_directories(uki PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_link_libraries(SteamDeck_rEFInd PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Network espops uki)
 
 # The privileged helper (console app on both platforms — deliberately not
 # WIN32_EXECUTABLE and not qt_add_executable: no plugins, no deployment
@@ -236,11 +247,15 @@ if(BUILD_GUI_TESTS)
     target_link_libraries(tst_themeconf PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME themeconf COMMAND tst_themeconf)
 
+    add_executable(tst_uki tests/tst_uki.cpp)
+    target_link_libraries(tst_uki PRIVATE uki Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME uki COMMAND tst_uki)
+
     if(NOT WIN32)
         add_executable(tst_osdetect tests/tst_osdetect.cpp osdetect_common.cpp osdetect_linux.cpp platform.cpp)
         target_include_directories(tst_osdetect PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
         target_link_libraries(tst_osdetect PRIVATE
-            Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets espops)
+            Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets espops uki)
         add_test(NAME osdetect COMMAND tst_osdetect)
 
         # Includes espresolve_linux.cpp directly (anonymous-namespace helpers),

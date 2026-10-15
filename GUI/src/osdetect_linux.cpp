@@ -136,7 +136,12 @@ QList<BootEntry> OSDetector::firmwareEntriesForEsp(const Partition &p)
     const QString out = runCommand(QStringLiteral("efibootmgr"), {QStringLiteral("-v")}, &ok);
     if (!ok)
         return entries;
+    return parseEfibootmgrEntries(out, p.partUuid);
+}
 
+QList<BootEntry> OSDetector::parseEfibootmgrEntries(const QString &out, const QString &partUuid)
+{
+    QList<BootEntry> entries;
     // Boot0000* SteamOS\tHD(1,GPT,<guid>,0x800,0x100000)/\EFI\steamos\steamcl.efi
     //
     // Windows appends an optional-data blob straight after the loader path
@@ -150,11 +155,30 @@ QList<BootEntry> OSDetector::firmwareEntriesForEsp(const Partition &p)
     const QStringList lines = out.split('\n');
     for (const QString &line : lines) {
         const QRegularExpressionMatch m = entryRe.match(line);
-        if (!m.hasMatch() || m.captured(1).toLower() != p.partUuid)
+        if (!m.hasMatch() || m.captured(1).toLower() != partUuid)
             continue;
 
         QString loader = m.captured(2);
         loader.replace('\\', '/'); // \EFI\steamos\steamcl.efi -> /EFI/steamos/steamcl.efi
+
+        // Fedora's uki-direct boots a UKI through shim: the entry's loader is
+        // shimx64.efi and the UKI path rides in its optional data, printed
+        // as UTF-16LE hex right after the loader path. That entry is the
+        // UKI, not a bootable shim (shim alone would chainload GRUB).
+        static const QRegularExpression hexRun(QStringLiteral("^[0-9a-fA-F]+"));
+        const QString hex = hexRun.match(line.mid(m.capturedEnd(2))).captured(0);
+        if (hex.size() >= 8 && hex.size() % 4 == 0) {
+            const QByteArray raw = QByteArray::fromHex(hex.toLatin1());
+            QString arg = QString::fromUtf16(reinterpret_cast<const char16_t *>(raw.constData()),
+                                             raw.size() / 2);
+            arg = arg.left(arg.indexOf(QChar(0)) >= 0 ? arg.indexOf(QChar(0)) : arg.size()).trimmed();
+            arg.replace('\\', '/');
+            BootEntry uki;
+            if (classifyLoaderPath(arg, uki) && !uki.ukiToken.isEmpty()) {
+                entries.append(uki);
+                continue;
+            }
+        }
 
         // Name entries the way a filesystem scan would, rather than from the
         // NVRAM label -- those are user-editable and often renamed.
@@ -208,6 +232,12 @@ QList<BootEntry> OSDetector::deepScanEntriesForEsp(const Partition &p)
         BootEntry e;
         if (!classifyLoaderPath(line, e))
             continue;
+        // Every image of a UKI family is kept; detect() folds them into one
+        // entry with the newest image as its loader.
+        if (!e.ukiToken.isEmpty()) {
+            entries.append(e);
+            continue;
+        }
         int existing = -1;
         for (int i = 0; i < entries.size(); ++i) {
             if (entries[i].displayName == e.displayName) {

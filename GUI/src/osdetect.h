@@ -14,6 +14,15 @@ struct BootEntry {
     QString loaderPath;                   // loader path on the volume, e.g. /EFI/fedora/shimx64.efi
     QString volume;                       // optional volume (label or partition GUID) for cross-volume entries
     bool supportsFirmwareBootnum = false; // SteamOS: can boot via firmware_bootnum instead of a loader
+    // Unified Kernel Images in /EFI/Linux: non-empty for one kernel-install
+    // entry-token family. loaderPath is then the newest image and
+    // ukiLoaders/ukiVersions list every image newest first; the slot key
+    // and the generated stanza follow the family rather than one versioned
+    // file, which kernel-install deletes as kernels rotate (see uki/uki.h).
+    QString ukiToken;
+    QStringList ukiLoaders;
+    QStringList ukiVersions;
+    QString ukiOsId;  // .osrel ID when the images were readable; may be empty
 };
 
 Q_DECLARE_METATYPE(BootEntry)
@@ -72,6 +81,9 @@ private:
     // Entries recovered from the firmware's boot variables, for ESPs whose
     // EFI/ tree is unreadable. Empty on Windows (see osdetect_win.cpp).
     QList<BootEntry> firmwareEntriesForEsp(const Partition &p);
+    // The `efibootmgr -v` parsing behind firmwareEntriesForEsp(), for the
+    // entries whose HD() node names partition GUID `partUuid` (lowercase).
+    static QList<BootEntry> parseEfibootmgrEntries(const QString &out, const QString &partUuid);
     // Entries from the cache written by scripts/scan_esp.sh, an opt-in
     // elevated scan that sees loaders with no firmware boot entry. Empty on
     // Windows and when the user has never run it.
@@ -81,6 +93,17 @@ private:
     // True for the ESP that belongs to the running OS (its EFI/ mount).
     static bool isRunningSystemEsp(const Partition &p);
     static QString displayNameForVendorDir(const QString &dirName);
+    // Names a UKI family: its .osrel NAME, else the running distro when the
+    // token is this machine's machine-id, else a known distro token, else
+    // "Linux".
+    static QString displayNameForUkiToken(const QString &token, const QString &osName,
+                                          const QString &runningDistroName);
+    // Folds per-file UKI entries (deep-scan/firmware recovery) into one
+    // entry per entry token, newest image as the loader.
+    static QList<BootEntry> mergeUkiEntries(const QList<BootEntry> &entries);
+    // On the running system's ESP, names the running OS's own names-only
+    // UKI families after it and records its os-release ID (osdetect_common).
+    static void adoptRunningOsForUkis(QList<BootEntry> &entries);
 
     // Platform backends (osdetect_linux.cpp / osdetect_win.cpp)
     QList<Partition> listPartitions();

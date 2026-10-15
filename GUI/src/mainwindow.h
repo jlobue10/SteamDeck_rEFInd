@@ -79,6 +79,7 @@ private:
     void browsePng(QLineEdit *edit, const QString &title);
     void checkPNGFile(QLineEdit *edit);
     bool copyPng(QLineEdit *edit, const QString &destPath);
+    void warnIfUkiConfigStale();
     QString createBootStanza(const BootEntry &entry, const QString &iconPath);
     QList<BootEntry> extraEntries(const QList<Selection> &selections) const;
     static QString stockIconFor(const BootEntry &entry);
@@ -115,6 +116,9 @@ private:
     QList<BootEntry> detected;
     QSize panelPrefill; // quirk/EDID resolution, computed off-thread by startDetection
     bool populating = false;
+    // The Create Config notice about who keeps UKI entries current, shown
+    // once per session.
+    bool ukiNoticeShown = false;
     bool settingsLoaded = false; // readSettings() ran; gates the exit write
     QThread *scanThread = nullptr;          // active background detection, if any
     QNetworkAccessManager *network = nullptr; // lazy, for the update check

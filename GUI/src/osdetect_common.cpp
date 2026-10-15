@@ -1,10 +1,13 @@
 #include "osdetect.h"
+#include "uki/uki.h"
 
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
 #include <QMap>
 #include <QProcess>
+
+#include <algorithm>
 
 // GPT partition type GUID for EFI System Partitions (lowercase, no braces).
 static const QString ESP_PARTTYPE_GPT = QStringLiteral("c12a7328-f81f-11d2-ba4b-00a0c93ec93b");
@@ -105,6 +108,42 @@ static QString systemdBootDistroName(const QString &rootPath)
     return {};
 }
 
+// Fedora's uki-direct boots UKIs through shim and rewrites the vendor dir's
+// BOOTX64.CSV (UTF-16 "loader,title,args,comment" lines) so every line
+// launches an \EFI\Linux image. Its shim then has no OS of its own: run
+// bare, it chainloads a GRUB with no config. Such a dir is skipped -- the
+// UKI family is the entry -- unless GRUB really is configured there.
+static bool isUkiLauncherDir(const QDir &vendorDir)
+{
+    if (QFile::exists(vendorDir.filePath(QStringLiteral("grub.cfg"))))
+        return false;
+    // Only the x86-64 shim's CSV: the ia32 one beside it keeps the stock
+    // GRUB line on a uki-direct install.
+    bool sawCsv = false;
+    for (const QString &csv : vendorDir.entryList(QDir::Files)) {
+        if (csv.compare(QLatin1String("BOOTX64.CSV"), Qt::CaseInsensitive) != 0)
+            continue;
+        QFile f(vendorDir.filePath(csv));
+        if (!f.open(QIODevice::ReadOnly))
+            return false;
+        const QByteArray raw = f.read(64 * 1024);
+        QString text = raw.startsWith("\xff\xfe")
+                           ? QString::fromUtf16(reinterpret_cast<const char16_t *>(raw.constData() + 2),
+                                                (raw.size() - 2) / 2)
+                           : QString::fromUtf8(raw);
+        for (const QString &line : text.split(QLatin1Char('\n'))) {
+            const QString t = line.trimmed();
+            if (t.isEmpty())
+                continue;
+            sawCsv = true;
+            const QString args = t.section(QLatin1Char(','), 2, 2).trimmed();
+            if (!args.startsWith(QLatin1String("\\EFI\\Linux\\"), Qt::CaseInsensitive))
+                return false;
+        }
+    }
+    return sawCsv;
+}
+
 QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString &runningDistroName)
 {
     QList<BootEntry> entries;
@@ -157,6 +196,8 @@ QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString 
         }
         if (loaderFile.isEmpty())
             continue;
+        if (isUkiLauncherDir(sub))
+            continue;
         BootEntry e;
         // A bare systemd-boot install (loader in /EFI/systemd, no distro dir)
         // has no vendor name of its own; on the running system's ESP, name it
@@ -174,6 +215,32 @@ QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString 
         }
         e.menuName = e.displayName;
         e.loaderPath = QStringLiteral("/EFI/") + dirName + "/" + loaderFile;
+        linuxEntries.append(e);
+    }
+
+    // Unified Kernel Images in /EFI/Linux (kernel-install layout=uki, or any
+    // ukify/mkinitcpio UKI there): one entry per entry-token family, so a
+    // slot survives kernel updates. The stanza is written with every image
+    // of the family and re-pointed by the kernel-install plugin.
+    for (const Uki::Family &fam : Uki::scanFamilies(rootPath)) {
+        BootEntry e;
+        e.displayName = displayNameForUkiToken(fam.token, fam.osName, runningDistroName);
+        e.loaderPath = fam.loaders.first();
+        e.ukiToken = fam.token;
+        e.ukiLoaders = fam.loaders;
+        e.ukiVersions = fam.versions;
+        e.ukiOsId = fam.osId;
+        // Two families of one OS (e.g. arch-linux and arch-linux-lts) or a
+        // family named like a vendor-dir loader on this ESP: tell them apart.
+        const auto clashes = [&e](const BootEntry &other) {
+            return other.displayName == e.displayName;
+        };
+        if (std::any_of(linuxEntries.cbegin(), linuxEntries.cend(), clashes))
+            e.displayName += QStringLiteral(" (") + (Uki::isMachineIdToken(fam.token)
+                                                         ? QStringLiteral("UKI")
+                                                         : fam.token)
+                + QLatin1Char(')');
+        e.menuName = e.displayName;
         linuxEntries.append(e);
     }
 
@@ -295,6 +362,24 @@ bool OSDetector::classifyLoaderPath(const QString &loaderPath, BootEntry &entry)
     if (lower.startsWith(QLatin1String("/efi/microsoft/")))
         return false;
 
+    // /EFI/Linux/<token>-<version>.efi — a Unified Kernel Image. Named from
+    // the file name alone (recovery paths have no file contents); detect()
+    // folds the images of one token into a single entry.
+    Uki::Image uki;
+    if (Uki::imageFromLoaderPath(loaderPath, &uki)) {
+        entry.displayName = displayNameForUkiToken(uki.token, QString(), QString());
+        entry.menuName = entry.displayName;
+        entry.loaderPath = loaderPath;
+        entry.ukiToken = uki.token;
+        entry.ukiLoaders = QStringList{loaderPath};
+        entry.ukiVersions = QStringList{uki.kernelVersion};
+        return true;
+    }
+    // Anything else directly in /EFI/Linux is a UKI name that can't be used
+    // unquoted in refind.conf, not a vendor dir called "Linux".
+    if (lower.startsWith(QLatin1String("/efi/linux/")) && lower.count(QLatin1Char('/')) == 3)
+        return false;
+
     // /EFI/<vendor>/<loader>.efi — a loader with no vendor dir is not an OS.
     const QString vendorLower = lower.section('/', 2, 2);
     if (vendorLower.isEmpty() || vendorLower.endsWith(QLatin1String(".efi")))
@@ -313,6 +398,154 @@ bool OSDetector::classifyLoaderPath(const QString &loaderPath, BootEntry &entry)
     entry.menuName = entry.displayName;
     entry.loaderPath = loaderPath;
     return true;
+}
+
+QString OSDetector::displayNameForUkiToken(const QString &token, const QString &osName,
+                                          const QString &runningDistroName)
+{
+    if (!osName.isEmpty()) {
+        // Same normalization as runningOsName() ("Fedora Linux" -> "Fedora"),
+        // so a family is named alike whether its .osrel was readable or the
+        // running distro's name stood in for it.
+        QString name = osName.trimmed();
+        if (name.endsWith(QLatin1String(" Linux")) && name.size() > 6)
+            name.chop(6);
+        return name.trimmed();
+    }
+    if (Uki::isMachineIdToken(token)) {
+        // kernel-install's default entry token is /etc/machine-id: on this
+        // machine's own images that names the running distro.
+        QFile id(QStringLiteral("/etc/machine-id"));
+        if (id.open(QIODevice::ReadOnly | QIODevice::Text)
+            && QString::fromLatin1(id.readLine()).trimmed().compare(token, Qt::CaseInsensitive) == 0) {
+            const QString running = !runningDistroName.isEmpty() ? runningDistroName : runningOsName();
+            if (!running.isEmpty())
+                return running;
+        }
+        return QStringLiteral("Linux");
+    }
+    const QString lower = token.toLower();
+    if (knownDistroNames().contains(lower))
+        return knownDistroNames().value(lower);
+    return QStringLiteral("Linux");
+}
+
+QList<BootEntry> OSDetector::mergeUkiEntries(const QList<BootEntry> &entries)
+{
+    QList<BootEntry> out;
+    for (const BootEntry &e : entries) {
+        if (e.ukiToken.isEmpty()) {
+            out.append(e);
+            continue;
+        }
+        BootEntry *family = nullptr;
+        for (BootEntry &existing : out) {
+            if (existing.ukiToken == e.ukiToken && existing.volume == e.volume) {
+                family = &existing;
+                break;
+            }
+        }
+        if (!family) {
+            out.append(e);
+            continue;
+        }
+        for (int i = 0; i < e.ukiLoaders.size(); ++i) {
+            if (family->ukiLoaders.contains(e.ukiLoaders.at(i)))
+                continue;
+            family->ukiLoaders.append(e.ukiLoaders.at(i));
+            family->ukiVersions.append(i < e.ukiVersions.size() ? e.ukiVersions.at(i) : QString());
+        }
+    }
+    // Newest first within each family; the loader follows the newest image.
+    for (BootEntry &e : out) {
+        if (e.ukiToken.isEmpty() || e.ukiLoaders.size() < 2)
+            continue;
+        QList<int> order;
+        for (int i = 0; i < e.ukiLoaders.size(); ++i)
+            order.append(i);
+        std::sort(order.begin(), order.end(), [&e](int a, int b) {
+            const int c = Uki::compareVersions(e.ukiVersions.value(a), e.ukiVersions.value(b));
+            if (c != 0)
+                return c > 0;
+            return e.ukiLoaders.at(a) > e.ukiLoaders.at(b);
+        });
+        QStringList loaders, versions;
+        for (int i : order) {
+            loaders.append(e.ukiLoaders.at(i));
+            versions.append(e.ukiVersions.value(i));
+        }
+        e.ukiLoaders = loaders;
+        e.ukiVersions = versions;
+        e.loaderPath = loaders.first();
+    }
+    return out;
+}
+
+void OSDetector::adoptRunningOsForUkis(QList<BootEntry> &entries)
+{
+    // Names-only UKI entries (unreadable ESP: no .osrel) on the running
+    // system's own ESP: a tokenless image, or one whose token is this
+    // machine's machine-id, is the running OS's kernel. Recording its os-release
+    // ID in the stanza marker lets uki-refresh follow the family when the
+    // token changes.
+    QString id, name;
+    QFile f(QStringLiteral("/etc/os-release"));
+    if (f.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        for (const QString &line : QString::fromUtf8(f.readAll()).split('\n')) {
+            if (line.startsWith(QLatin1String("ID=")))
+                id = line.mid(3).remove('"').remove('\'').trimmed();
+        }
+    }
+    name = runningOsName();
+    QString machineId;
+    QFile mid(QStringLiteral("/etc/machine-id"));
+    if (mid.open(QIODevice::ReadOnly | QIODevice::Text))
+        machineId = QString::fromLatin1(mid.readLine()).trimmed();
+    for (BootEntry &e : entries) {
+        if (e.ukiToken.isEmpty() || !e.ukiOsId.isEmpty())
+            continue;
+        const bool ours = e.ukiToken == QLatin1String(Uki::kNoToken)
+                          || (!machineId.isEmpty()
+                              && e.ukiToken.compare(machineId, Qt::CaseInsensitive) == 0);
+        if (!ours)
+            continue;
+        e.ukiOsId = id;
+        if (!name.isEmpty() && e.displayName == QLatin1String("Linux")) {
+            e.displayName = name;
+            e.menuName = name;
+        }
+    }
+    // The tokenless images and the machine-id family are then one install
+    // (as Uki::groupImages() decides from .osrel when it can read them):
+    // fold the tokenless ones in as older kernels.
+    int bare = -1, own = -1;
+    for (int i = 0; i < entries.size(); ++i) {
+        if (entries.at(i).ukiToken == QLatin1String(Uki::kNoToken))
+            bare = i;
+        else if (!machineId.isEmpty()
+                 && entries.at(i).ukiToken.compare(machineId, Qt::CaseInsensitive) == 0)
+            own = i;
+    }
+    if (bare >= 0 && own >= 0) {
+        entries[own].ukiLoaders += entries.at(bare).ukiLoaders;
+        entries[own].ukiVersions += entries.at(bare).ukiVersions;
+        entries.removeAt(bare);
+        entries = mergeUkiEntries(entries); // re-sorts the family newest first
+    }
+
+    // This machine's kernels whose /usr/lib/modules tree is gone stay out of
+    // the menu, exactly as uki-refresh decides (Fedora's type1 kernel removal
+    // leaves their UKIs on the ESP).
+    if (Uki::modulesTreeUsable()) {
+        for (BootEntry &e : entries) {
+            if (e.ukiToken.isEmpty()
+                || !Uki::isThisMachinesFamily(e.ukiToken, e.ukiOsId, machineId, id))
+                continue;
+            Uki::dropUninstalledKernels(&e.ukiLoaders, &e.ukiVersions,
+                                        [](const QString &v) { return Uki::kernelInstalled(v); });
+            e.loaderPath = e.ukiLoaders.value(0, e.loaderPath);
+        }
+    }
 }
 
 bool OSDetector::espRootUnreadable(const QString &rootPath)
@@ -394,6 +627,11 @@ QList<BootEntry> OSDetector::detect()
                              qUtf8Printable(root));
             }
         }
+        // Recovery paths list one entry per UKI file; fold each entry-token
+        // family into one slottable entry (a no-op for scanEspRoot()'s).
+        here = mergeUkiEntries(here);
+        if (isRunningSystemEsp(p))
+            adoptRunningOsForUkis(here);
         for (BootEntry e : here) {
             if (e.volume.isEmpty())
                 e.volume = volume;
