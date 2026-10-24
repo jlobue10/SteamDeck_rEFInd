@@ -34,7 +34,7 @@
 #include <QVariant>
 #include <QVersionNumber>
 
-static const char APP_VERSION[] = "3.5.0";
+static const char APP_VERSION[] = "3.5.1";
 static const char VERSION_URL[] = "https://raw.githubusercontent.com/jlobue10/SteamDeck_rEFInd/main/VERSION";
 // The user-visible "empty slot" combo entry. A function, not a file-static
 // QString: statics are initialized before main() installs the translator, so
@@ -669,9 +669,13 @@ void MainWindow::on_Boot_Option_04_Icon_pushButton_clicked()
 
 void MainWindow::on_Install_rEFInd_clicked()
 {
-    if (!Platform::runInstallerScript(ui->Install_Source_comboBox->currentText()))
-        QMessageBox::warning(this, tr("Install rEFInd"),
-                             tr("Failed to launch the installation script."));
+    QString detail;
+    if (!Platform::runInstallerScript(ui->Install_Source_comboBox->currentText(), &detail)) {
+        QString text = tr("Failed to launch the installation script.");
+        if (!detail.isEmpty())
+            text += QLatin1String("\n\n") + detail;
+        QMessageBox::warning(this, tr("Install rEFInd"), text);
+    }
 }
 
 QString MainWindow::steamFirmwareBootNum()

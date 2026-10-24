@@ -25,7 +25,9 @@ QString windowsSystemExecutable(const QString &relativePath);
 void prepareDataDir();
 
 // Launches the rEFInd installer for the chosen source in a new terminal window.
-bool runInstallerScript(const QString &installSource);
+// Returns false if the launch itself failed; *detail then says why (on
+// Windows: the script is only run from beneath Program Files).
+bool runInstallerScript(const QString &installSource, QString *detail = nullptr);
 
 // Installs the generated config + PNGs onto the ESP. Returns 0 on success.
 // Linux, passwordless path (root-owned /etc/SteamDeck_rEFInd script +
