@@ -120,7 +120,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="468"/>
-        <location filename="mainwindow.cpp" line="1834"/>
+        <location filename="mainwindow.cpp" line="1838"/>
         <source>Open Folder</source>
         <translation>打开文件夹</translation>
     </message>
@@ -280,15 +280,15 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="965"/>
-        <location filename="mainwindow.cpp" line="1791"/>
-        <location filename="mainwindow.cpp" line="1804"/>
-        <location filename="mainwindow.cpp" line="1809"/>
+        <location filename="mainwindow.cpp" line="1795"/>
+        <location filename="mainwindow.cpp" line="1808"/>
+        <location filename="mainwindow.cpp" line="1813"/>
         <source>Install Themes</source>
         <translation>安装主题</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="976"/>
-        <location filename="mainwindow.cpp" line="1113"/>
+        <location filename="mainwindow.cpp" line="1117"/>
         <source>Showtools</source>
         <translation>Showtools</translation>
     </message>
@@ -314,7 +314,7 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1075"/>
-        <location filename="mainwindow.cpp" line="673"/>
+        <location filename="mainwindow.cpp" line="677"/>
         <source>Install rEFInd</source>
         <translation>安装 rEFInd</translation>
     </message>
@@ -325,14 +325,14 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1097"/>
-        <location filename="mainwindow.cpp" line="1044"/>
-        <location filename="mainwindow.cpp" line="1054"/>
-        <location filename="mainwindow.cpp" line="1082"/>
-        <location filename="mainwindow.cpp" line="1094"/>
-        <location filename="mainwindow.cpp" line="1154"/>
-        <location filename="mainwindow.cpp" line="1168"/>
-        <location filename="mainwindow.cpp" line="1179"/>
-        <location filename="mainwindow.cpp" line="1190"/>
+        <location filename="mainwindow.cpp" line="1048"/>
+        <location filename="mainwindow.cpp" line="1058"/>
+        <location filename="mainwindow.cpp" line="1086"/>
+        <location filename="mainwindow.cpp" line="1098"/>
+        <location filename="mainwindow.cpp" line="1158"/>
+        <location filename="mainwindow.cpp" line="1172"/>
+        <location filename="mainwindow.cpp" line="1183"/>
+        <location filename="mainwindow.cpp" line="1194"/>
         <source>Create Config</source>
         <translation>创建配置</translation>
     </message>
@@ -343,10 +343,10 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="1119"/>
-        <location filename="mainwindow.cpp" line="1325"/>
-        <location filename="mainwindow.cpp" line="1340"/>
-        <location filename="mainwindow.cpp" line="1346"/>
-        <location filename="mainwindow.cpp" line="1351"/>
+        <location filename="mainwindow.cpp" line="1329"/>
+        <location filename="mainwindow.cpp" line="1344"/>
+        <location filename="mainwindow.cpp" line="1350"/>
+        <location filename="mainwindow.cpp" line="1355"/>
         <source>Install Config</source>
         <translation>安装配置</translation>
     </message>
@@ -497,17 +497,17 @@ Use Create Config and Install Config to point it at the current kernels. If rEFI
         <translation>无法启动安装脚本。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1045"/>
+        <location filename="mainwindow.cpp" line="1049"/>
         <source>No themes were found, so a random theme could not be picked. Reinstall the GUI to restore the shipped themes.</source>
         <translation>未找到任何主题，因此无法随机选择主题。请重新安装 GUI 以恢复附带的主题。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1055"/>
+        <location filename="mainwindow.cpp" line="1059"/>
         <source>The selected theme &quot;%1&quot; was not found (or its theme.conf is empty). Pick another theme, or reinstall the GUI to restore the shipped themes.</source>
         <translation>未找到所选主题“%1”（或其 theme.conf 为空）。请选择其他主题，或重新安装 GUI 以恢复附带的主题。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1114"/>
+        <location filename="mainwindow.cpp" line="1118"/>
         <source>These showtools entries are not recognized: %1
 
 Valid entries: %2</source>
@@ -516,32 +516,32 @@ Valid entries: %2</source>
 有效条目:%2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1155"/>
+        <location filename="mainwindow.cpp" line="1159"/>
         <source>Could not write %1</source>
         <translation>无法写入 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1169"/>
+        <location filename="mainwindow.cpp" line="1173"/>
         <source>No OS entries were detected or selected.
 
 The generated config would contain no boot stanzas, so it was not written. Use Deep Scan to look for more bootloaders, or pick an OS in the Boot Option boxes, then create the config again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1180"/>
+        <location filename="mainwindow.cpp" line="1184"/>
         <source>Could not write %1 completely — the disk may be full. The config was not updated.</source>
         <translation>无法完整写入 %1 — 磁盘可能已满。配置未更新。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1191"/>
+        <location filename="mainwindow.cpp" line="1195"/>
         <source>This config boots Unified Kernel Images, whose file names change with every kernel update of the Linux system that owns them.
 
 Install rEFInd_GUI on that Linux system: its kernel-install hook re-points these boot entries automatically after every kernel update. Otherwise, use Create Config and Install Config again here after that system updates its kernel.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1326"/>
-        <location filename="mainwindow.cpp" line="1792"/>
+        <location filename="mainwindow.cpp" line="1330"/>
+        <location filename="mainwindow.cpp" line="1796"/>
         <source>The privileged install helper was NOT run:
 
 %1
@@ -565,18 +565,18 @@ Reinstall the GUI to restore the original script, then try again.</oldsource>
 请重新安装 GUI 以恢复原始脚本，然后重试。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1341"/>
-        <location filename="mainwindow.cpp" line="1353"/>
+        <location filename="mainwindow.cpp" line="1345"/>
+        <location filename="mainwindow.cpp" line="1357"/>
         <source>Installing the config failed (code %1).</source>
         <translation>配置安装失败（代码 %1）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1348"/>
+        <location filename="mainwindow.cpp" line="1352"/>
         <source>The config was installed successfully.</source>
         <translation>配置安装成功。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1349"/>
+        <location filename="mainwindow.cpp" line="1353"/>
         <source>The config was installed successfully.
 
 %1</source>
@@ -585,7 +585,7 @@ Reinstall the GUI to restore the original script, then try again.</oldsource>
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1354"/>
+        <location filename="mainwindow.cpp" line="1358"/>
         <source>Installing the config failed (code %1).
 
 %2</source>
@@ -594,28 +594,28 @@ Reinstall the GUI to restore the original script, then try again.</oldsource>
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1374"/>
-        <location filename="mainwindow.cpp" line="1384"/>
-        <location filename="mainwindow.cpp" line="1391"/>
+        <location filename="mainwindow.cpp" line="1378"/>
+        <location filename="mainwindow.cpp" line="1388"/>
+        <location filename="mainwindow.cpp" line="1395"/>
         <source>Copy PNG</source>
         <translation>复制 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1083"/>
-        <location filename="mainwindow.cpp" line="1095"/>
-        <location filename="mainwindow.cpp" line="1375"/>
-        <location filename="mainwindow.cpp" line="1385"/>
-        <location filename="mainwindow.cpp" line="1392"/>
+        <location filename="mainwindow.cpp" line="1087"/>
+        <location filename="mainwindow.cpp" line="1099"/>
+        <location filename="mainwindow.cpp" line="1379"/>
+        <location filename="mainwindow.cpp" line="1389"/>
+        <location filename="mainwindow.cpp" line="1396"/>
         <source>Could not copy %1 to %2</source>
         <translation>无法将 %1 复制到 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1417"/>
+        <location filename="mainwindow.cpp" line="1421"/>
         <source>Invalid PNG</source>
         <translation>无效的 PNG</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1418"/>
+        <location filename="mainwindow.cpp" line="1422"/>
         <source>%1 is not a valid PNG file.
 
 Backgrounds and OS icons must be real PNG images (not just files with a .png extension).</source>
@@ -624,53 +624,53 @@ Backgrounds and OS icons must be real PNG images (not just files with a .png ext
 背景和系统图标必须是真正的 PNG 图像（而不仅仅是扩展名为 .png 的文件）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1691"/>
+        <location filename="mainwindow.cpp" line="1695"/>
         <source>Check For Update</source>
         <translation>检查更新</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1694"/>
+        <location filename="mainwindow.cpp" line="1698"/>
         <source>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;Original GUI Creator: &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;Special Thanks to Deck Wizard for testing and QA&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard Dual Boot Tutorial&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd&apos;&gt;rEFInd Customization GUI v%1&lt;/a&gt;&lt;br&gt;&lt;br&gt;GUI 原作者： &lt;a href=&apos;https://github.com/jlobue10&apos;&gt;jlobue10&lt;/a&gt;&lt;br&gt;&lt;br&gt;特别感谢 Deck Wizard 的测试与质量保证&lt;br&gt;&lt;br&gt;&lt;a href=&apos;https://www.youtube.com/watch?v=yBHzVSDVEqw&apos;&gt;Deck Wizard 双系统教程&lt;/a&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1743"/>
+        <location filename="mainwindow.cpp" line="1747"/>
         <source>&lt;p align=&apos;center&apos;&gt;Update check failed. Please check your internet connection and try again.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;检查更新失败。请检查网络连接后重试。&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1746"/>
+        <location filename="mainwindow.cpp" line="1750"/>
         <source>&lt;p align=&apos;center&apos;&gt;An update is available &lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;here&lt;/a&gt;&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;有可用更新，请&lt;a href=&apos;https://github.com/jlobue10/SteamDeck_rEFInd/releases&apos;&gt;点击此处&lt;/a&gt;获取&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1750"/>
+        <location filename="mainwindow.cpp" line="1754"/>
         <source>&lt;p align=&apos;center&apos;&gt;No update found. You are using the latest version.&lt;br&gt;&lt;br&gt;&lt;/p&gt;</source>
         <translation>&lt;p align=&apos;center&apos;&gt;未发现更新。您使用的已是最新版本。&lt;br&gt;&lt;br&gt;&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1760"/>
-        <location filename="mainwindow.cpp" line="1767"/>
+        <location filename="mainwindow.cpp" line="1764"/>
+        <location filename="mainwindow.cpp" line="1771"/>
         <source>systemd service</source>
         <translation>systemd 服务</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1761"/>
-        <location filename="mainwindow.cpp" line="1768"/>
+        <location filename="mainwindow.cpp" line="1765"/>
+        <location filename="mainwindow.cpp" line="1772"/>
         <source>Failed to launch the service toggle.</source>
         <translation>无法启动服务切换。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1774"/>
-        <location filename="mainwindow.cpp" line="1781"/>
+        <location filename="mainwindow.cpp" line="1778"/>
+        <location filename="mainwindow.cpp" line="1785"/>
         <source>Background Randomizer</source>
         <translation>背景随机更换</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1775"/>
-        <location filename="mainwindow.cpp" line="1782"/>
-        <location filename="mainwindow.cpp" line="1821"/>
-        <location filename="mainwindow.cpp" line="1828"/>
+        <location filename="mainwindow.cpp" line="1779"/>
+        <location filename="mainwindow.cpp" line="1786"/>
+        <location filename="mainwindow.cpp" line="1825"/>
+        <location filename="mainwindow.cpp" line="1832"/>
         <source>Failed to launch the randomizer setup.</source>
         <translation>无法启动背景随机更换设置。</translation>
     </message>
@@ -691,12 +691,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 请重新安装 GUI（在 SteamOS 上重新运行 install-GUI.sh）以安装或恢复它，然后重试。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1806"/>
+        <location filename="mainwindow.cpp" line="1810"/>
         <source>The themes were installed successfully.</source>
         <translation>主题安装成功。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1807"/>
+        <location filename="mainwindow.cpp" line="1811"/>
         <source>The themes were installed successfully.
 
 %1</source>
@@ -705,12 +705,12 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 %1</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1811"/>
+        <location filename="mainwindow.cpp" line="1815"/>
         <source>Installing the themes failed (code %1).</source>
         <translation>主题安装失败（代码 %1）。</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1812"/>
+        <location filename="mainwindow.cpp" line="1816"/>
         <source>Installing the themes failed (code %1).
 
 %2</source>
@@ -719,13 +719,13 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
 %2</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1820"/>
-        <location filename="mainwindow.cpp" line="1827"/>
+        <location filename="mainwindow.cpp" line="1824"/>
+        <location filename="mainwindow.cpp" line="1831"/>
         <source>Theme Randomizer</source>
         <translation>主题随机更换</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1835"/>
+        <location filename="mainwindow.cpp" line="1839"/>
         <source>Failed to open %1 in the file manager.</source>
         <translation>无法在文件管理器中打开 %1。</translation>
     </message>
@@ -741,38 +741,43 @@ Reinstall the GUI (on SteamOS, re-run install-GUI.sh) to install or restore it, 
         <translation type="vanished">无法启动 powershell.exe。</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="176"/>
+        <location filename="platform.cpp" line="168"/>
         <source>No EFI System Partition with rEFInd on it could be found.
 Install rEFInd first, then install the %1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="198"/>
+        <location filename="platform.cpp" line="190"/>
         <source>EFI\refind\themes on the target ESP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="202"/>
+        <location filename="platform.cpp" line="194"/>
         <source>EFI\refind on the target ESP</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="355"/>
+        <location filename="platform.cpp" line="311"/>
+        <source>xterm could not be started to run %1. Is xterm installed?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="platform.cpp" line="354"/>
         <source>sudo could not be started.</source>
         <translation>无法启动 sudo。</translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="394"/>
+        <location filename="platform.cpp" line="393"/>
         <source>missing</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="409"/>
+        <location filename="platform.cpp" line="408"/>
         <source>%1 (expected version %2, found: %3)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="platform.cpp" line="416"/>
+        <location filename="platform.cpp" line="415"/>
         <source>%1 (the passwordless sudo rule for &apos;%2&apos; is not installed)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -816,6 +821,34 @@ Install rEFInd first, then install the %1.</source>
         <location filename="main.cpp" line="24"/>
         <source>QT_LAYOUT_DIRECTION</source>
         <translation>LTR</translation>
+    </message>
+</context>
+<context>
+    <name>ScriptTrust</name>
+    <message>
+        <location filename="scripttrust.cpp" line="63"/>
+        <source>The application directory could not be resolved (%1).</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="scripttrust.cpp" line="71"/>
+        <source>The script %1 is missing from %2. Reinstall the application to restore it.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="scripttrust.cpp" line="76"/>
+        <source>The script %1 resolves to %2, outside the application directory, so it is not run.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="scripttrust.cpp" line="95"/>
+        <source>The application is running from %1, which is not inside a protected program directory (%2). The installer script runs with administrator rights, so it is only started from a location standard users cannot modify. Reinstall with the setup program to its default location.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="scripttrust.cpp" line="100"/>
+        <source>none found</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 </TS>

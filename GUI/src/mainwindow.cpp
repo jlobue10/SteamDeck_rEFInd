@@ -669,9 +669,13 @@ void MainWindow::on_Boot_Option_04_Icon_pushButton_clicked()
 
 void MainWindow::on_Install_rEFInd_clicked()
 {
-    if (!Platform::runInstallerScript(ui->Install_Source_comboBox->currentText()))
-        QMessageBox::warning(this, tr("Install rEFInd"),
-                             tr("Failed to launch the installation script."));
+    QString detail;
+    if (!Platform::runInstallerScript(ui->Install_Source_comboBox->currentText(), &detail)) {
+        QString text = tr("Failed to launch the installation script.");
+        if (!detail.isEmpty())
+            text += QLatin1String("\n\n") + detail;
+        QMessageBox::warning(this, tr("Install rEFInd"), text);
+    }
 }
 
 QString MainWindow::steamFirmwareBootNum()

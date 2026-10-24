@@ -76,6 +76,7 @@ set(PROJECT_SOURCES
         osdetect.h
         osdetect_common.cpp
         platform.cpp
+        scripttrust.cpp
         platform.h
         previewdialog.cpp
         previewdialog.h
@@ -242,6 +243,10 @@ if(BUILD_GUI_TESTS)
     add_executable(tst_randomize tests/tst_randomize.cpp)
     target_link_libraries(tst_randomize PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
     add_test(NAME randomize COMMAND tst_randomize)
+
+    add_executable(tst_scripttrust tests/tst_scripttrust.cpp scripttrust.cpp)
+    target_link_libraries(tst_scripttrust PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Test)
+    add_test(NAME scripttrust COMMAND tst_scripttrust)
 
     add_executable(tst_themeconf tests/tst_themeconf.cpp)
     target_link_libraries(tst_themeconf PRIVATE espops Qt${QT_VERSION_MAJOR}::Test)
