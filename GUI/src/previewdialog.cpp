@@ -227,4 +227,9 @@ PreviewDialog::PreviewDialog(const QString &backgroundPath, const QList<PreviewE
     confView->setFont(mono);
     confView->setPlainText(confText);
     tabs->addTab(confView, QStringLiteral("refind.conf")); // file name, not prose
+
+    // Without a layout the tabs keep their initial size when the dialog is
+    // resized or maximized.
+    auto *dialogLayout = new QVBoxLayout(this);
+    dialogLayout->addWidget(tabs);
 }
