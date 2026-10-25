@@ -184,7 +184,10 @@ if CREATE_OUT="$(sudo efibootmgr -c -d "$ESP_DISK" -p "$ESP_PARTNUM" -L "rEFInd"
 			echo "Deleting old rEFInd entry Boot$_num..."
 			sudo efibootmgr -b "$_num" -B >/dev/null 2>&1 \
 				|| echo "Warning: could not delete Boot$_num." >&2
-		done < <(efibootmgr | sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +rEFInd.*/\1/p')
+		# Only entries on this ESP: a rEFInd entry pointing at another
+		# ESP (e.g. a Windows-side install) belongs to that install.
+		done < <(efibootmgr -v | grep -iF "GPT,${ESP_PARTUUID}," \
+			| sed -nE 's/^Boot([0-9A-Fa-f]{4})\*? +rEFInd.*/\1/p')
 	else
 		echo "ERROR: the new rEFInd entry could not be verified against the target ESP and loader path." >&2
 		echo "Existing rEFInd and Windows entries were left active." >&2

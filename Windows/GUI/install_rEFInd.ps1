@@ -482,7 +482,10 @@ try {
     # Entries carrying Windows Boot Manager's optional-data blob are always
     # left alone -- overwriting {bootmgr}'s own variable would break Windows.
     $freeId = $null
-    $candidateIds = @((Get-BootOrderIds) + @(0..255 | ForEach-Object { '{0:X4}' -f $_ }) |
+    # @() around the call is load-bearing: PowerShell unrolls a one-element
+    # array returned from a function into a bare string, and string + array
+    # would then concatenate into one bogus id.
+    $candidateIds = @(@(Get-BootOrderIds) + @(0..255 | ForEach-Object { '{0:X4}' -f $_ }) |
         Select-Object -Unique)
     foreach ($id in $candidateIds) {
         $existing = Get-UefiVar "Boot$id"

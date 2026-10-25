@@ -193,7 +193,9 @@ if ($esp -and $esp.Part) {
     try {
         $espGuidHex = ConvertTo-HexString (([guid]$esp.Part.Guid).ToByteArray())
         $loaderHex = ConvertTo-HexString ([System.Text.Encoding]::Unicode.GetBytes($RefindLoader))
-        $candidateIds = @((Get-BootOrderIds) + @(0..255 | ForEach-Object { '{0:X4}' -f $_ }) |
+        # @() around the call is load-bearing: a one-entry BootOrder comes back
+        # as a bare string, and string + array would concatenate into one id.
+        $candidateIds = @(@(Get-BootOrderIds) + @(0..255 | ForEach-Object { '{0:X4}' -f $_ }) |
             Select-Object -Unique)
         foreach ($id in $candidateIds) {
             $bytes = Get-UefiVar "Boot$id"
@@ -258,6 +260,11 @@ if ($esp -and $esp.Part) {
     } finally {
         Dismount-Esp $esp
     }
+} elseif ($esp) {
+    # mountvol /S succeeded but no partition is flagged as the system ESP:
+    # nothing can be matched safely, but the drive letter must still go.
+    Write-Warning 'Could not identify the system EFI System Partition; skipping boot entry and file cleanup.'
+    Dismount-Esp $esp
 }
 
 # 4. Remove the app's scheduled tasks, if enabled: background and theme
