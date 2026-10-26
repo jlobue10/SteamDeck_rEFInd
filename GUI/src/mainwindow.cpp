@@ -450,10 +450,15 @@ QList<BootEntry> MainWindow::comboOptions()
     if (!usbUuid.isEmpty())
         addFallback({QStringLiteral("Windows (USB)"), QStringLiteral("Windows USB"),
                      QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"), usbUuid, false});
+    // Removable-media loaders carry the EFI architecture suffix
+    // (grubx64_real.efi / grubaa64_real.efi), like OSDetector's own fallbacks.
+    const QString sfx = OSDetector::efiArchSuffix();
     addFallback({QStringLiteral("Ventoy"), QStringLiteral("Ventoy"),
-                 QStringLiteral("/EFI/BOOT/grubx64_real.efi"), QStringLiteral("VTOYEFI"), false});
+                 QStringLiteral("/EFI/BOOT/grub") + sfx + QStringLiteral("_real.efi"),
+                 QStringLiteral("VTOYEFI"), false});
     addFallback({QStringLiteral("Batocera (SD)"), QStringLiteral("Batocera"),
-                 QStringLiteral("/EFI/BOOT/bootx64.efi"), QStringLiteral("BATOCERA"), false});
+                 QStringLiteral("/EFI/BOOT/boot") + sfx + QStringLiteral(".efi"),
+                 QStringLiteral("BATOCERA"), false});
     return options;
 }
 
