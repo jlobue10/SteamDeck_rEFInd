@@ -49,8 +49,19 @@ public:
     // the static "Windows (SD)"/"Windows (USB)" combo fallbacks.
     QString removableEspPartUuid(bool sdCard);
     static QString runCommand(const QString &program, const QStringList &args, bool *ok = nullptr);
+    // EFI binary-name suffix of the running CPU: "x64", "aa64" (ARM64) or
+    // "ia32". Vendor loaders, the removable-media fallback and shim's
+    // BOOT<ARCH>.CSV all carry it (shimx64.efi vs shimaa64.efi); a firmware
+    // only runs its own architecture's images, so detection looks for the
+    // native names alone.
+    static QString efiArchSuffix();
+    // shim, GRUB, systemd-boot file names for this architecture, in the
+    // order scanEspRoot() prefers them.
+    static QStringList vendorLoaderCandidates();
 
 private:
+    // Tests set this to scan fixtures of another architecture; empty = native.
+    static QString efiArchSuffixOverride;
     struct Partition {
         QString path;        // /dev/... on Linux, "disk<N>p<M>" on Windows (informational)
         QString partType;    // GPT type GUID (lowercase, no braces) or "0xef" for MBR ESPs

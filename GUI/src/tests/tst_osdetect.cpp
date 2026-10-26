@@ -68,6 +68,12 @@ private slots:
             QStringLiteral("/EFI/refind/refind_x64.efi"), e));
         QVERIFY(!OSDetector::classifyLoaderPath(
             QStringLiteral("/EFI/BOOT/bootx64.efi"), e));
+        QVERIFY(!OSDetector::classifyLoaderPath(
+            QStringLiteral("/EFI/refind/refind_aa64.efi"), e));
+        QVERIFY(!OSDetector::classifyLoaderPath(
+            QStringLiteral("/EFI/BOOT/bootaa64.efi"), e));
+        QVERIFY(!OSDetector::classifyLoaderPath(
+            QStringLiteral("/EFI/shellaa64/Shell.efi"), e));
         // Utility/driver dirs.
         QVERIFY(!OSDetector::classifyLoaderPath(
             QStringLiteral("/EFI/memtest86/memtest.efi"), e));
@@ -207,6 +213,69 @@ private slots:
         }
         entries = detector.scanEspRoot(dir.path(), QString());
         QCOMPARE(entries.size(), 2);
+    }
+
+    void archSuffixSelectsLoaderNames()
+    {
+        // An ARM64 laptop (ASUS ProArt P16 / NVIDIA N1X): vendor dirs hold
+        // *aa64.efi loaders and uki-direct writes BOOTAA64.CSV. The suffix
+        // follows the running CPU; the override stands in for it here, so
+        // this runs the same on an x86-64 build machine.
+        const QString saved = OSDetector::efiArchSuffixOverride;
+        OSDetector::efiArchSuffixOverride = QStringLiteral("aa64");
+        QCOMPARE(OSDetector::efiArchSuffix(), QStringLiteral("aa64"));
+        QCOMPARE(OSDetector::vendorLoaderCandidates(),
+                 QStringList({QStringLiteral("shimaa64.efi"), QStringLiteral("grubaa64.efi"),
+                              QStringLiteral("systemd-bootaa64.efi")}));
+
+        QTemporaryDir dir;
+        QVERIFY(dir.isValid());
+        for (const QString &sub : {QStringLiteral("EFI/systemd"), QStringLiteral("EFI/fedora"),
+                                   QStringLiteral("EFI/Microsoft/Boot"), QStringLiteral("EFI/Linux")})
+            QVERIFY(QDir(dir.path()).mkpath(sub));
+        for (const QString &name : {QStringLiteral("EFI/systemd/systemd-bootaa64.efi"),
+                                    QStringLiteral("EFI/fedora/shimaa64.efi"),
+                                    QStringLiteral("EFI/fedora/grubaa64.efi"),
+                                    QStringLiteral("EFI/Microsoft/Boot/bootmgfw.efi")}) {
+            QFile f(dir.filePath(name));
+            QVERIFY(f.open(QIODevice::WriteOnly));
+        }
+        OSDetector detector;
+        QList<BootEntry> entries = detector.scanEspRoot(dir.path(), QStringLiteral("Arch Linux ARM"));
+        QCOMPARE(entries.size(), 3);
+        QCOMPARE(entries.at(0).loaderPath, QStringLiteral("/EFI/Microsoft/Boot/bootmgfw.efi"));
+        // shim beats GRUB, under the aa64 name.
+        QCOMPARE(entries.at(1).loaderPath, QStringLiteral("/EFI/fedora/shimaa64.efi"));
+        QCOMPARE(entries.at(2).loaderPath, QStringLiteral("/EFI/systemd/systemd-bootaa64.efi"));
+        QCOMPARE(entries.at(2).displayName, QStringLiteral("Arch Linux ARM"));
+
+        // uki-direct on ARM64: a BOOTAA64.CSV launching only UKIs hides the
+        // shim dir, exactly as BOOTX64.CSV does on x86-64.
+        {
+            QFile f(dir.filePath(QStringLiteral("EFI/Linux/fedora-7.2.10-200.fc44.aarch64.efi")));
+            QVERIFY(f.open(QIODevice::WriteOnly));
+        }
+        const QString csv = QStringLiteral(
+            "shimaa64.efi,Fedora 7.2.10 (UKI),\\EFI\\Linux\\fedora-7.2.10-200.fc44.aarch64.efi ,Comment\n");
+        {
+            QFile f(dir.filePath(QStringLiteral("EFI/fedora/BOOTAA64.CSV")));
+            QVERIFY(f.open(QIODevice::WriteOnly));
+            f.write("\xff\xfe");
+            f.write(reinterpret_cast<const char *>(csv.utf16()), csv.size() * 2);
+        }
+        entries = detector.scanEspRoot(dir.path(), QString());
+        QCOMPARE(entries.size(), 3);
+        QCOMPARE(entries.at(1).loaderPath, QStringLiteral("/EFI/systemd/systemd-bootaa64.efi"));
+        QCOMPARE(entries.at(2).ukiToken, QStringLiteral("fedora"));
+
+        // The same ESP seen from an x86-64 machine: the aa64 loaders are not
+        // bootable there, so only Windows and the UKI family remain.
+        OSDetector::efiArchSuffixOverride = QStringLiteral("x64");
+        entries = detector.scanEspRoot(dir.path(), QString());
+        QCOMPARE(entries.size(), 2);
+        QCOMPARE(entries.at(0).displayName, QStringLiteral("Windows"));
+        QCOMPARE(entries.at(1).ukiToken, QStringLiteral("fedora"));
+        OSDetector::efiArchSuffixOverride = saved;
     }
 
     void scanEspRootFindsUkiFamilies()

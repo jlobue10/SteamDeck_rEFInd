@@ -208,11 +208,8 @@ QList<BootEntry> OSDetector::deepScanEntriesForEsp(const Partition &p)
     // .efi it finds, so without this a distro shipping both shimx64.efi and
     // grubx64.efi would surface twice and detect()'s name-clash rule would
     // rename the second copy to "Fedora (esp)".
-    static const QStringList loaderPreference = {
-        QStringLiteral("shimx64.efi"), QStringLiteral("grubx64.efi"),
-        QStringLiteral("systemd-bootx64.efi"),
-    };
-    auto rank = [](const QString &loaderPath) {
+    const QStringList loaderPreference = vendorLoaderCandidates();
+    auto rank = [&loaderPreference](const QString &loaderPath) {
         const int i = loaderPreference.indexOf(loaderPath.section('/', -1).toLower());
         return i < 0 ? loaderPreference.size() : i;
     };
