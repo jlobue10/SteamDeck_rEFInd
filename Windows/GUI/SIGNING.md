@@ -33,7 +33,7 @@ and they must stay true:
   |---|---|
   | `SteamDeck_rEFInd.exe` | `GUI/src/rEFInd_GUI.rc` ← `version_generated.h`, configured by CMake from `project(VERSION)` (`GUI/src/version.h.in`) |
   | `SteamDeck_rEFInd_helper.exe` | `GUI/src/helper.rc` ← same header |
-  | `SteamDeck_rEFInd-<ver>-setup.exe` | `VersionInfoProductName` / `VersionInfoProductTextVersion` in `SteamDeck_rEFInd.iss` (from `AppVersion`) |
+  | `SteamDeck_rEFInd-<ver>-setup.exe` | `VersionInfoProductName` / `VersionInfoProductTextVersion` in `SteamDeck_rEFInd.iss` (from `AppVersion`), with Inno Setup's padding removed by `signpath/Trim-InstallerVersionInfo.ps1` |
 
   `ProductName` is `SteamDeck_rEFInd` everywhere; `ProductVersion` is the
   plain `X.Y.Z` release version, which the workflow reads from the `VERSION`
@@ -139,7 +139,16 @@ approval — raise it if approvals are slow.
    with the exes and the `.ps1` scripts signed. These replace the unsigned
    copies.
 4. Build the installer from the now-signed `deploy/` (after checking the Inno
-   Setup compiler's own Authenticode signature).
+   Setup compiler's own Authenticode signature), then run
+   `signpath/Trim-InstallerVersionInfo.ps1` on it and install it once on the
+   runner. Inno Setup writes the setup exe's version strings into a
+   fixed-size template and leaves the rest of each as spaces: `ProductName`
+   arrives as `SteamDeck_rEFInd` plus 44 spaces, `ProductVersion` as the
+   version plus up to 45. SignPath compares both exactly and refused the
+   first installer it was sent ("unexpected product name"), so the script
+   ends each string where its text ends. It changes bytes of the version
+   resource only and the file keeps its size; the silent install afterwards
+   shows that the setup program still finds its data.
 5. **Stage B** — upload the setup exe and submit it under `installer` with the
    same `version`; the signed installer replaces the unsigned one.
 6. Attach the signed installer (+ `.sha256`) to the release.
