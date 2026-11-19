@@ -137,6 +137,43 @@ jobs:
               throw "ISCC.exe Authenticode signature is not valid (status $($sig.Status)); refusing to build the installer."
           }
           & $iscc Windows\GUI\SteamDeck_rEFInd.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE." }
+
+      # Inno Setup fills a fixed-size template with the setup exe's version
+      # strings and leaves the rest of each as spaces ("SteamDeck_rEFInd" plus
+      # 44 spaces). SignPath compares ProductName and ProductVersion exactly
+      # and refused the installer over it, so the padding is cut here, before
+      # signing. The file keeps its size; only the version resource changes.
+      - name: Trim the installer's version strings
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          $setup = Get-Item "Windows\GUI\Output\SteamDeck_rEFInd-$env:VERSION-setup.exe"
+          & Windows\GUI\signpath\Trim-InstallerVersionInfo.ps1 -Path $setup.FullName `
+              -ExpectedProductName SteamDeck_rEFInd -ExpectedProductVersion $env:VERSION
+
+      # The trimmed file must still be a working installer: install it on the
+      # runner, silently, and look for the program it carries. (No rEFInd is
+      # installed by this; the setup program only places the GUI's files.)
+      - name: Check that the installer still installs
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.ver.outputs.version }}
+        run: |
+          $setup = Get-Item "Windows\GUI\Output\SteamDeck_rEFInd-$env:VERSION-setup.exe"
+          $log = Join-Path $env:RUNNER_TEMP 'setup-check.log'
+          $run = Start-Process -FilePath $setup.FullName -Wait -PassThru -ArgumentList @(
+              '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/NOICONS', "/LOG=`"$log`"")
+          if ($run.ExitCode -ne 0) {
+              if (Test-Path $log) { Get-Content $log -Tail 40 }
+              throw "The installer ended with exit code $($run.ExitCode)."
+          }
+          $exe = Join-Path $env:ProgramFiles 'SteamDeck_rEFInd\SteamDeck_rEFInd.exe'
+          if (-not (Test-Path -LiteralPath $exe)) { throw "The installer did not place $exe." }
+          $installed = (Get-Item -LiteralPath $exe).VersionInfo.ProductVersion
+          Write-Host "Installed: $exe, ProductVersion $installed"
+          if ($installed -cne $env:VERSION) { throw "The installed program is version $installed, expected $env:VERSION." }
 
       # --- Stage B: sign the installer itself ---
       - name: Upload unsigned installer (for signing)
