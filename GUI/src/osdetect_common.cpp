@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QMap>
 #include <QProcess>
+#include <QSysInfo>
 
 #include <algorithm>
 
@@ -13,6 +14,29 @@
 static const QString ESP_PARTTYPE_GPT = QStringLiteral("c12a7328-f81f-11d2-ba4b-00a0c93ec93b");
 // MBR partition type for ESPs.
 static const QString ESP_PARTTYPE_MBR = QStringLiteral("0xef");
+
+QString OSDetector::efiArchSuffixOverride;
+
+QString OSDetector::efiArchSuffix()
+{
+    if (!efiArchSuffixOverride.isEmpty())
+        return efiArchSuffixOverride;
+    const QString cpu = QSysInfo::currentCpuArchitecture();
+    if (cpu == QLatin1String("arm64") || cpu == QLatin1String("aarch64"))
+        return QStringLiteral("aa64");
+    if (cpu == QLatin1String("i386") || cpu == QLatin1String("i686"))
+        return QStringLiteral("ia32");
+    return QStringLiteral("x64");
+}
+
+QStringList OSDetector::vendorLoaderCandidates()
+{
+    // Prefer shim (secure boot), then GRUB, then systemd-boot.
+    const QString sfx = efiArchSuffix();
+    return {QStringLiteral("shim") + sfx + QStringLiteral(".efi"),
+            QStringLiteral("grub") + sfx + QStringLiteral(".efi"),
+            QStringLiteral("systemd-boot") + sfx + QStringLiteral(".efi")};
+}
 
 QString OSDetector::runCommand(const QString &program, const QStringList &args, bool *ok)
 {
@@ -117,11 +141,14 @@ static bool isUkiLauncherDir(const QDir &vendorDir)
 {
     if (QFile::exists(vendorDir.filePath(QStringLiteral("grub.cfg"))))
         return false;
-    // Only the x86-64 shim's CSV: the ia32 one beside it keeps the stock
-    // GRUB line on a uki-direct install.
+    // Only this architecture's shim CSV (BOOTX64.CSV, BOOTAA64.CSV): on
+    // x86-64 the ia32 one beside it keeps the stock GRUB line on a
+    // uki-direct install.
+    const QString csvName = QStringLiteral("BOOT") + OSDetector::efiArchSuffix().toUpper()
+                            + QStringLiteral(".CSV");
     bool sawCsv = false;
     for (const QString &csv : vendorDir.entryList(QDir::Files)) {
-        if (csv.compare(QLatin1String("BOOTX64.CSV"), Qt::CaseInsensitive) != 0)
+        if (csv.compare(csvName, Qt::CaseInsensitive) != 0)
             continue;
         QFile f(vendorDir.filePath(csv));
         if (!f.open(QIODevice::ReadOnly))
@@ -154,6 +181,7 @@ QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString 
     static const QStringList skipDirs = {
         QStringLiteral("boot"), QStringLiteral("refind"), QStringLiteral("keys"),
         QStringLiteral("fonts"), QStringLiteral("memtest86"), QStringLiteral("shellx64"),
+        QStringLiteral("shellaa64"), QStringLiteral("shellia32"),
     };
 
     BootEntry windows, steam;
@@ -182,11 +210,9 @@ QList<BootEntry> OSDetector::scanEspRoot(const QString &rootPath, const QString 
             }
             continue;
         }
-        // Generic Linux vendor dir: prefer shim (secure boot), then GRUB, then systemd-boot.
-        static const QStringList loaderCandidates = {
-            QStringLiteral("shimx64.efi"), QStringLiteral("grubx64.efi"),
-            QStringLiteral("systemd-bootx64.efi"),
-        };
+        // Generic Linux vendor dir: prefer shim (secure boot), then GRUB, then
+        // systemd-boot, under this architecture's names.
+        const QStringList loaderCandidates = vendorLoaderCandidates();
         QString loaderFile;
         for (const QString &candidate : loaderCandidates) {
             if (QFile::exists(sub.filePath(candidate))) {
@@ -284,16 +310,19 @@ QList<BootEntry> OSDetector::assembleEntries(const QList<Partition> &partitions,
         return false;
     };
 
+    const QString sfx = efiArchSuffix();
     for (const Partition &p : partitions) {
         // Removable media recognized by well-known labels, ESP-typed or not.
         if (p.label.compare(QLatin1String("BATOCERA"), Qt::CaseInsensitive) == 0) {
             addUnique({QStringLiteral("Batocera"), QStringLiteral("Batocera"),
-                       QStringLiteral("/EFI/BOOT/bootx64.efi"), QStringLiteral("BATOCERA"), false});
+                       QStringLiteral("/EFI/BOOT/boot") + sfx + QStringLiteral(".efi"),
+                       QStringLiteral("BATOCERA"), false});
             continue;
         }
         if (p.label.compare(QLatin1String("VTOYEFI"), Qt::CaseInsensitive) == 0) {
             addUnique({QStringLiteral("Ventoy"), QStringLiteral("Ventoy"),
-                       QStringLiteral("/EFI/BOOT/grubx64_real.efi"), QStringLiteral("VTOYEFI"), false});
+                       QStringLiteral("/EFI/BOOT/grub") + sfx + QStringLiteral("_real.efi"),
+                       QStringLiteral("VTOYEFI"), false});
             continue;
         }
         if (!isEsp(p) || !p.mountPoint.isEmpty())
@@ -389,6 +418,7 @@ bool OSDetector::classifyLoaderPath(const QString &loaderPath, BootEntry &entry)
     static const QStringList skipDirs = {
         QStringLiteral("boot"), QStringLiteral("refind"), QStringLiteral("keys"),
         QStringLiteral("fonts"), QStringLiteral("memtest86"), QStringLiteral("shellx64"),
+        QStringLiteral("shellaa64"), QStringLiteral("shellia32"),
     };
     if (skipDirs.contains(vendorLower) || vendorLower.startsWith(QLatin1String("drivers"))
         || vendorLower.startsWith(QLatin1String("tools")))
